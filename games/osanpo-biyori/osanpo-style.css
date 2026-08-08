@@ -1,0 +1,180 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #f5f8e9;
+  --board: #e6f0c4;
+  --accent: #93b23f;
+  --hard: #e2574c;
+  --text: #3a3f2c;
+  --popup-good: #6c9a32;
+  --popup-bad: #a32d2d;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：レーン・アイテムの色 */
+  --lane-line: rgba(58, 63, 44, 0.1);
+  --mystery-color: #d4537e;
+  --hazard-color: #a32d2d;
+}
+
+/* ツールバー：図鑑進捗＋終了ボタン */
+.osanpo-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.osanpo-zukan { flex: 1 1 auto; }
+.osanpo-zukan b { color: var(--accent); }
+.osanpo-end-btn,
+.osanpo-zukan-btn { font-size: 12px; padding: 0 12px; }
+
+.osanpo-placeholder-zukan-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* 図鑑モーダル */
+.osanpo-zukan-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 20;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.osanpo-zukan-modal.osanpo-zukan-open { display: flex; }
+
+.osanpo-zukan-panel {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 360px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.osanpo-zukan-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  font-weight: bold;
+  border-bottom: 1px solid #eee;
+  color: var(--text);
+}
+.osanpo-zukan-close {
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--text);
+}
+.osanpo-zukan-grid {
+  overflow-y: auto;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.osanpo-zukan-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 2px;
+  border-radius: 10px;
+  background: #f4f4f0;
+}
+.osanpo-zukan-cell.osanpo-zukan-found { background: #eef6e0; }
+.osanpo-zukan-cell.osanpo-zukan-rare.osanpo-zukan-found { background: #fbeaf0; }
+.osanpo-zukan-emoji { font-size: 24px; opacity: 0.9; }
+.osanpo-zukan-cell:not(.osanpo-zukan-found) .osanpo-zukan-emoji { color: var(--mystery-color); font-weight: 900; opacity: 0.7; }
+.osanpo-zukan-name { font-size: 9px; color: var(--text); text-align: center; line-height: 1.2; }
+.osanpo-zukan-cell:not(.osanpo-zukan-found) .osanpo-zukan-name { color: #999; }
+
+/* フィールド（3レーンの道） */
+.osanpo-field {
+  position: relative;
+  height: 260px;
+  max-width: 340px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f2f8e0 0%, var(--board) 100%);
+}
+
+.osanpo-lane-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--lane-line);
+}
+
+/* 出現アイテム（？のうちは共通デザイン、ハザードは色を変える） */
+.osanpo-item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--mystery-color);
+  line-height: 1;
+  user-select: none;
+  transition: font-size 0.15s ease;
+}
+.osanpo-item.osanpo-hazard {
+  color: var(--hazard-color);
+  font-size: 26px;
+}
+.osanpo-item.osanpo-item-found {
+  font-size: 26px;
+  opacity: 0.75;
+}
+
+/* 犬（進行方向でscaleX反転、レーン移動でleftを変える） */
+.osanpo-dog {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  font-size: 58px;
+  line-height: 1;
+  transition: left 0.18s ease-out, transform 0.18s ease-out;
+  transform: translate(-50%, 0) scaleX(var(--flip, -1));
+}
+.osanpo-dog.osanpo-dog-flinch {
+  animation: osanpoFlinch 0.35s ease;
+}
+@keyframes osanpoFlinch {
+  0% { transform: translate(-50%, 0) scaleX(var(--flip, -1)); }
+  30% { transform: translate(-50%, 6px) scaleX(var(--flip, -1)) scale(0.92); }
+  100% { transform: translate(-50%, 0) scaleX(var(--flip, -1)); }
+}
+
+/* 操作ボタン（左右レーン移動） */
+.osanpo-controls {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 12px;
+}
+.osanpo-lane-btn {
+  min-width: 64px;
+  font-size: 20px;
+}
+
+.osanpo-placeholder {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c7268;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 10px;
+}

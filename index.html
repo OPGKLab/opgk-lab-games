@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OPGK Lab | ゲーム一覧</title>
+<link rel="stylesheet" href="./common/series-style-base.css" />
+<style>
+  /* このページ専用（一覧カードのレイアウトのみ） */
+  .list-title { text-align: center; font-size: 22px; margin: 4px 0 20px; }
+
+  .category-block { margin-bottom: 24px; }
+  .category-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text);
+    margin: 0 0 10px 2px;
+  }
+  .category-title::before {
+    content: "";
+    width: 4px; height: 16px;
+    background: var(--accent);
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .game-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    background: #fff;
+    border-radius: 16px;
+    border-top: 4px solid var(--card-accent, var(--accent));
+    padding: 20px 12px 16px;
+    text-decoration: none;
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .game-card .icon-circle {
+    width: 56px; height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #eef3f7;
+    font-size: 28px;
+  }
+
+  .game-card .label { font-weight: bold; font-size: 15px; }
+  .game-card .desc { font-size: 12px; color: #6b7a72; line-height: 1.4; min-height: 2.6em; }
+
+  .game-card .play-btn {
+    margin-top: 4px;
+    background: var(--card-accent, var(--accent));
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 8px 28px;
+    border-radius: 20px;
+  }
+
+  .coming-soon { opacity: 0.5; pointer-events: none; }
+</style>
+</head>
+<body>
+  <div class="s-app">
+    <div class="s-brand">🌿 OPGK Lab</div>
+    <h1 class="list-title">あそんでみる</h1>
+
+    <div class="category-block">
+      <div class="category-title">🧩 あたまを使う</div>
+      <div class="game-grid">
+        <a class="game-card" style="--card-accent:#4f7fe0" href="./games/slide-puzzle/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">🔀</span>
+          <span class="label">スライドパズル</span>
+          <span class="desc">数字をずらして、順番通りに並べましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#b84a39" href="./games/mine-sweeper/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">💣</span>
+          <span class="label">マインスイーパー</span>
+          <span class="desc">地雷のないマスをすべて開けましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#2f8fd1" href="./games/juguchi-puzzle/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">🚰</span>
+          <span class="label">じゃぐちパズル</span>
+          <span class="desc">パイプを回して、水の道をつなげましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#b84a39" href="./games/shinkei-suijaku/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">🐾</span>
+          <span class="label">どうぶつ神経衰弱</span>
+          <span class="desc">絵柄を覚えて、ペアを探しましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#7c6fe0" href="./games/hit-and-blow/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">🔢</span>
+          <span class="label">ヒット&ブロー</span>
+          <span class="desc">推理して数字を当てよう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#2f8f5b" href="./games/reversi/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">⚫</span>
+          <span class="label">リバーシ</span>
+          <span class="desc">相手より多く自分の色の石を並べましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="category-block">
+      <div class="category-title">⚡ とっさに反応</div>
+      <div class="game-grid">
+        <a class="game-card" style="--card-accent:#a9713f" href="./games/kuma-tataki/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">🐻</span>
+          <span class="label">くまさんぽこぽこ</span>
+          <span class="desc">出てきたくまさんをタップしよう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#12b886" href="./games/hebi-sui-sui/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">🐍</span>
+          <span class="label">へびすいすい</span>
+          <span class="desc">ネズミを捕まえて長くなろう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#e8a23c" href="./games/sakusaku-judge/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">👀</span>
+          <span class="label">さくさくジャッジ！</span>
+          <span class="desc">正しいものをすばやく見分けよう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="category-block">
+      <div class="category-title">🧸 くらし・まったり</div>
+      <div class="game-grid">
+        <a class="game-card" style="--card-accent:#e8a23c" href="./games/tamago-yukue/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">🐣</span>
+          <span class="label">たまごのゆくえ</span>
+          <span class="desc">同じ卵を合体させて進化させよう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#93b23f" href="./games/osanpo-biyori/index.html" target="_blank" rel="noopener">
+          <span class="icon-circle">🐕‍🦺</span>
+          <span class="label">おさんぽ日和</span>
+          <span class="desc">いろんな出会いを見つけよう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 新作を追加したら、上のカードと同じ形で1つ追記するだけでOK（--card-accentで色を指定） -->
+
+    <p class="s-copyright" style="text-align:center; margin-top:24px;">©2026 OPGK Lab</p>
+  </div>
+</body>
+</html>

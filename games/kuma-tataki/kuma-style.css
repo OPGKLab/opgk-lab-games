@@ -1,0 +1,54 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #f7ede0;
+  --board: #e8d3b0;
+  --accent: #a9713f;
+  --hard: #e2574c;
+  --text: #4a3524;
+  --popup-good: #3f9d63;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：穴の色（common側には存在しない変数） */
+  --hole-bg: #d9bf95;
+  --hole-bg-light: #ecdcc0;
+}
+
+/* このゲーム固有：盤面レイアウト（共通の .s-board に追加するクラス） */
+.kuma-board {
+  --cols: 3;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 10px;
+}
+
+.kuma-hole {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 50%;
+  background: var(--hole-bg);
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+}
+.kuma-mound {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, var(--hole-bg-light), var(--hole-bg) 75%);
+}
+.kuma-char {
+  position: absolute;
+  inset: -8%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: min(16vw, 76px);
+  line-height: 1;
+  transform: translateY(100%);
+  transition: transform 0.12s ease-out;
+}
+.kuma-hole.kuma-up .kuma-char { transform: translateY(0); }
+.kuma-hole.kuma-avoid { box-shadow: inset 0 0 0 3px var(--hard); }
+.kuma-hole.kuma-hit-good { filter: brightness(1.4); }
+.kuma-hole.kuma-hit-bad { filter: hue-rotate(180deg); }
