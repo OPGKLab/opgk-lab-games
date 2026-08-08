@@ -66,6 +66,7 @@ class GameShell {
           <button class="s-icon-btn" id="sSoundBtn">🔊</button>
         </div>
         <p class="s-hint">${this.cfg.hint || ''}</p>
+        <a class="s-back-link" href="../../index.html">← ゲーム一覧に戻る</a>
         <p class="s-copyright">©2026 OPGK Lab</p>
       </div>
     `;

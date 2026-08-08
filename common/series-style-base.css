@@ -112,6 +112,8 @@ body {
 }
 
 .s-hint { font-size: 12px; color: #6b7a72; margin-top: 8px; }
+.s-back-link { display: block; text-align: center; font-size: 13px; color: var(--accent); margin-top: 14px; text-decoration: none; }
+.s-back-link:hover { text-decoration: underline; }
 .s-copyright { font-size: 11px; color: #93a49c; margin-top: 14px; }
 
 /* 得点ポップアップ（どのゲームでも共通利用） */
