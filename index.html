@@ -71,7 +71,10 @@
     border-radius: 20px;
   }
 
-  .coming-soon { opacity: 0.5; pointer-events: none; }
+.coming-soon { opacity: 0.5; pointer-events: none; }
+.footer-links { display: flex; justify-content: center; gap: 20px; margin-top: 20px; font-size: 13px; }
+.footer-links a { color: var(--text); text-decoration: none; }
+.footer-links a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -165,7 +168,11 @@
 
     <!-- 新作を追加したら、上のカードと同じ形で1つ追記するだけでOK（--card-accentで色を指定） -->
 
+<div class="footer-links">
+      <a href="./about.html">🌿 OPGK Labについて</a>
+      <a href="https://forms.gle/U6UFrK1zkt4DUvFVA" target="_blank" rel="noopener">✉ ご感想・お問い合わせ</a>
+    </div>
     <p class="s-copyright" style="text-align:center; margin-top:24px;">©2026 OPGK Lab</p>
-  </div>
+    <p class="s-copyright" style="text-align:center;">商用利用・再配布に関するご相談は、お問い合わせフォームよりお願いいたします。</p>  </div>
 </body>
 </html>
