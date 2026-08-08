@@ -15,7 +15,26 @@
 }
 
 /* このゲーム固有：盤面レイアウト（共通の .s-board に追加するクラス） */
-.kuma-board {
+.kuma-rule {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.kuma-rule-item {
+  font-size: 12px;
+  font-weight: bold;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: #fff;
+  white-space: nowrap;
+}
+.kuma-rule-good { color: var(--popup-good); }
+.kuma-rule-bad { color: var(--popup-bad); }
+.kuma-rule-bonus { color: var(--popup-bonus); }
+
+.kuma-holes {
   --cols: 3;
   display: grid;
   grid-template-columns: repeat(var(--cols), 1fr);

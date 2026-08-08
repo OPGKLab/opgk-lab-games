@@ -6,7 +6,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'くまさんぽこぽこ🐻',
-  hint: 'タイトルを5回連続タップすると…隠しモード出現？',
+  hint: 'ぱんだ🐼はよけて、くまとしろくまをタップ（タイトル5回タップで隠しモード）',
   hasScore: true,
   hasTimer: true,
   duration: 30,
@@ -28,14 +28,22 @@ let spawnTimer = null;
 
 function buildBoard() {
   shell.board.classList.add('kuma-board');
-  shell.board.innerHTML = '';
+  shell.board.innerHTML = `
+    <div class="kuma-rule">
+      <span class="kuma-rule-item kuma-rule-good">🐻 +10</span>
+      <span class="kuma-rule-item kuma-rule-bonus">🐻‍❄️ 2倍✨</span>
+      <span class="kuma-rule-item kuma-rule-bad">🐼 -10 よけて！</span>
+    </div>
+    <div class="kuma-holes" id="kumaHoles"></div>
+  `;
+  const holesWrap = shell.board.querySelector('#kumaHoles');
   holes = [];
   for (let i = 0; i < HOLE_COUNT; i++) {
     const hole = document.createElement('button');
     hole.className = 'kuma-hole';
     hole.innerHTML = `<div class="kuma-mound"></div><div class="kuma-char"></div>`;
     hole.addEventListener('click', () => whack(i));
-    shell.board.appendChild(hole);
+    holesWrap.appendChild(hole);
     holes.push({ el: hole, char: null, timeoutId: null });
   }
 }
