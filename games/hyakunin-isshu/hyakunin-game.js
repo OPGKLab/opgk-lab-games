@@ -135,8 +135,17 @@ function shuffle(arr) {
   return a;
 }
 
+function furiganaSpan(kanji, kana) {
+  return `<span class="hu-word"><span class="hu-kana">${kana}</span><span class="hu-kanji">${kanji}</span></span>`;
+}
+
 function rubyLine(kanjiArr, kanaArr) {
-  return kanjiArr.map((k, i) => `<ruby>${k}<rt>${kanaArr[i]}</rt></ruby>`).join(' ');
+  return kanjiArr.map((k, i) => furiganaSpan(k, kanaArr[i])).join(' ');
+}
+
+/* 下の句カード用：句ごとに改行される独立した行として組み立てる（ネイティブrubyの折り返し崩れを回避） */
+function choiceLines(kanjiArr, kanaArr) {
+  return kanjiArr.map((k, i) => `<div class="hu-choice-line">${furiganaSpan(k, kanaArr[i])}</div>`).join('');
 }
 
 /* 激むず：上の句の最初の1文字が同じ歌（実際の競技かるたの「決まり字」的に紛らわしい札）を優先して選ぶ */
@@ -182,7 +191,7 @@ function showQuestion() {
   choices.forEach((poem) => {
     const btn = document.createElement('button');
     btn.className = 'hu-choice-card';
-    btn.innerHTML = rubyLine(poem[4], poem[5]);
+    btn.innerHTML = choiceLines(poem[4], poem[5]);
     btn.addEventListener('click', () => onChoose(poem[0] === id, btn));
     choicesEl.appendChild(btn);
   });

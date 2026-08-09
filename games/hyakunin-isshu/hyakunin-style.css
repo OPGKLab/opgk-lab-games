@@ -46,8 +46,31 @@
   color: var(--text);
   box-shadow: 0 2px 6px rgba(91, 44, 111, 0.15);
 }
-.hu-kami-card ruby { margin: 0 3px; }
-.hu-kami-card rt { font-size: 0.5em; color: var(--accent); }
+.hu-kami-card .hu-word { margin: 0 3px; }
+
+/* 自作ふりがな構造：フォントサイズはブラウザ／OSの最小文字サイズ設定で無効化されることがあるため、
+   サイズ差に頼らず「太字の黒系＝本文」「斜体のグレー＝読み仮名」で視覚的に区別する */
+.hu-word {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+.hu-kana,
+.hu-kanji {
+  white-space: nowrap;
+}
+.hu-kana {
+  font-size: 0.55em; /* 対応環境では小さく表示。非対応環境でも下記の配色で区別可能 */
+  font-style: italic;
+  font-weight: 400;
+  color: #8a7391;
+  letter-spacing: -0.02em;
+}
+.hu-kanji {
+  font-weight: 700;
+  color: var(--text);
+}
 
 /* 下の句：4枚の選択札 */
 .hu-choices {
@@ -67,8 +90,7 @@
   cursor: pointer;
   text-align: center;
 }
-.hu-choice-card ruby { display: block; margin: 2px 0; }
-.hu-choice-card rt { font-size: 0.5em; color: var(--accent); }
+.hu-choice-card .hu-choice-line { margin: 4px 0; }
 .hu-choice-card:not(:disabled):active { transform: scale(0.97); }
 .hu-choice-card.hu-tried { opacity: 0.4; cursor: default; }
 .hu-choice-card.hu-correct {
