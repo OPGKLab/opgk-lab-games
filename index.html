@@ -21,6 +21,11 @@
     color: var(--text);
     margin: 0 0 10px 2px;
   }
+  .category-title .count {
+    font-size: 14px;
+    font-weight: normal;
+    color: #6b7a72;
+  }
   .category-title::before {
     content: "";
     width: 5px; height: 20px;
@@ -35,27 +40,30 @@
     top: 0;
     z-index: 20;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    overflow-x: auto;
-    white-space: nowrap;
+    align-items: stretch;
+    gap: 6px;
     background: #cfe3ba;
-    padding: 10px 8px;
+    padding: 10px 6px;
     margin: 0 -8px 18px;
     border-radius: 0 0 14px 14px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    scrollbar-width: none;
   }
-  .s-catnav::-webkit-scrollbar { display: none; }
   .s-catnav-pill {
-    flex: 0 0 auto;
-    font-size: 13px;
-    font-weight: bold;
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(10.5px, 3.1vw, 13px);
+    font-weight: 400;
     color: var(--text);
     background: #fff;
-    padding: 7px 12px;
+    padding: 7px 4px;
     border-radius: 16px;
     text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* 右下固定：TOPへ戻る丸ボタン（常時表示・フェードなし） */
@@ -150,13 +158,13 @@
     <p class="list-catch">無料・広告なし。すきま時間にどうぞ。</p>
 
     <nav class="s-catnav" id="sCatNav">
-      <a class="s-catnav-pill" href="#cat-atama">🧩 あたまを使う(6)</a>
-      <a class="s-catnav-pill" href="#cat-tossa">⚡ とっさに反応(3)</a>
-      <a class="s-catnav-pill" href="#cat-kurashi">🧸 くらし・まったり(3)</a>
+      <a class="s-catnav-pill" href="#cat-atama">🧩 あたまを使う</a>
+      <a class="s-catnav-pill" href="#cat-tossa">⚡ とっさに反応</a>
+      <a class="s-catnav-pill" href="#cat-kurashi">🧸 くらし・まったり</a>
     </nav>
 
     <div class="category-block" id="cat-atama">
-      <div class="category-title">🧩 あたまを使う</div>
+      <div class="category-title">🧩 あたまを使う<span class="count">(6)</span></div>
       <div class="game-grid">
         <a class="game-card" style="--card-accent:#4f7fe0" href="./games/slide-puzzle/index.html" data-no="001">
           <span class="icon-circle">🔀</span>
@@ -164,13 +172,13 @@
           <span class="desc">数字をずらして、順番通りに並べましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#b84a39" href="./games/mine-sweeper/index.html" data-no="003">
+        <a class="game-card" style="--card-accent:#b84a39" href="./games/mine-sweeper/index.html" data-no="002">
           <span class="icon-circle">💣</span>
           <span class="label">マインスイーパー</span>
           <span class="desc">地雷のないマスをすべて開けましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#2f8fd1" href="./games/juguchi-puzzle/index.html" data-no="002">
+        <a class="game-card" style="--card-accent:#2f8fd1" href="./games/juguchi-puzzle/index.html" data-no="003">
           <span class="icon-circle">🚰</span>
           <span class="label">じゃぐちパズル</span>
           <span class="desc">パイプを回して、水の道をつなげましょう</span>
@@ -198,7 +206,7 @@
     </div>
 
     <div class="category-block" id="cat-tossa">
-      <div class="category-title">⚡ とっさに反応</div>
+      <div class="category-title">⚡ とっさに反応<span class="count">(3)</span></div>
       <div class="game-grid">
         <a class="game-card" style="--card-accent:#a9713f" href="./games/kuma-tataki/index.html" data-no="101">
           <span class="icon-circle">🐻</span>
@@ -206,13 +214,13 @@
           <span class="desc">くまをタップ、ぱんだは避けよう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#12b886" href="./games/hebi-sui-sui/index.html" data-no="103">
+        <a class="game-card" style="--card-accent:#12b886" href="./games/hebi-sui-sui/index.html" data-no="102">
           <span class="icon-circle">🐍</span>
           <span class="label">へびすいすい</span>
           <span class="desc">ネズミを捕まえて長くなろう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#e8a23c" href="./games/sakusaku-judge/index.html" data-no="102">
+        <a class="game-card" style="--card-accent:#e8a23c" href="./games/sakusaku-judge/index.html" data-no="103">
           <span class="icon-circle">👀</span>
           <span class="label">さくさくジャッジ！</span>
           <span class="desc">正しいものをすばやく見分けよう</span>
@@ -222,7 +230,7 @@
     </div>
 
     <div class="category-block" id="cat-kurashi">
-      <div class="category-title">🧸 くらし・まったり</div>
+      <div class="category-title">🧸 くらし・まったり<span class="count">(3)</span></div>
       <div class="game-grid">
         <a class="game-card" style="--card-accent:#e8a23c" href="./games/tamago-yukue/index.html" data-no="201">
           <span class="icon-circle">🐣</span>
