@@ -1,7 +1,7 @@
 /* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
 :root {
-  --bg: #eef1f6;
-  --board: #b9c4d6;
+  --bg: #fbf3e4;
+  --board: #ecdfc0;
   --accent: #4f7fe0;
   --hard: #e2574c;
   --text: #2b3a67;
@@ -10,7 +10,7 @@
   --popup-bonus: #e0a52c;
 
   /* このゲーム固有：タイルは目に優しいクリーム系、ヒントのみ水色で強調 */
-  --tile-bg: #f2e8cf;
+  --tile-bg: #f6ecd4;
   --tile-text: #2b3a67;
   --hint-bg: #e8f2ff;
   --hint-border: #4f7fe0;
@@ -40,17 +40,22 @@
 .slide-tile {
   aspect-ratio: 1 / 1;
   border: none;
-  border-radius: 14px;
-  background: var(--tile-bg);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 46%),
+    var(--tile-bg);
   color: var(--tile-text);
   font-size: calc(300px / var(--size) * 0.42);
   font-weight: 900;
-  box-shadow: 0 2px 3px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 4px rgba(120,90,40,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
   cursor: pointer;
   transition: transform 0.08s ease-out, box-shadow 0.15s, background 0.15s;
 }
 .slide-tile:disabled { cursor: default; }
-.slide-tile:not(:disabled):active { transform: scale(0.94); }
+.slide-tile:not(:disabled):active {
+  transform: scale(0.94);
+  box-shadow: 0 1px 2px rgba(120,90,40,0.18), inset 0 1px 0 rgba(255,255,255,0.4);
+}
 .slide-tile.slide-blank {
   background: transparent !important;
   box-shadow: none;
@@ -58,7 +63,9 @@
 
 /* ヒント強調：水色背景＋青枠で、クリーム地の中でもはっきり目立たせる */
 .slide-tile.hint-glow {
-  background: var(--hint-bg) !important;
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 46%),
+    var(--hint-bg) !important;
   animation: slideHintPulse 0.9s ease-in-out infinite alternate;
 }
 @keyframes slideHintPulse {
