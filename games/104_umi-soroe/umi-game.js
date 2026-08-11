@@ -30,7 +30,7 @@ let pointerStartInfo = null;
 /* ---------- 消えた個数に応じたサウンド段階 ---------- */
 /* ▼▼▼ テストβ用フラグ：3個消しでも★スペシャル音を確認できるようにする一時措置。
    確認後は false に戻すこと（正規α = 3個は単音、10個以上のみ★スペシャル） ▼▼▼ */
-const TEST_FORCE_SPECIAL_ON_3 = true;
+const TEST_FORCE_SPECIAL_ON_3 = false;
 
 function getSoundTier(count) {
   if (TEST_FORCE_SPECIAL_ON_3 && count === 3) return 5; // ★テスト確認用
