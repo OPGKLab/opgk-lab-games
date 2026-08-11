@@ -7,7 +7,7 @@
 
 const shell = new GameShell({
   rootSelector: '#app',
-  title: 'ハムスターのチーズ集め🧀',
+  title: 'はむはむチーズ🧀',
   hint: 'バーを動かしてハムスターを跳ね返そう。🧀に当たればクリア！（指操作／十字キー対応、タイトル5回タップで激むず）',
   hasScore: true,
   hasTimer: false,
@@ -246,7 +246,7 @@ function draw() {
   ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--paddle-color') || '#8a5a3c';
   roundRect(currentPaddleX(), paddle.y, paddle.w, paddle.h, 6);
 
-  ctx.font = `${BALL_R * 2.4}px sans-serif`;
+  ctx.font = `${BALL_R * 3.2}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('🐹', ball.x, ball.y);
