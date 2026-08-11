@@ -1,0 +1,158 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #f4eef7;
+  --board: #efe6f0;
+  --accent: #5b2c6f;
+  --hard: #b0413e;
+  --text: #3a2440;
+  --popup-good: #5b2c6f;
+  --popup-bad: #b0413e;
+  --popup-bonus: #c9a227;
+
+  /* このゲーム固有：札・金の縁の色 */
+  --hu-card-bg: #fffaf3;
+  --hu-gold: #c9a227;
+}
+
+/* ツールバー：問題数／終了ボタン */
+.hu-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text);
+}
+.hu-end-btn { font-size: 12px; padding: 0 12px; }
+
+/* 上の句カード（読み札風） */
+.hu-kami-wrap {
+  text-align: center;
+  margin-bottom: 16px;
+}
+.hu-poem-no {
+  font-size: 12px;
+  color: #8a7391;
+  margin-bottom: 6px;
+}
+.hu-kami-card {
+  background: linear-gradient(180deg, #fffaf3, #f7edf5);
+  border: 2px solid var(--hu-gold);
+  border-radius: 14px;
+  padding: 22px 14px;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 18px;
+  line-height: 2.2;
+  color: var(--text);
+  box-shadow: 0 2px 6px rgba(91, 44, 111, 0.15);
+}
+.hu-kami-card .hu-word { margin: 0 3px; }
+
+/* 自作ふりがな構造：フォントサイズはブラウザ／OSの最小文字サイズ設定で無効化されることがあるため、
+   サイズ差に頼らず「太字の黒系＝本文」「斜体のグレー＝読み仮名」で視覚的に区別する */
+.hu-word {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+.hu-kana,
+.hu-kanji {
+  white-space: nowrap;
+}
+.hu-kana {
+  font-size: 0.55em; /* 対応環境では小さく表示。非対応環境でも下記の配色で区別可能 */
+  font-style: italic;
+  font-weight: 400;
+  color: #8a7391;
+  letter-spacing: -0.02em;
+}
+.hu-kanji {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* 下の句：4枚の選択札 */
+.hu-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.hu-choice-card {
+  background: var(--hu-card-bg);
+  border: 2px solid #ddd0d8;
+  border-radius: 12px;
+  padding: 16px 8px;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 15px;
+  line-height: 2;
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+}
+.hu-choice-card .hu-choice-line { margin: 4px 0; }
+.hu-choice-card:not(:disabled):active { transform: scale(0.97); }
+.hu-choice-card.hu-tried { opacity: 0.4; cursor: default; }
+.hu-choice-card.hu-correct {
+  border-color: var(--accent);
+  background: #f5eef8;
+  box-shadow: 0 0 0 2px var(--accent) inset;
+}
+.hu-choice-card.hu-shake { animation: huShake 0.4s ease; }
+@keyframes huShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px) rotate(-2deg); }
+  40% { transform: translateX(6px) rotate(2deg); }
+  60% { transform: translateX(-4px) rotate(-1deg); }
+  80% { transform: translateX(4px) rotate(1deg); }
+}
+
+/* 桜吹雪：右上から、薄いピンクの花びらが静かにハラハラ舞い落ちる（少量） */
+.hu-sakura-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 11;
+}
+.hu-petal {
+  position: absolute;
+  top: -10px;
+  background-color: #f792b8;
+  border-radius: 12px 1px 12px 1px;
+  opacity: 0.8;
+  pointer-events: none;
+  animation-name: huPetalFall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes huPetalFall {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0.9; }
+  100% { transform: translate(var(--dx, -120px), var(--dy, 280px)) rotate(360deg); opacity: 0; }
+}
+
+/* 「つぎの歌」ボタン：正解後、歌をじっくり眺めてから自分のペースで進める */
+.hu-next-row {
+  display: none;
+  justify-content: center;
+  margin-top: 14px;
+}
+.hu-next-btn { font-size: 15px; padding: 10px 30px; }
+
+.hu-placeholder {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #6b5975;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.hu-placeholder p { margin: 0; }
+.hu-placeholder-start { margin-top: 6px; font-weight: bold; color: var(--accent); }

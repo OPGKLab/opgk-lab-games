@@ -1,0 +1,102 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #eaf4f5;
+  --board: #dcedef;
+  --accent: #1f7a8c;
+  --hard: #e2574c;
+  --text: #2a3f42;
+  --popup-good: #1f7a8c;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：生き物ごとの淡い色分け（彩度控えめ） */
+  --c0: #cfe3ea; /* 🐳 */
+  --c1: #fbdbd0; /* 🦐 */
+  --c2: #e6ddd0; /* 🦭 */
+  --c3: #f7d9ea; /* 🪼 */
+  --c4: #e6d9f0; /* 🦑（激むず） */
+  --c5: #fde3c0; /* 🐟（激むず） */
+}
+
+.umi-toolbar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+/* 盤面レイアウト */
+.umi-grid {
+  --cols: 6;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 6px;
+  max-width: 340px;
+  margin: 0 auto;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.umi-grid.umi-shuffling {
+  animation: umiShuffleFade 0.5s ease;
+}
+@keyframes umiShuffleFade {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.umi-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(300px / var(--cols) * 0.62);
+  line-height: 1;
+  touch-action: none;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+  transition: transform 0.16s ease, opacity 0.16s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+.umi-tile.umi-c0 { background: var(--c0); }
+.umi-tile.umi-c1 { background: var(--c1); }
+.umi-tile.umi-c2 { background: var(--c2); }
+.umi-tile.umi-c3 { background: var(--c3); }
+.umi-tile.umi-c4 { background: var(--c4); }
+.umi-tile.umi-c5 { background: var(--c5); }
+
+.umi-tile.umi-selected {
+  transform: scale(0.92);
+  box-shadow: inset 0 0 0 3px var(--accent);
+}
+
+/* ヒント表示：ゆっくり明滅させて焦らせない */
+.umi-tile.umi-hint {
+  animation: umiHintPulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes umiHintPulse {
+  0% { box-shadow: inset 0 0 0 2px var(--accent); }
+  100% { box-shadow: inset 0 0 0 4px var(--accent), 0 0 10px 2px rgba(31,122,140,0.45); }
+}
+
+/* マッチ成立の光り→消える演出 */
+.umi-tile.umi-match-glow {
+  filter: brightness(1.5);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+.umi-tile.umi-matched {
+  transform: scale(0.25);
+  opacity: 0;
+}
+
+.umi-placeholder {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4f6a6d;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 10px;
+}
