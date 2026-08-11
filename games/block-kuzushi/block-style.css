@@ -1,0 +1,60 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #eef0fa;
+  --board: #e4e7f7;
+  --accent: #6c7fd8;
+  --hard: #e2574c;
+  --text: #333a5c;
+  --popup-good: #3f9d63;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：パドル・ボールの色 */
+  --paddle-color: #6c7fd8;
+  --ball-color: #ffffff;
+  --ball-border: #4a5bb0;
+}
+
+.block-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: bold;
+}
+.block-toolbar b { color: var(--accent); }
+.block-lives { font-size: 16px; letter-spacing: 2px; }
+
+.block-canvas-wrap {
+  display: flex;
+  justify-content: center;
+}
+#blockCanvas {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  aspect-ratio: 300 / 420;
+  touch-action: none;
+  border-radius: 12px;
+  background: #fdfdff;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+}
+
+.block-launch-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+.block-launch-btn:disabled { opacity: 0.4; }
+
+.block-placeholder {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c6499;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 10px;
+}
