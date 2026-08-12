@@ -1,0 +1,206 @@
+/* このゲーム固有：テーマカラー（藍色系、既存ゲームと非重複） */
+:root {
+  --bg: #eef0f7;
+  --board: #dde3f0;
+  --accent: #3d5a80;
+  --hard: #e2574c;
+  --text: #2b3a52;
+  --popup-good: #3d5a80;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：タイル・選択・ブロック行の色 */
+  --tile-bg: #ffffff;
+  --tile-selected-bg: #dbe6f5;
+  --tile-blocked-bg: #c3c9d4;
+}
+
+/* ツールバー：達成数＋現在の合計 */
+.atj-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.atj-progress b, .atj-sum b { color: var(--accent); }
+
+/* 合計がちょうど10になった時、押せることがひと目でわかるようにする */
+.atj-sum.atj-sum-ready b {
+  color: #2f8f5b;
+  animation: atjSumPulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes atjSumPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.18); }
+}
+#atjConfirmBtn.atj-ready {
+  background: #2f8f5b;
+  box-shadow: 0 0 0 4px rgba(47, 143, 91, 0.3);
+  animation: atjBtnPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes atjBtnPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+/* 盤面：うっすら斜めストライプのテクスチャで単調さを避ける */
+.atj-board {
+  padding: 10px;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 2px, transparent 2px, transparent 10px),
+    var(--board);
+}
+
+.atj-grid {
+  --cols: 6;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 6px;
+  max-width: 300px;
+  margin: 0 auto;
+  touch-action: none; /* なぞり操作を優先し、スクロールを防止 */
+}
+
+/* タイル：光沢グラデーション＋二重シャドウで浮き上がるような立体感を出す */
+.atj-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #ffffff 0%, var(--num-tint, #eef1f8) 100%);
+  color: var(--text);
+  font-size: calc(300px / var(--cols) * 0.44);
+  font-weight: 900;
+  box-shadow:
+    0 3px 0 rgba(61, 90, 128, 0.18),
+    0 5px 10px rgba(61, 90, 128, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+.atj-tile:disabled { cursor: default; }
+.atj-tile .atj-val { pointer-events: none; }
+
+/* 経路の順番バッジ（2マス以上つないだ時だけ表示） */
+.atj-tile .atj-order {
+  position: absolute;
+  top: 3px; right: 5px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  pointer-events: none;
+}
+.atj-tile.atj-selected .atj-order:not(:empty) {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 選択中：押し込まれたような沈み込み表現＋アクセント枠 */
+.atj-tile.atj-selected {
+  background: linear-gradient(160deg, var(--tile-selected-bg) 0%, #c7d7ee 100%);
+  box-shadow:
+    0 1px 0 rgba(61, 90, 128, 0.18),
+    0 2px 4px rgba(61, 90, 128, 0.18),
+    inset 0 0 0 3px var(--accent);
+  transform: translateY(2px);
+}
+
+/* 激むず：せり上がってきた使用不可の行 */
+.atj-tile.atj-blocked {
+  background: var(--tile-blocked-bg);
+  color: #8a8f9a;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+/* 正解演出：ぱっと膨らんでから発光する派手めの反応 */
+.atj-tile.atj-match-glow { animation: atjMatchPop 0.35s ease; }
+@keyframes atjMatchPop {
+  0% { transform: scale(1); filter: none; }
+  40% { transform: scale(1.28); filter: brightness(1.7) drop-shadow(0 0 10px rgba(255,255,255,0.95)); }
+  100% { transform: scale(1); filter: none; }
+}
+.atj-tile.atj-matched {
+  transform: scale(0.2);
+  opacity: 0;
+}
+
+/* 不正解：軽く横に揺れて知らせる */
+.atj-tile.atj-shake { animation: atjShake 0.3s ease; }
+@keyframes atjShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* 新しく補充された数字：ふわっと落ちてきて、色の変化が目に入りやすいようにする */
+.atj-tile.atj-fresh { animation: atjFreshIn 0.35s ease; }
+@keyframes atjFreshIn {
+  0% { transform: translateY(-14px) scale(0.85); opacity: 0; filter: brightness(1.35); }
+  60% { transform: translateY(2px) scale(1.05); opacity: 1; }
+  100% { transform: translateY(0) scale(1); filter: none; }
+}
+
+/* 手詰まり救済シャッフル */
+.atj-grid.atj-shuffling { animation: atjShuffleFade 0.5s ease; }
+@keyframes atjShuffleFade {
+  0% { opacity: 1; }
+  50% { opacity: 0.25; }
+  100% { opacity: 1; }
+}
+
+/* 終了時：盤面を暗くしてから中央にメッセージを重ねる */
+.atj-grid.atj-dimmed { filter: brightness(0.4) saturate(0.6); }
+.atj-end-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 20px;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  animation: atjOverlayIn 0.25s ease;
+}
+.atj-end-overlay.atj-end-clear { background: rgba(30, 45, 70, 0.78); }
+.atj-end-overlay.atj-end-over { background: rgba(50, 24, 24, 0.78); }
+.atj-end-title { font-size: 22px; font-weight: 900; }
+.atj-end-sub { font-size: 14px; opacity: 0.9; }
+@keyframes atjOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.atj-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.atj-placeholder {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c6a80;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 10px;
+}
