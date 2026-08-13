@@ -109,6 +109,49 @@
   100% { opacity: 0; transform: translate(-50%, -70%) scale(1.15); }
 }
 
+/* ---------- オールクリア演出 ---------- */
+.ocha-allclear {
+  position: relative;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #eef3e2 0%, #dfe9cd 100%);
+  text-align: center;
+  padding: 20px 10px;
+}
+.ocha-allclear-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--accent);
+}
+.ocha-allclear-score {
+  font-size: 16px;
+  color: var(--text);
+}
+.ocha-allclear-score b { color: var(--accent); font-size: 20px; }
+.ocha-allclear-sub {
+  font-size: 13px;
+  color: #7a8a6a;
+}
+
+.ocha-confetti {
+  position: absolute;
+  top: -30px;
+  pointer-events: none;
+  animation-name: ochaConfettiFall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+@keyframes ochaConfettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(280px) rotate(300deg); opacity: 0.1; }
+}
+
 .ocha-placeholder {
   min-height: 300px;
   display: flex;
