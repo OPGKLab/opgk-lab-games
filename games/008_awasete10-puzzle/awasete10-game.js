@@ -5,9 +5,15 @@
    ルール：盤面上で8方向（縦・横・斜め）に隣り合うマスを指でなぞってつなぎ、
    合計が10になったら「きめる」で確定して消す。指を離しても経路は保持され、
    「きめる」を押すまでは確定しない（考える猶予を残す設計）。
+   ※隠しルールとして、同じ数字を2つ以上つなげても消せる（ヒント文言では触れず、
+     初回のみトーストで気づかせる）。
+
+   数字の出現率は重み付き（1・8・9は控えめ）にして、単純な2枚ペアに頼らず
+   複数枚をつなぐ場面が増えるよう調整している。
+   短い間隔で連続して決めるとコンボ演出（ポップアップ＋一音追加）が入る。
 
    通常: 6x6、時間制限なし・詰みなし（手詰まり時は自動シャッフル）
-   激むず: 7x7、15秒ごとに未解決なら下から1行せり上がる（使用不可に）。
+   激むず: マス数は変えず、15秒→9秒間隔で未解決なら下から1行せり上がる（使用不可に）。
    せり上がりが盤面の大部分を占めたらゲームオーバー。
    ========================================================= */
 
@@ -20,10 +26,16 @@ const shell = new GameShell({
 });
 
 const BOARD_SIZE = 6;           // 激むずでもマス数は変えない（せり上がりペースの速さで難易度を出す）
-const ACHIEVEMENT_GOAL = 20;    // これだけ「そろえたら」クリア
+const ACHIEVEMENT_GOAL = 40;    // これだけ「そろえたら」クリア
 const HARD_PENALTY_MS = 9000;   // 激むず：この間隔で未解決ならせり上がる（通常イメージの15秒より速め）
 const MATCH_TARGET = 10;
 const PATH_NODE_CAP = 20000;    // 経路探索の打ち切り上限（過剰シャッフル防止のため打ち切り時は「解けるかもしれない」扱いにする）
+const COMBO_WINDOW_MS = 3500;   // この間隔以内に連続で決めるとコンボ扱い
+
+/* 数字ごとの出現重み：1・8・9は単純な2枚ペアを作りやすいので控えめに、
+   3〜6を中心に出しておくことで複数枚をつなぐ場面を増やす */
+const NUM_WEIGHTS = { 1: 2, 2: 2, 3: 3, 4: 3, 5: 4, 6: 3, 7: 3, 8: 1, 9: 1 };
+const NUM_WEIGHT_TOTAL = Object.values(NUM_WEIGHTS).reduce((a, b) => a + b, 0);
 
 /* 数字ごとの極薄カラー（視認性向上のためのヒント色。彩度は低めに抑える） */
 const NUM_COLORS = {
@@ -41,9 +53,19 @@ let clearedCount = 0;   // 達成数（そろえたグループの回数）
 let resolving = false;  // 消去・シャッフル演出中は操作不可
 let penaltyTimer = null;
 let gameOverFlag = false;
+let sameNumberHintShown = false; // 同じ数字マッチの発見トーストは初回だけ表示する
+let comboCount = 0;
+let lastMatchTs = 0;
 
 /* ---------- ユーティリティ ---------- */
-function randVal() { return 1 + ((Math.random() * 9) | 0); }
+function randVal() {
+  let r = Math.random() * NUM_WEIGHT_TOTAL;
+  for (const v of Object.keys(NUM_WEIGHTS)) {
+    r -= NUM_WEIGHTS[v];
+    if (r < 0) return Number(v);
+  }
+  return 5;
+}
 
 function neighbors8(r, c, size) {
   const list = [];
@@ -92,13 +114,30 @@ function hasTenPath(b, size, minRow) {
   return false;
 }
 
+/* 隣接する同じ数字のペアが存在するか（合計10ルールとは別に、これだけでも消せる） */
+function hasSameAdjacentPair(b, size, minRow) {
+  for (let r = minRow; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      for (const [nr, nc] of neighbors8(r, c, size)) {
+        if (nr < minRow) continue;
+        if (b[r][c] === b[nr][nc]) return true;
+      }
+    }
+  }
+  return false;
+}
+// 「合計10」または「同じ数字の隣接」のどちらかが作れれば解ける状態とみなす
+function boardSolvable(b, size, minRow) {
+  return hasSameAdjacentPair(b, size, minRow) || hasTenPath(b, size, minRow);
+}
+
 /* ---------- 盤面生成（必ず合計10の経路が作れる状態を保証） ---------- */
 function generateBoard() {
   let b, guard = 0;
   do {
     b = Array.from({ length: SIZE }, () => Array.from({ length: SIZE }, randVal));
     guard++;
-  } while (!hasTenPath(b, SIZE, 0) && guard < 30);
+  } while (!boardSolvable(b, SIZE, 0) && guard < 30);
   return b;
 }
 
@@ -112,6 +151,9 @@ function buildBoard() {
   clearedCount = 0;
   resolving = false;
   gameOverFlag = false;
+  sameNumberHintShown = false;
+  comboCount = 0;
+  lastMatchTs = 0;
 
   shell.board.className = 's-board atj-board';
   shell.board.innerHTML = `
@@ -182,12 +224,14 @@ function renderCell(r, c) {
   if (orderEl) orderEl.textContent = (idx !== -1 && path.length > 1) ? String(idx + 1) : '';
 }
 function updateSumDisplay() {
-  const sum = path.reduce((s, [r, c]) => s + board[r][c], 0);
+  const values = path.map(([r, c]) => board[r][c]);
+  const sum = values.reduce((s, v) => s + v, 0);
   const sumEl = shell.board.querySelector('#atjSum');
   if (sumEl) sumEl.textContent = sum;
 
-  // 合計がちょうど10になったら「押せます」と視覚的に伝える（自動確定はしない）
-  const ready = path.length > 0 && sum === MATCH_TARGET;
+  // 合計10、または同じ数字の連続ができたら「押せます」と視覚的に伝える（自動確定はしない）
+  const allSame = path.length >= 2 && values.every((v) => v === values[0]);
+  const ready = path.length > 0 && (sum === MATCH_TARGET || allSame);
   const sumWrap = shell.board.querySelector('.atj-sum');
   const confirmBtn = shell.board.querySelector('#atjConfirmBtn');
   if (sumWrap) sumWrap.classList.toggle('atj-sum-ready', ready);
@@ -243,9 +287,15 @@ function clearSelection() {
 
 function confirmSelection() {
   if (!shell.running || resolving || gameOverFlag || path.length === 0) return;
-  const sum = path.reduce((s, [r, c]) => s + board[r][c], 0);
+  const values = path.map(([r, c]) => board[r][c]);
+  const sum = values.reduce((s, v) => s + v, 0);
+  const allSame = path.length >= 2 && values.every((v) => v === values[0]);
 
-  if (sum === MATCH_TARGET) {
+  if (sum === MATCH_TARGET || allSame) {
+    if (allSame && sum !== MATCH_TARGET && !sameNumberHintShown) {
+      sameNumberHintShown = true;
+      shell.toast('おなじ数字をつなげても消せます✨');
+    }
     resolveMatch(path.slice());
   } else {
     shell.playTone(220, 0.15, 'sawtooth');
@@ -256,13 +306,15 @@ function confirmSelection() {
   }
 }
 
-/* ---------- サウンド（つないだ枚数に応じて段階化） ---------- */
-function playMatchSound(len) {
-  if (len <= 2) { shell.playTone(660, 0.1); return; }
-  if (len === 3) { [660, 880].forEach((f, i) => setTimeout(() => shell.playTone(f, 0.1), i * 90)); return; }
-  if (len <= 5) { [660, 880, 1046.5].forEach((f, i) => setTimeout(() => shell.playTone(f, 0.11), i * 85)); return; }
-  if (len <= 7) { [660, 880, 1046.5, 1318.51].forEach((f, i) => setTimeout(() => shell.playTone(f, 0.12, 'triangle'), i * 80)); return; }
-  [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((f, i) => setTimeout(() => shell.playTone(f, 0.14, 'triangle'), i * 90));
+/* ---------- サウンド（つないだ枚数・連続具合に応じて段階化） ---------- */
+function playMatchSound(len, combo) {
+  if (len <= 2) { shell.playTone(660, 0.1); }
+  else if (len === 3) { [660, 880].forEach((f, i) => setTimeout(() => shell.playTone(f, 0.1), i * 90)); }
+  else if (len <= 5) { [660, 880, 1046.5].forEach((f, i) => setTimeout(() => shell.playTone(f, 0.11), i * 85)); }
+  else if (len <= 7) { [660, 880, 1046.5, 1318.51].forEach((f, i) => setTimeout(() => shell.playTone(f, 0.12, 'triangle'), i * 80)); }
+  else { [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((f, i) => setTimeout(() => shell.playTone(f, 0.14, 'triangle'), i * 90)); }
+  // 連続で決めている時は、仕上げに一音だけ高い煌めきを足して爽快感を出す
+  if (combo >= 2) setTimeout(() => shell.playTone(1568, 0.1, 'triangle'), 260);
 }
 // 新しい数字が補充された時の小さな「キュルリン♪」音（連打を避けるため1回だけ鳴らす）
 function playRefillChirp() {
@@ -283,13 +335,18 @@ function resolveMatch(cells) {
   path = [];
   renderAll(); // 選択表示を先にクリアしてから、これから光らせる演出クラスを付ける
   cells.forEach(([r, c]) => cellEls[r][c].classList.add('atj-match-glow'));
-  playMatchSound(cells.length);
+
+  const now = Date.now();
+  comboCount = (now - lastMatchTs <= COMBO_WINDOW_MS) ? comboCount + 1 : 1;
+  lastMatchTs = now;
+  playMatchSound(cells.length, comboCount);
 
   clearedCount++;
   updateCountDisplay();
   const anchor = cellEls[cells[0][0]][cells[0][1]];
-  const label = cells.length >= 3 ? `まとめて${cells.length}枚！` : `${cells.length}枚そろった！`;
-  shell.showPopup(anchor, label, cells.length >= 3 ? 'bonus' : 'good');
+  let label = cells.length >= 3 ? `まとめて${cells.length}枚！` : `${cells.length}枚そろった！`;
+  if (comboCount >= 2) label += ` 🔥${comboCount}連続`;
+  shell.showPopup(anchor, label, cells.length >= 3 || comboCount >= 2 ? 'bonus' : 'good');
 
   setTimeout(() => {
     cells.forEach(([r, c]) => {
@@ -332,7 +389,7 @@ function applyGravity() {
 }
 
 function checkDeadlockAndShuffle() {
-  if (!shell.running || gameOverFlag || hasTenPath(board, SIZE, blockedRows)) return;
+  if (!shell.running || gameOverFlag || boardSolvable(board, SIZE, blockedRows)) return;
   resolving = true;
   const grid = shell.board.querySelector('#atjGrid');
   if (grid) grid.classList.add('atj-shuffling');
@@ -342,7 +399,7 @@ function checkDeadlockAndShuffle() {
     do {
       for (let r = blockedRows; r < SIZE; r++) for (let c = 0; c < SIZE; c++) board[r][c] = randVal();
       guard++;
-    } while (!hasTenPath(board, SIZE, blockedRows) && guard < 30);
+    } while (!boardSolvable(board, SIZE, blockedRows) && guard < 30);
     renderAll();
     if (grid) grid.classList.remove('atj-shuffling');
     resolving = false;
