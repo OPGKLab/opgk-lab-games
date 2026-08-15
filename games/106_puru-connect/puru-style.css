@@ -204,3 +204,17 @@
   text-align: center;
   padding: 0 10px;
 }
+
+/* 連打時にスクロールジェスチャーと誤認識されるのを防ぐ */
+body {
+  overscroll-behavior-y: contain;
+}
+.puyo-controls,
+.puyo-ctrl-btn,
+.puyo-rotate-btn,
+.puyo-drop-btn,
+.puyo-pause-btn {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
