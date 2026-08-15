@@ -155,3 +155,13 @@ body {
   80% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* 連続タップでブラウザがスクロール操作と誤認しないようにする（全ゲーム共通） */
+body {
+  overscroll-behavior-y: contain;
+}
+button {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
