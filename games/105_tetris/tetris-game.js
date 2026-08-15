@@ -1,5 +1,5 @@
 /* =========================================================
-   テトリス🧩 固有ロジック
+   テトリス🧱 固有ロジック
    共通土台(GameShell)のAPIだけを使い、盤面生成・落下・回転・
    ライン消去・レベル加速を実装。
    通常: 10x20 / 激むず: 8x20（幅が狭い分、詰みやすくなる）
@@ -349,6 +349,15 @@ function triggerGameOver() {
   shell.playTone(220, 0.3, 'sawtooth');
   shell.end(`ゲームオーバー！スコア: ${shell.getScore()}（レベル${level}・${totalLines}ライン）`);
 }
+
+/* ---------- キーボード操作（PC向け） ---------- */
+document.addEventListener('keydown', (e) => {
+  if (!shell.running) return;
+  if (e.key === 'ArrowLeft') { moveLeft(); e.preventDefault(); }
+  else if (e.key === 'ArrowRight') { moveRight(); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { rotatePiece(); e.preventDefault(); }
+  else if (e.key === 'ArrowDown') { hardDrop(); e.preventDefault(); }
+});
 
 /* ---- GameShellのライフサイクルに接続 ---- */
 shell.onStart(() => {

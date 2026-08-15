@@ -225,3 +225,17 @@
   text-align: center;
   padding: 0 10px;
 }
+
+/* 連続タップ時にブラウザがスクロール操作と誤認しないようにする（ずれ・誤タップ対策） */
+body {
+  overscroll-behavior-y: contain;
+}
+.tetris-controls,
+.tetris-ctrl-btn,
+.tetris-rotate-btn,
+.tetris-drop-btn,
+.tetris-pause-btn {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
