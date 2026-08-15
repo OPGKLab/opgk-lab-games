@@ -23,7 +23,7 @@ OPGK Labは、シンプルで無料で遊べるブラウザゲームを集めた
 Games are grouped into three categories:
 ゲームは3つのカテゴリに分かれています。
 
-- 🧠 **Brain & Puzzle** — puzzles and logic games / パズル・思考系ゲーム
+- 🧩 **Brain & Puzzle** — puzzles and logic games / パズル・思考系ゲーム
 - ⚡ **Quick Reaction** — fast-paced reflex games / 反射神経を試すゲーム
 - 🧸 **Casual & Relaxing** — laid-back, no-rush games / のんびり遊べるゲーム
 
@@ -40,6 +40,14 @@ See the full list on the [game page](https://opgklab.github.io/opgk-lab-games/).
 
 All games run directly in the browser — no build step, no backend.
 すべてのゲームはブラウザ上で直接動作します（ビルドやサーバー不要）。
+
+## Development
+
+AI (generative AI) is used as part of the game development process.
+Games are individually planned, designed, refined, and tested with AI assistance.
+
+OPGK Labのゲーム制作には、AI（生成AI）を活用しています。
+企画・仕様検討・調整・動作確認などを行いながら、個人で制作・公開しています。
 
 ## Contact
 
