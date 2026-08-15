@@ -1,0 +1,211 @@
+/* このゲーム固有：テーマカラー（入道雲の青空イメージ、既存ゲームと非重複の明るい水色） */
+:root {
+  --bg: #eaf7fc;
+  --board: #d6f0f9;
+  --accent: #4fb8e0;
+  --hard: #e2574c;
+  --text: #2d4a5a;
+  --popup-good: #4fb8e0;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：駐車場の地面色・出口色 */
+  --lot-bg: #eaf8fd;
+  --lot-line: rgba(45, 74, 90, 0.1);
+  --exit-color: #2f8f5b;
+  --target-bg: #fffaf0;
+}
+
+.kuruma-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.kuruma-progress b, .kuruma-moves b { color: var(--accent); }
+.kuruma-toolbar-actions { display: flex; gap: 6px; }
+.kuruma-toolbar-actions button { font-size: 12px; }
+
+/* 盤面ラッパー：出口マーカーがはみ出せるよう余白を確保 */
+.kuruma-lot-wrap {
+  position: relative;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.kuruma-lot {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background:
+    linear-gradient(to right, var(--lot-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lot-line) 1px, transparent 1px),
+    var(--lot-bg);
+  background-size: calc(100% / 6) calc(100% / 6);
+  border-radius: 10px;
+  overflow: visible;
+  touch-action: none;
+}
+
+/* 出口：右辺の対象行に取り付ける、絵文字＋「出口」ラベル付きの目立つマーカー */
+.kuruma-exit {
+  position: absolute;
+  right: -46px;
+  width: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  pointer-events: none;
+}
+.kuruma-exit-emoji { font-size: 32px; line-height: 1; }
+.kuruma-exit-label {
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+  background: var(--exit-color);
+  padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.kuruma-exit::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 80%;
+  background: var(--exit-color);
+  border-radius: 3px 0 0 3px;
+}
+
+/* 車本体：ほんのり角丸の箱型＋光沢ハイライト。
+   位置(left/top)は「離した瞬間のスナップ」時だけ動かし、
+   ドラッグ中はtransformで指に追従させる（この2つを混在させないことでガタつきを防ぐ） */
+.kuruma-car {
+  position: absolute;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 3px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: filter 0.1s ease;
+}
+/* 光沢ハイライト（左上から丸く抜ける光） */
+.kuruma-car::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 55%);
+  pointer-events: none;
+}
+/* サンルーフ：常に横長の楕円（運転席・助手席のイメージ）を維持する。
+   位置・サイズはJS側でセル基準のpxを直接指定する（向き・長さによらず形が崩れないようにするため）。 */
+.kuruma-sunroof {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.kuruma-car:active { cursor: grabbing; }
+.kuruma-car.kuruma-dragging {
+  z-index: 5;
+  filter: brightness(1.08);
+}
+/* スナップ演出中だけleft/topにアニメーションを付ける */
+.kuruma-car.kuruma-snapping {
+  transition: left 0.12s ease-out, top 0.12s ease-out, filter 0.1s ease;
+}
+.kuruma-car.kuruma-target {
+  z-index: 2;
+  background: var(--target-bg) !important;
+  box-shadow: inset 0 0 0 3px var(--hard), 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+/* ターゲットの絵文字：出口(右側)を向くよう左右反転して表示 */
+.kuruma-target-emoji {
+  display: inline-block;
+  line-height: 1;
+  transform: scaleX(-1);
+}
+
+/* ヒント表示：対象の車をゆっくり明滅 */
+.kuruma-car.kuruma-hint {
+  animation: kurumaHintPulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes kurumaHintPulse {
+  0% { box-shadow: inset 0 0 0 3px rgba(255,255,255,0.85), 0 0 0 2px var(--accent); }
+  100% { box-shadow: inset 0 0 0 3px rgba(255,255,255,0.85), 0 0 0 5px var(--accent), 0 0 14px 3px rgba(52,97,143,0.5); }
+}
+
+/* ヒント方向矢印 */
+.kuruma-hint-arrow {
+  position: absolute;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent);
+  pointer-events: none;
+  animation: kurumaArrowBounce 0.7s ease-in-out infinite alternate;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.9);
+}
+@keyframes kurumaArrowBounce {
+  0% { transform: translate(0, 0); }
+  100% { transform: var(--arrow-bounce, translate(4px, 0)); }
+}
+
+/* クリア演出：脱出した瞬間に光る */
+.kuruma-car.kuruma-exiting {
+  filter: brightness(1.3);
+}
+
+.kuruma-placeholder {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #5c6f7c;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.kuruma-placeholder p { margin: 0; }
+.kuruma-placeholder b { color: var(--accent); }
+
+/* セッション完了オーバーレイ */
+.kuruma-complete {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 20px 10px;
+}
+.kuruma-complete-title { font-size: 24px; font-weight: 900; color: var(--accent); }
+.kuruma-complete-sub { font-size: 14px; color: var(--text); }
+
+/* 生成中の簡易表示 */
+.kuruma-loading {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c6f7c;
+  font-size: 14px;
+}
