@@ -93,8 +93,11 @@ function buildBoard() {
   `;
   nextIconEl = shell.board.querySelector('#tamagoNextIcon');
   canvas = shell.board.querySelector('#tamagoCanvas');
-  canvas.width = W;
-  canvas.height = H;
+  // スマホ等の高精細ディスプレイでぼやけないよう、内部解像度をdevicePixelRatio倍にする。
+  // 描画処理側は今まで通りW×Hの論理座標のまま使えるよう、ctx.scaleで補正する。
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
   // 表示サイズをCanvasの実解像度(W:H)に合わせる。CSS側の固定値だと激むず(幅260)の時に
   // 320幅相当へ引き伸ばされてしまい、絵文字が横長に潰れて見えていた。
   canvas.style.maxWidth = `${W}px`;
@@ -102,6 +105,7 @@ function buildBoard() {
   const toolbarEl = shell.board.querySelector('.tamago-toolbar');
   if (toolbarEl) toolbarEl.style.maxWidth = `${W}px`;
   ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
 
   canvas.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointermove', onPointerMove);
@@ -119,8 +123,8 @@ function showPlaceholder() {
 /* ---------- 座標変換（表示サイズとCanvas内部解像度のズレを吸収） ---------- */
 function getCanvasPos(evt) {
   const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
+  const scaleX = W / rect.width;
+  const scaleY = H / rect.height;
   return {
     x: (evt.clientX - rect.left) * scaleX,
     y: (evt.clientY - rect.top) * scaleY,
