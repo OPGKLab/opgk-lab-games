@@ -1,5 +1,5 @@
 /* =========================================================
-   テトリス🧱 固有ロジック
+   落ちものパズル🧩 固有ロジック
    共通土台(GameShell)のAPIだけを使い、盤面生成・落下・回転・
    ライン消去・レベル加速を実装。
    通常: 10x20 / 激むず: 8x20（幅が狭い分、詰みやすくなる）
@@ -8,7 +8,7 @@
 
 const shell = new GameShell({
   rootSelector: '#app',
-  title: 'テトリス🧩',
+  title: '落ちものパズル🧩',
   hint: '下のボタンでブロックを動かそう。列を横一列そろえると消えます（タイトル5回タップで激むず・幅せまめ）',
   hasScore: true,
   hasTimer: false,
@@ -203,7 +203,7 @@ function applyLineClear(count) {
   const gained = (LINE_SCORE[count] || LINE_SCORE[4]) * level;
   shell.addScore(gained);
   playLineClearSound(count);
-  shell.toast(count >= 4 ? `テトリス！+${gained}` : `${count}ライン消去！+${gained}`);
+  shell.toast(count >= 4 ? `大量消去！+${gained}` : `${count}ライン消去！+${gained}`);
 
   const newLevel = Math.floor(totalLines / LINES_PER_LEVEL) + 1;
   if (newLevel !== level) {
