@@ -224,7 +224,7 @@ function draw() {
   bricks.forEach((b) => {
     if (!b.alive) return;
     if (b.isCheese) {
-      ctx.font = `${b.h + 6}px sans-serif`;
+      ctx.font = `${b.h + 14}px sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('🧀', b.x + b.w / 2, b.y + b.h / 2 + 1);
@@ -251,7 +251,7 @@ function draw() {
   ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--paddle-color') || '#8a5a3c';
   roundRect(currentPaddleX(), paddle.y, paddle.w, paddle.h, 6);
 
-  ctx.font = `${BALL_R * 2.4}px sans-serif`;
+  ctx.font = `${BALL_R * 3.2}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('🐹', ball.x, ball.y);
