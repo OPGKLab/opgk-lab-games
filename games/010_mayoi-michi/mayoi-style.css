@@ -1,0 +1,271 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き）
+   深めの森グリーン。既存のへび(#12b886)・おさんぽ(#93b23f)・お茶(#5c7a52)とは
+   距離のある落ち着いたモスグリーンに。 */
+:root {
+  --bg: #eef4ec;
+  --board: #e3ede0;
+  --accent: #2f6b4a;
+  --hard: #e2574c;
+  --text: #2e3b30;
+  --popup-good: #2f6b4a;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：迷路の床・生垣・霧の色 */
+  --mz-floor: #eef3e4;
+  --mz-floor-light: #f7faf0;
+  --mz-hedge: #3f5c34;
+  --mz-hedge-light: #567a49;
+  --mz-fog: #263021;
+  --mz-dim-op: 0.35;
+}
+
+.maze-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+/* なかま発見状況：見つけるとカラーで丸く光る */
+.maze-friend-icons { display: flex; gap: 6px; }
+.mz-friend-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  font-size: 16px;
+  opacity: 0.45;
+  filter: grayscale(0.7);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+.mz-friend-icon.mz-found {
+  opacity: 1;
+  filter: none;
+  box-shadow: inset 0 0 0 2px var(--accent);
+  animation: mzFoundPop 0.35s ease;
+}
+@keyframes mzFoundPop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+.maze-compass {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--accent);
+  background: #fff;
+  padding: 3px 10px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 42px;
+  text-align: center;
+}
+
+/* ビューポート：この枠だけが見えている「窓」。中の.maze-gridがtransformで動く */
+.maze-viewport {
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0 2px, transparent 2px 9px),
+    var(--mz-floor);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.06);
+}
+.maze-grid {
+  position: relative;
+  transition: transform 0.15s ease-out;
+}
+
+.maze-cell {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 壁＝木の生垣（葉っぱのつぶつぶ模様の緑の塊）で表現する */
+.mz-hedge {
+  position: absolute;
+  background:
+    radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.3) 0 2.5px, transparent 3px),
+    radial-gradient(circle at 60% 65%, rgba(255, 255, 255, 0.2) 0 2.5px, transparent 3px),
+    radial-gradient(circle at 80% 25%, rgba(0, 0, 0, 0.12) 0 2.5px, transparent 3px),
+    linear-gradient(160deg, var(--mz-hedge-light), var(--mz-hedge));
+  background-size: 9px 9px, 9px 9px, 9px 9px, 100% 100%;
+  border-radius: 3px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+.mz-hedge-n { left: 1px; right: 1px; top: -3px; height: 7px; }
+.mz-hedge-s { left: 1px; right: 1px; bottom: -3px; height: 7px; }
+.mz-hedge-w { top: 1px; bottom: 1px; left: -3px; width: 7px; }
+.mz-hedge-e { top: 1px; bottom: 1px; right: -3px; width: 7px; }
+
+/* 霧（激むずのみ）：未探索は真っ暗、探索済みは薄暗く残す */
+.maze-cell.mz-hidden { background: var(--mz-fog) !important; }
+.maze-cell.mz-hidden .mz-hedge { background: var(--mz-fog); }
+.maze-cell.mz-hidden .mz-emoji { visibility: hidden; }
+.maze-cell.mz-dim { opacity: var(--mz-dim-op); }
+
+.mz-emoji { font-size: 20px; line-height: 1; user-select: none; }
+.mz-friend-done { font-size: 16px; opacity: 0.7; }
+.mz-decor { font-size: 13px; opacity: 0.5; }
+
+.mz-goal-emoji {
+  font-size: 26px;
+  animation: mzGoalGlow 1.4s ease-in-out infinite alternate;
+}
+@keyframes mzGoalGlow {
+  0% { filter: drop-shadow(0 0 2px rgba(47, 107, 74, 0.4)); }
+  100% { filter: drop-shadow(0 0 10px rgba(47, 107, 74, 0.85)); }
+}
+
+/* リーダー（🐿️）：主役なので少し大きめに表示 */
+.maze-player {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  line-height: 1;
+  z-index: 6;
+  pointer-events: none;
+  transition: left 0.14s ease-out, top 0.14s ease-out;
+  --bump-x: 0px;
+  --bump-y: 0px;
+}
+.maze-player.mz-flip { transform: scaleX(-1); }
+
+.maze-player.mz-bump { animation: mzBump 0.18s ease; }
+@keyframes mzBump {
+  0% { transform: translate(0, 0); }
+  40% { transform: translate(var(--bump-x), var(--bump-y)); }
+  100% { transform: translate(0, 0); }
+}
+.maze-player.mz-flip.mz-bump { animation: mzBumpFlip 0.18s ease; }
+@keyframes mzBumpFlip {
+  0% { transform: scaleX(-1) translate(0, 0); }
+  40% { transform: scaleX(-1) translate(var(--bump-x), var(--bump-y)); }
+  100% { transform: scaleX(-1) translate(0, 0); }
+}
+.maze-player.mz-flinch { animation: mzFlinch 0.32s ease; }
+@keyframes mzFlinch {
+  0% { transform: translate(0, 0) scale(1); }
+  35% { transform: translate(var(--bump-x), var(--bump-y)) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+.maze-player.mz-flip.mz-flinch { animation: mzFlinchFlip 0.32s ease; }
+@keyframes mzFlinchFlip {
+  0% { transform: scaleX(-1) translate(0, 0) scale(1); }
+  35% { transform: scaleX(-1) translate(var(--bump-x), var(--bump-y)) scale(0.9); }
+  100% { transform: scaleX(-1) translate(0, 0) scale(1); }
+}
+
+/* なかま（隊列）：移動中だけ後ろにゾロゾロ、止まるとリスの位置に吸収されて消える */
+.maze-follower {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 5;
+  transition: left 0.14s ease-out, top 0.14s ease-out, opacity 0.28s ease, transform 0.28s ease;
+}
+.maze-follower.mz-flip { transform: scaleX(-1); }
+.maze-follower.mz-follower-hidden {
+  opacity: 0;
+  transform: scale(0.3);
+}
+.maze-follower.mz-flip.mz-follower-hidden {
+  transform: scaleX(-1) scale(0.3);
+}
+
+/* その場に直接出るメッセージ（なかま発見・ピャッ等） */
+.mz-msg {
+  position: absolute;
+  transform: translate(-50%, 0);
+  font-weight: 900;
+  font-size: 15px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  animation: mzMsgFloat 0.7s ease-out forwards;
+}
+.mz-msg-good { color: var(--popup-good); }
+.mz-msg-bad { color: var(--popup-bad); }
+.mz-msg-bonus { color: var(--popup-bonus); font-size: 17px; }
+@keyframes mzMsgFloat {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.7); }
+  15% { opacity: 1; transform: translate(-50%, -8px) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%, -42px) scale(1); }
+}
+
+/* 十字ボタン */
+.maze-dpad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.maze-dpad-mid { display: flex; align-items: center; gap: 8px; }
+.maze-dpad-btn {
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 13px;
+  background: #fff;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+.maze-dpad-btn:active { filter: brightness(0.95); transform: scale(0.96); }
+.maze-dpad-center { display: inline-block; width: 46px; height: 46px; }
+
+.maze-dpad-btn.mz-dpad-hint {
+  animation: mzDpadPulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes mzDpadPulse {
+  0% { box-shadow: 0 0 0 2px var(--accent); }
+  100% { box-shadow: 0 0 0 5px var(--accent), 0 0 12px 2px rgba(47, 107, 74, 0.5); }
+}
+
+.maze-placeholder {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #4c5c46;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.maze-placeholder p { margin: 0; }
+.maze-placeholder b { color: var(--accent); }
+
+/* 連打時にスクロールと誤認識されないようにする */
+body {
+  overscroll-behavior-y: contain;
+}
+.maze-dpad,
+.maze-dpad-btn,
+.maze-viewport {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
