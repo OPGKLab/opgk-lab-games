@@ -4,6 +4,13 @@
    なかま収集（隊列演出）・バッドイベント・視界制限（激むず）・
    コンパス・ヒントを実装。
 
+   操作方式：十字キーではなく「盤面タップ」。リスから見てタップした
+   方向（上下左右のうち一番近い向き）へ1マス進む。
+
+   カメラ：毎歩センタリングし直すと画面酔いしやすいため、
+   プレイヤーが画面内の中央寄りにいる間はカメラを動かさず、
+   端に近づいた時だけ追従する「デッドゾーン」方式にしている。
+
    迷路生成：バックトラック法（反復版）で一本道の迷路を作り、
    激むずのみランダムに壁を壊してループ（分岐）を追加する。
    なかま／バッドイベントは「行き止まり（枝分かれ1本のマス）」にのみ
@@ -11,15 +18,16 @@
 
    隊列演出：プレイヤーの移動履歴(trailHistory)を記録し、
    なかまは「N歩前にリーダーがいた場所」を追いかける方式（ドラクエ方式）。
-   折り返しても履歴をそのまま辿るだけなので、Uターンで隊列が
-   崩れることはない。移動が止まってしばらく経つと、なかまは
-   リーダーの位置に吸収されて見えなくなる（再度動くと展開する）。
+   移動方向の履歴(moveDirHistory)も別途記録し、各なかまがその時点で
+   直近に横移動していた向きを逆算して、個別に左右反転させている。
+   移動が止まってしばらく経つと、なかまはリーダーの位置に吸収されて
+   見えなくなる（再度動くと展開する）。
    ========================================================= */
 
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'まよいみち🌲',
-  hint: '十字ボタンで🐿️を動かし、なかまを全員集めて巣穴（🌲の森）を目指そう（タイトル5回タップで激むず）',
+  hint: '画面をタップして、進みたい方向へ🐿️を動かそう。なかまを全員集めて巣穴（🌲の森）を目指そう（タイトル5回タップで激むず）',
   hasScore: false,
   hasTimer: false,
 });
@@ -27,12 +35,16 @@ const shell = new GameShell({
 const DIRS = { N: [-1, 0], S: [1, 0], E: [0, 1], W: [0, -1] };
 const OPPOSITE = { N: 'S', S: 'N', E: 'W', W: 'E' };
 const DIR_LABEL = { N: '上', S: '下', E: '右', W: '左' };
+const DIR_ARROW = { N: '▲', S: '▼', E: '▶', W: '◀' };
 
 const CELL_PX = 46;
 const VIEW_COLS = 5;
 const VIEW_ROWS = 6;
+const DEADZONE_COLS = 1; // これより内側にいる間はカメラを動かさない（画面酔い対策）
+const DEADZONE_ROWS = 1;
 const LIGHT_DURATION = 16; // 歩数
-const IDLE_ABSORB_MS = 500; // これだけ止まっていたら、なかまがリーダーに吸収される
+const IDLE_ABSORB_MS = 1400; // これだけ止まっていたら、なかまがリーダーに吸収される
+const TAP_DEAD_RADIUS = 6; // px。リス自身をタップした場合は無視する
 
 const NORMAL_MODE = { size: 11, friendCount: 2, badCount: 3, fog: false, includeLight: false, loopCount: 0 };
 const HARD_MODE = {
@@ -58,10 +70,11 @@ let collectedFriends = [];
 let hasCompass = false;
 let lightStepsLeft = 0;
 let playerPos = { r: 0, c: 0 };
-let facingRight = false;
+let facingRight = true;
 let seen = new Set();
 let currentMode = NORMAL_MODE;
 let gridEl = null;
+let viewportEl = null;
 let playerEl = null;
 let followerEls = [];
 let trailHistory = [];
@@ -69,6 +82,8 @@ let moveDirHistory = []; // 各歩の移動方向('N'/'E'/'S'/'W')。なかま�
 let idleTimer = null;
 let hintTimeoutId = null;
 let cleared = false;
+let viewOffCol = 0;
+let viewOffRow = 0;
 
 /* ---------- ユーティリティ ---------- */
 function key(r, c) { return r + ',' + c; }
@@ -229,9 +244,9 @@ function buildPuzzle() {
     }
   });
 
-  // 状態初期化
+  // 状態初期化（リスはスタート時から反転した向きで出発する）
   playerPos = { ...start };
-  facingRight = false;
+  facingRight = true;
   collectedFriends = [];
   followerEls = [];
   trailHistory = [];
@@ -255,11 +270,11 @@ function wallHedgesHTML(r, c) {
 
 function cellInnerHTML(r, c) {
   const cell = cellData[r][c];
-  if (cell.type === 'bad') return `<span class="mz-emoji">${cell.emoji}</span>`;
+  if (cell.type === 'bad') return `<span class="mz-emoji mz-emoji-actor">${cell.emoji}</span>`;
   if (cell.type === 'friend') {
     return cell.friendRef.collected
       ? '<span class="mz-emoji mz-friend-done">✅</span>'
-      : `<span class="mz-emoji">${cell.emoji}</span>`;
+      : `<span class="mz-emoji mz-emoji-actor">${cell.emoji}</span>`;
   }
   if (cell.type === 'compass') return cell.consumed ? '' : '<span class="mz-emoji">🧭</span>';
   if (cell.type === 'light') return cell.consumed ? '' : '<span class="mz-emoji">💡</span>';
@@ -350,12 +365,25 @@ function absorbFollowers() {
   });
 }
 
-function updateViewport() {
+/* カメラ：毎歩センタリングし直すと画面酔いしやすいため、
+   プレイヤーが表示範囲の中央寄り（デッドゾーン内）にいる間は動かさず、
+   端に近づいた時だけ必要なぶんだけ追従させる。 */
+function updateViewport(recenter) {
   const maxOffCol = Math.max(0, SIZE - VIEW_COLS);
   const maxOffRow = Math.max(0, SIZE - VIEW_ROWS);
-  const offCol = Math.min(maxOffCol, Math.max(0, playerPos.c - ((VIEW_COLS - 1) >> 1)));
-  const offRow = Math.min(maxOffRow, Math.max(0, playerPos.r - ((VIEW_ROWS - 1) >> 1)));
-  gridEl.style.transform = `translate(${-offCol * CELL_PX}px, ${-offRow * CELL_PX}px)`;
+
+  if (recenter) {
+    viewOffCol = Math.min(maxOffCol, Math.max(0, playerPos.c - ((VIEW_COLS - 1) >> 1)));
+    viewOffRow = Math.min(maxOffRow, Math.max(0, playerPos.r - ((VIEW_ROWS - 1) >> 1)));
+  } else {
+    const relC = playerPos.c - viewOffCol;
+    const relR = playerPos.r - viewOffRow;
+    if (relC < DEADZONE_COLS) viewOffCol = Math.max(0, playerPos.c - DEADZONE_COLS);
+    else if (relC > VIEW_COLS - 1 - DEADZONE_COLS) viewOffCol = Math.min(maxOffCol, playerPos.c - (VIEW_COLS - 1 - DEADZONE_COLS));
+    if (relR < DEADZONE_ROWS) viewOffRow = Math.max(0, playerPos.r - DEADZONE_ROWS);
+    else if (relR > VIEW_ROWS - 1 - DEADZONE_ROWS) viewOffRow = Math.min(maxOffRow, playerPos.r - (VIEW_ROWS - 1 - DEADZONE_ROWS));
+  }
+  gridEl.style.transform = `translate(${-viewOffCol * CELL_PX}px, ${-viewOffRow * CELL_PX}px)`;
 }
 
 function renderFriendIcons() {
@@ -411,17 +439,10 @@ function buildDom() {
     <div class="maze-viewport" id="mazeViewport" style="width:${VIEW_COLS * CELL_PX}px;height:${VIEW_ROWS * CELL_PX}px;">
       <div class="maze-grid" id="mazeGrid" style="width:${SIZE * CELL_PX}px;height:${SIZE * CELL_PX}px;"></div>
     </div>
-    <div class="maze-dpad">
-      <button class="maze-dpad-btn" id="mazeUp">▲</button>
-      <div class="maze-dpad-mid">
-        <button class="maze-dpad-btn" id="mazeLeft">◀</button>
-        <span class="maze-dpad-center"></span>
-        <button class="maze-dpad-btn" id="mazeRight">▶</button>
-      </div>
-      <button class="maze-dpad-btn" id="mazeDown">▼</button>
-    </div>
+    <p class="maze-tap-hint">画面をタップして、進みたい方向へ</p>
   `;
   gridEl = shell.board.querySelector('#mazeGrid');
+  viewportEl = shell.board.querySelector('#mazeViewport');
 
   cellEls = [];
   for (let r = 0; r < SIZE; r++) {
@@ -445,17 +466,14 @@ function buildDom() {
   playerEl.textContent = '🐿️';
   gridEl.appendChild(playerEl);
 
-  shell.board.querySelector('#mazeUp').addEventListener('click', () => attemptMove('N'));
-  shell.board.querySelector('#mazeDown').addEventListener('click', () => attemptMove('S'));
-  shell.board.querySelector('#mazeLeft').addEventListener('click', () => attemptMove('W'));
-  shell.board.querySelector('#mazeRight').addEventListener('click', () => attemptMove('E'));
+  viewportEl.addEventListener('pointerdown', onViewportTap);
   shell.board.querySelector('#mazeHintBtn').addEventListener('click', showHint);
 
   renderFriendIcons();
   updateSeen();
   renderAllCells();
   renderPlayer();
-  updateViewport();
+  updateViewport(true);
   updateCompassDisplay();
 }
 
@@ -470,6 +488,30 @@ function showPlaceholder() {
     </div>
   `;
 }
+
+/* ---------- 操作：盤面タップで方向入力 ---------- */
+function onViewportTap(e) {
+  if (!shell.running || cleared) return;
+  e.preventDefault();
+  const rect = viewportEl.getBoundingClientRect();
+  const tapX = e.clientX - rect.left;
+  const tapY = e.clientY - rect.top;
+  const playerScreenX = (playerPos.c - viewOffCol) * CELL_PX + CELL_PX / 2;
+  const playerScreenY = (playerPos.r - viewOffRow) * CELL_PX + CELL_PX / 2;
+  const dx = tapX - playerScreenX;
+  const dy = tapY - playerScreenY;
+  if (Math.abs(dx) < TAP_DEAD_RADIUS && Math.abs(dy) < TAP_DEAD_RADIUS) return;
+  const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'E' : 'W') : (dy > 0 ? 'S' : 'N');
+  attemptMove(dir);
+}
+
+/* iOSでのダブルタップ拡大ジェスチャーを明示的にキャンセルする */
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
 
 /* ---------- 移動 ---------- */
 function attemptMove(dir) {
@@ -506,7 +548,7 @@ function attemptMove(dir) {
   renderAllCells();
   renderPlayer();
   showFollowersTrail();
-  updateViewport();
+  updateViewport(false);
   updateCompassDisplay();
 }
 
@@ -600,6 +642,17 @@ function bfsFrom(startPos) {
   return { dist, parent };
 }
 
+/* 盤面上のプレイヤーのすぐ隣に、進むべき方向の矢印を一時的に表示する */
+function showHintArrow(dir) {
+  const arrow = document.createElement('div');
+  arrow.className = 'mz-hint-arrow';
+  arrow.textContent = DIR_ARROW[dir];
+  arrow.style.left = `${playerPos.c * CELL_PX + CELL_PX / 2 + DIRS[dir][1] * CELL_PX * 0.85}px`;
+  arrow.style.top = `${playerPos.r * CELL_PX + CELL_PX / 2 + DIRS[dir][0] * CELL_PX * 0.85}px`;
+  gridEl.appendChild(arrow);
+  return arrow;
+}
+
 function showHint() {
   if (!shell.running || cleared) return;
   const { dist, parent } = bfsFrom(playerPos);
@@ -622,13 +675,11 @@ function showHint() {
   const dir = parent[curKey].dir;
 
   clearTimeout(hintTimeoutId);
-  const btnMap = { N: '#mazeUp', S: '#mazeDown', E: '#mazeRight', W: '#mazeLeft' };
-  const btn = shell.board.querySelector(btnMap[dir]);
-  if (btn) btn.classList.add('mz-dpad-hint');
+  const arrowEl = showHintArrow(dir);
   shell.playTone(600, 0.08);
   const who = targetIsGoal ? '🌲巣穴を探して' : `${target.emoji}を探して`;
   shell.toast(`${who}「${DIR_LABEL[dir]}」に進んでみましょう`);
-  hintTimeoutId = setTimeout(() => { if (btn) btn.classList.remove('mz-dpad-hint'); }, 1800);
+  hintTimeoutId = setTimeout(() => arrowEl.remove(), 1800);
 }
 
 /* ---------- キーボード操作（PC向け） ---------- */

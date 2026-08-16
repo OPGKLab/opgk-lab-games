@@ -13,11 +13,14 @@
 
   /* このゲーム固有：迷路の床・生垣・霧の色 */
   --mz-floor: #eef3e4;
-  --mz-floor-light: #f7faf0;
   --mz-hedge: #3f5c34;
   --mz-hedge-light: #567a49;
   --mz-fog: #263021;
   --mz-dim-op: 0.35;
+
+  /* このゲーム固有：主役とその他キャラのフォントサイズ（主役を1とした時、その他は0.8） */
+  --mz-leader-size: 34px;
+  --mz-companion-size: 27px;
 }
 
 .maze-toolbar {
@@ -29,17 +32,17 @@
   font-size: 13px;
 }
 
-/* なかま発見状況：見つけるとカラーで丸く光る */
+/* なかま発見状況：見つけるとカラーで丸く光る（大きめサイズで視認性重視） */
 .maze-friend-icons { display: flex; gap: 6px; }
 .mz-friend-icon {
-  width: 30px;
-  height: 30px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: #fff;
-  font-size: 16px;
+  font-size: 24px;
   opacity: 0.45;
   filter: grayscale(0.7);
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08);
@@ -47,7 +50,7 @@
 .mz-friend-icon.mz-found {
   opacity: 1;
   filter: none;
-  box-shadow: inset 0 0 0 2px var(--accent);
+  box-shadow: inset 0 0 0 3px var(--accent);
   animation: mzFoundPop 0.35s ease;
 }
 @keyframes mzFoundPop {
@@ -66,9 +69,11 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   min-width: 42px;
   text-align: center;
+  align-self: center;
 }
 
-/* ビューポート：この枠だけが見えている「窓」。中の.maze-gridがtransformで動く */
+/* ビューポート：この枠だけが見えている「窓」。中の.maze-gridがtransformで動く。
+   ここをタップすると、リスから見てその方向へ1マス進む（十字キーの代わり）。 */
 .maze-viewport {
   position: relative;
   overflow: hidden;
@@ -78,10 +83,21 @@
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0 2px, transparent 2px 9px),
     var(--mz-floor);
   box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.06);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
 }
 .maze-grid {
   position: relative;
-  transition: transform 0.15s ease-out;
+  transition: transform 0.16s ease-out;
+}
+
+.maze-tap-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #5c6f58;
+  margin: 8px 0 0;
 }
 
 .maze-cell {
@@ -116,6 +132,8 @@
 .maze-cell.mz-dim { opacity: var(--mz-dim-op); }
 
 .mz-emoji { font-size: 20px; line-height: 1; user-select: none; }
+/* バッドイベント（キツネ）となかま（未発見）：主役の0.8倍サイズで統一 */
+.mz-emoji-actor { font-size: var(--mz-companion-size); }
 .mz-friend-done { font-size: 16px; opacity: 0.7; }
 .mz-decor { font-size: 13px; opacity: 0.5; }
 
@@ -128,13 +146,13 @@
   100% { filter: drop-shadow(0 0 10px rgba(47, 107, 74, 0.85)); }
 }
 
-/* リーダー（🐿️）：主役なので少し大きめに表示 */
+/* リーダー（🐿️）：主役なので一番大きく表示 */
 .maze-player {
   position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  font-size: var(--mz-leader-size);
   line-height: 1;
   z-index: 6;
   pointer-events: none;
@@ -169,17 +187,18 @@
   100% { transform: scaleX(-1) translate(0, 0) scale(1); }
 }
 
-/* なかま（隊列）：移動中だけ後ろにゾロゾロ、止まるとリスの位置に吸収されて消える */
+/* なかま（隊列）：移動中だけ後ろにゾロゾロ、止まるとリスの位置に吸収されて消える。
+   主役の0.8倍サイズ。 */
 .maze-follower {
   position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 25px;
+  font-size: var(--mz-companion-size);
   line-height: 1;
   pointer-events: none;
   z-index: 5;
-  transition: left 0.14s ease-out, top 0.14s ease-out, opacity 0.28s ease, transform 0.28s ease;
+  transition: left 0.14s ease-out, top 0.14s ease-out, opacity 0.3s ease, transform 0.3s ease;
 }
 .maze-follower.mz-flip { transform: scaleX(-1); }
 .maze-follower.mz-follower-hidden {
@@ -211,36 +230,21 @@
   100% { opacity: 0; transform: translate(-50%, -42px) scale(1); }
 }
 
-/* 十字ボタン */
-.maze-dpad {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: 14px;
+/* ヒント矢印：盤面上に直接、進むべき方向を示す */
+.mz-hint-arrow {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--accent);
+  pointer-events: none;
+  z-index: 9;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 1px 3px rgba(255, 255, 255, 0.95);
+  animation: mzArrowPulse 0.7s ease-in-out infinite alternate;
 }
-.maze-dpad-mid { display: flex; align-items: center; gap: 8px; }
-.maze-dpad-btn {
-  width: 46px;
-  height: 46px;
-  border: none;
-  border-radius: 13px;
-  background: #fff;
-  color: var(--text);
-  font-size: 18px;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-}
-.maze-dpad-btn:active { filter: brightness(0.95); transform: scale(0.96); }
-.maze-dpad-center { display: inline-block; width: 46px; height: 46px; }
-
-.maze-dpad-btn.mz-dpad-hint {
-  animation: mzDpadPulse 0.9s ease-in-out infinite alternate;
-}
-@keyframes mzDpadPulse {
-  0% { box-shadow: 0 0 0 2px var(--accent); }
-  100% { box-shadow: 0 0 0 5px var(--accent), 0 0 12px 2px rgba(47, 107, 74, 0.5); }
+@keyframes mzArrowPulse {
+  0% { opacity: 0.55; }
+  100% { opacity: 1; }
 }
 
 .maze-placeholder {
@@ -258,14 +262,7 @@
 .maze-placeholder p { margin: 0; }
 .maze-placeholder b { color: var(--accent); }
 
-/* 連打時にスクロールと誤認識されないようにする */
+/* 連打・連続タップでブラウザの拡大やスクロールと誤認識されないようにする */
 body {
   overscroll-behavior-y: contain;
-}
-.maze-dpad,
-.maze-dpad-btn,
-.maze-viewport {
-  touch-action: none;
-  -webkit-user-select: none;
-  user-select: none;
 }
