@@ -7,7 +7,7 @@
 
 const shell = new GameShell({
   rootSelector: '#app',
-  title: 'はむはむチーズ🧀',
+  title: 'ハムスターのチーズ集め🧀',
   hint: 'バーを動かしてハムスターを跳ね返そう。🧀に当たればクリア！（指操作／十字キー対応、タイトル5回タップで激むず）',
   hasScore: true,
   hasTimer: false,
@@ -107,8 +107,13 @@ function buildBoard() {
     </div>
   `;
   canvas = shell.board.querySelector('#hamuCanvas');
-  canvas.width = W; canvas.height = H;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
   ctx = canvas.getContext('2d');
+  // スマホ等の高精細ディスプレイでぼやけないよう内部解像度をdevicePixelRatio倍にしたぶん、
+  // 描画処理側は今まで通りW×Hの論理座標のまま使えるようctx.scaleで補正する。
+  ctx.scale(dpr, dpr);
   livesEl = shell.board.querySelector('#hamuLives');
   stageEl = shell.board.querySelector('#hamuStage');
   launchBtn = shell.board.querySelector('#hamuLaunchBtn');
@@ -159,7 +164,7 @@ function togglePause() {
 /* ---------- 座標変換・操作 ---------- */
 function getCanvasX(evt) {
   const rect = canvas.getBoundingClientRect();
-  return (evt.clientX - rect.left) * (canvas.width / rect.width);
+  return (evt.clientX - rect.left) * (W / rect.width);
 }
 function onPointerDown(evt) {
   if (!shell.running || paused) return;
@@ -246,7 +251,7 @@ function draw() {
   ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--paddle-color') || '#8a5a3c';
   roundRect(currentPaddleX(), paddle.y, paddle.w, paddle.h, 6);
 
-  ctx.font = `${BALL_R * 3.2}px sans-serif`;
+  ctx.font = `${BALL_R * 2.4}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('🐹', ball.x, ball.y);
