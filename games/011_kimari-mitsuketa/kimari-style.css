@@ -1,0 +1,182 @@
+/* このゲーム固有：テーマカラー（スレートパープル、既存ゲームと非重複） */
+:root {
+  --bg: #f0eff7;
+  --board: #e6e4f2;
+  --accent: #6d6ba0;
+  --hard: #e2574c;
+  --text: #38355a;
+  --popup-good: #6d6ba0;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：タイル・キーの色 */
+  --tile-bg: #ffffff;
+  --blank-bg: #efedf9;
+}
+
+.s-board.kimari-board {
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.kimari-question-badge {
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+/* 数列／絵文字パターン表示 */
+.kimari-seq {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.kimari-tile {
+  min-width: 46px;
+  height: 54px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--tile-bg);
+  box-shadow: inset 0 0 0 2px #ddd9ee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text);
+}
+.kimari-tile.kimari-blank {
+  background: var(--blank-bg);
+  box-shadow: inset 0 0 0 2px var(--accent);
+  color: var(--accent);
+}
+/* 絵文字問題のお題タイル：数字タイルより大きく、選択肢に近いサイズにして
+   「同じもの」だと視覚的にわかるようにする */
+.kimari-tile.kimari-tile-emoji {
+  width: 50px;
+  min-width: 50px;
+  height: 50px;
+  font-size: 28px;
+}
+.kimari-tile.kimari-blank.kimari-correct-flash {
+  animation: kimariPulseGood 0.5s ease;
+}
+@keyframes kimariPulseGood {
+  0% { transform: scale(1); filter: none; }
+  40% { transform: scale(1.25); filter: drop-shadow(0 0 10px rgba(109, 107, 160, 0.75)); }
+  100% { transform: scale(1); filter: none; }
+}
+.kimari-tile.kimari-shake,
+.kimari-choice-btn.kimari-shake {
+  animation: kimariShake 0.3s ease;
+}
+@keyframes kimariShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+.kimari-tile.kimari-hint-pulse {
+  animation: kimariHintPulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes kimariHintPulse {
+  0% { box-shadow: inset 0 0 0 2px var(--accent); }
+  100% { box-shadow: inset 0 0 0 4px var(--accent), 0 0 12px 2px rgba(109, 107, 160, 0.45); }
+}
+
+/* 数字キーパッド：0〜9 + ⌫ を5列で並べる */
+.kimari-keypad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  max-width: 320px;
+  margin: 0 auto 14px;
+}
+.kimari-key {
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+.kimari-key-back { background: #ece9f7; }
+
+/* 絵文字選択肢：2x2 */
+.kimari-choices {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  max-width: 220px;
+  margin: 0 auto 14px;
+}
+.kimari-choice-btn {
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 16px;
+  background: #fff;
+  font-size: 32px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+  cursor: pointer;
+}
+.kimari-choice-btn:active { transform: scale(0.96); }
+
+.kimari-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ---------- オールクリア演出 ---------- */
+.kimari-allclear {
+  position: relative;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #efeef8 0%, #ddd9f0 100%);
+  text-align: center;
+  padding: 20px 10px;
+}
+.kimari-allclear-title { font-size: 26px; font-weight: 900; color: var(--accent); }
+.kimari-allclear-score { font-size: 16px; color: var(--text); }
+.kimari-allclear-score b { color: var(--accent); font-size: 20px; }
+.kimari-allclear-sub { font-size: 13px; color: #7a76a0; }
+
+.kimari-confetti {
+  position: absolute;
+  top: -30px;
+  pointer-events: none;
+  animation-name: kimariConfettiFall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+@keyframes kimariConfettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(280px) rotate(300deg); opacity: 0.1; }
+}
+
+.kimari-placeholder {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #6b678f;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.kimari-placeholder p { margin: 0; }
+.kimari-placeholder b { color: var(--accent); }
