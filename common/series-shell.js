@@ -53,6 +53,7 @@ class GameShell {
       <div class="s-header">
         <h1 class="s-title" id="sTitle">${this.cfg.title}</h1>
         <div class="s-status">
+          <span class="s-mode-hint">👆5タップでモード切替</span>
           <span class="s-badge" id="sModeBadge">通常</span>
           ${this.cfg.hasScore ? '<span>スコア: <b id="sScore">0</b></span>' : ''}
           ${this.cfg.hasTimer ? `<span>残り: <b id="sTime">${this.cfg.duration}</b>秒</span>` : ''}
