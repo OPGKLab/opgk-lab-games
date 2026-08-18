@@ -57,10 +57,10 @@
 /* 絵文字問題のお題タイル：数字タイルより大きく、選択肢に近いサイズにして
    「同じもの」だと視覚的にわかるようにする */
 .kimari-tile.kimari-tile-emoji {
-  width: 50px;
-  min-width: 50px;
-  height: 50px;
-  font-size: 28px;
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  font-size: 38px;
 }
 .kimari-tile.kimari-blank.kimari-correct-flash {
   animation: kimariPulseGood 0.5s ease;
