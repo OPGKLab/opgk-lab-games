@@ -101,8 +101,8 @@
   gap: 8px;
 }
 
-/* 図鑑モーダル(z-index:20)より、豆知識トースト(共通土台)を手前に出す */
-.s-toast { z-index: 30; }
+/* 図鑑モーダル(z-index:20)より、豆知識トースト(共通土台)を確実に手前に出す */
+.s-toast { z-index: 999; }
 .osanpo-zukan-cell {
   display: flex;
   flex-direction: column;
@@ -154,7 +154,7 @@
 .osanpo-item {
   position: absolute;
   transform: translate(-50%, -50%);
-  font-size: 30px;
+  font-size: 46px;
   font-weight: 900;
   color: var(--mystery-color);
   line-height: 1;
@@ -163,15 +163,15 @@
 }
 .osanpo-item.osanpo-hazard {
   color: var(--hazard-color);
-  font-size: 26px;
+  font-size: 40px;
 }
 .osanpo-item.osanpo-passerby {
   color: inherit;
-  font-size: 28px;
+  font-size: 42px;
   opacity: 0.9;
 }
 .osanpo-item.osanpo-item-found {
-  font-size: 26px;
+  font-size: 38px;
   opacity: 0.75;
 }
 
@@ -185,7 +185,7 @@
 }
 .osanpo-dog-body {
   display: inline-block;
-  font-size: 58px;
+  font-size: 72px;
   line-height: 1;
   transform: scaleX(var(--flip, -1));
   /* 回転の軸を顔側に寄せることで、逆側（しっぽ側）が振れて見えるようにする。
@@ -216,8 +216,8 @@
 
 .osanpo-mood-badge {
   position: absolute;
-  top: -6px;
-  right: -8px;
+  top: -30px;
+  right: -6px;
   font-size: 0;
   opacity: 0;
   transition: opacity 0.2s ease, font-size 0.2s ease;
