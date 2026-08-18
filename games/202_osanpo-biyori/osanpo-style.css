@@ -36,6 +36,24 @@
   margin-top: 10px;
 }
 
+.osanpo-theme-row {
+  font-size: 12.5px;
+  color: var(--text);
+  background: #fff;
+  border-radius: 10px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.osanpo-theme-status {
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 12px;
+}
+
 /* 図鑑モーダル */
 .osanpo-zukan-modal {
   display: none;
@@ -91,7 +109,7 @@
   border-radius: 10px;
   background: #f4f4f0;
 }
-.osanpo-zukan-cell.osanpo-zukan-found { background: #eef6e0; }
+.osanpo-zukan-cell.osanpo-zukan-found { background: #eef6e0; cursor: pointer; }
 .osanpo-zukan-cell.osanpo-zukan-rare.osanpo-zukan-found { background: #fbeaf0; }
 .osanpo-zukan-emoji { font-size: 24px; opacity: 0.9; }
 .osanpo-zukan-cell:not(.osanpo-zukan-found) .osanpo-zukan-emoji { color: var(--mystery-color); font-weight: 900; opacity: 0.7; }
@@ -117,6 +135,18 @@
   background: var(--lane-line);
 }
 
+/* 時間帯（実時刻）で盤面の色調をうっすら変える */
+.osanpo-tod-morning .osanpo-field {
+  background: linear-gradient(180deg, #fff6df 0%, var(--board) 62%);
+}
+.osanpo-tod-evening .osanpo-field {
+  background: linear-gradient(180deg, #ffe3c8 0%, var(--board) 58%);
+}
+.osanpo-tod-night .osanpo-field {
+  background: linear-gradient(180deg, #d3ddef 0%, #bcc9e0 100%);
+}
+.osanpo-tod-night .osanpo-item:not(.osanpo-hazard):not(.osanpo-passerby) { color: #b5457a; }
+
 /* 出現アイテム（？のうちは共通デザイン、ハザードは色を変える） */
 .osanpo-item {
   position: absolute;
@@ -132,6 +162,11 @@
   color: var(--hazard-color);
   font-size: 26px;
 }
+.osanpo-item.osanpo-passerby {
+  color: inherit;
+  font-size: 28px;
+  opacity: 0.9;
+}
 .osanpo-item.osanpo-item-found {
   font-size: 26px;
   opacity: 0.75;
@@ -142,18 +177,57 @@
   position: absolute;
   bottom: 10px;
   left: 50%;
+  transform: translate(-50%, 0);
+  transition: left 0.18s ease-out;
+}
+.osanpo-dog-body {
+  display: inline-block;
   font-size: 58px;
   line-height: 1;
-  transition: left 0.18s ease-out, transform 0.18s ease-out;
-  transform: translate(-50%, 0) scaleX(var(--flip, -1));
+  transform: scaleX(var(--flip, -1));
+  /* 回転の軸を顔側に寄せることで、逆側（しっぽ側）が振れて見えるようにする。
+     ずれる場合は下の16pxの値を調整、逆側になる場合は符号(+/-)を入れ替えてください。 */
+  transform-origin: calc(50% - var(--flip, -1) * 16px) 85%;
 }
-.osanpo-dog.osanpo-dog-flinch {
+.osanpo-dog-body.osanpo-dog-flinch {
   animation: osanpoFlinch 0.35s ease;
 }
 @keyframes osanpoFlinch {
-  0% { transform: translate(-50%, 0) scaleX(var(--flip, -1)); }
-  30% { transform: translate(-50%, 6px) scaleX(var(--flip, -1)) scale(0.92); }
-  100% { transform: translate(-50%, 0) scaleX(var(--flip, -1)); }
+  0% { transform: scaleX(var(--flip, -1)); }
+  30% { transform: scaleX(var(--flip, -1)) translateY(6px) scale(0.92); }
+  100% { transform: scaleX(var(--flip, -1)); }
+}
+
+/* ごきげんメーター：連続発見数に応じてしっぽ振りが激しくなる */
+.osanpo-dog-body.osanpo-mood-1 { animation: osanpoWag 1.1s ease-in-out infinite; }
+.osanpo-dog-body.osanpo-mood-2 { animation: osanpoWag 0.7s ease-in-out infinite; }
+.osanpo-dog-body.osanpo-mood-3 { animation: osanpoWagBig 0.45s ease-in-out infinite; }
+@keyframes osanpoWag {
+  0%, 100% { transform: scaleX(var(--flip, -1)) rotate(0deg); }
+  50% { transform: scaleX(var(--flip, -1)) rotate(6deg); }
+}
+@keyframes osanpoWagBig {
+  0%, 100% { transform: scaleX(var(--flip, -1)) rotate(0deg) scale(1); }
+  50% { transform: scaleX(var(--flip, -1)) rotate(10deg) scale(1.08); }
+}
+
+.osanpo-mood-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  font-size: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease, font-size 0.2s ease;
+}
+.osanpo-mood-badge.osanpo-mood-badge-show {
+  font-size: 18px;
+  opacity: 1;
+  animation: osanpoMoodPop 0.3s ease;
+}
+@keyframes osanpoMoodPop {
+  0% { transform: scale(0.4); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
 }
 
 /* 操作ボタン（左右レーン移動） */
