@@ -6,8 +6,8 @@
 
    クイズ：通常＝選んだシーンから8問・日→英のみ。
            激むず＝全シーン混合12問・日→英/英→日をランダム。
-   辞書　：JAタップ→EN表示、さらに「🇪🇸スペイン語は？」で
-           ES表示という二段階の隠し分岐（クイズにも同じ仕組み）。
+   辞書　：JAタップ→EN表示、さらに「🇰🇷韓国語は？」「🇹🇼中国語は？」で
+           それぞれ表示という隠し分岐（2言語とも独立して開閉可）。
    ========================================================= */
 
 const shell = new GameShell({
@@ -22,46 +22,46 @@ const SCENES = {
   greeting: {
     label: 'あいさつ', emoji: '👋',
     items: [
-      { ja: 'おはようございます', en: 'Good morning', es: 'Buenos días', esKana: 'ブエノス ディアス' },
-      { ja: 'こんにちは', en: 'Good afternoon', es: 'Buenas tardes', esKana: 'ブエナス タルデス' },
-      { ja: 'こんばんは', en: 'Good evening', es: 'Buenas noches', esKana: 'ブエナス ノチェス' },
-      { ja: 'ありがとうございます', en: 'Thank you very much', es: 'Muchas gracias', esKana: 'ムーチャス グラシアス' },
-      { ja: 'すみません', en: 'Excuse me', es: 'Disculpe', esKana: 'ディスクルペ' },
-      { ja: 'はじめまして', en: 'Nice to meet you', es: 'Mucho gusto', esKana: 'ムーチョ グスト' },
-      { ja: 'お元気ですか', en: 'How are you?', es: '¿Cómo está usted?', esKana: 'コモ エスタ ウステッ' },
-      { ja: 'さようなら', en: 'Goodbye', es: 'Adiós', esKana: 'アディオス' },
-      { ja: 'お願いします', en: 'Please', es: 'Por favor', esKana: 'ポル ファボール' },
-      { ja: 'お大事に', en: 'Take care', es: 'Cuídese', esKana: 'クイデセ' },
+      { ja: 'おはようございます', en: 'Good morning', ko: '좋은 아침이에요', koKana: 'チョウン アチミエヨ', zh: '早安', zhPinyin: 'zǎo ān', zhKana: 'ザオ アン' },
+      { ja: 'こんにちは', en: 'Good afternoon', ko: '안녕하세요', koKana: 'アンニョンハセヨ', zh: '午安', zhPinyin: 'wǔ ān', zhKana: 'ウー アン' },
+      { ja: 'こんばんは', en: 'Good evening', ko: '좋은 저녁이에요', koKana: 'チョウン チョニョギエヨ', zh: '晚上好', zhPinyin: 'wǎn shàng hǎo', zhKana: 'ワンシャンハオ' },
+      { ja: 'ありがとうございます', en: 'Thank you very much', ko: '대단히 감사합니다', koKana: 'テダニ カムサハムニダ', zh: '太謝謝你了', zhPinyin: 'tài xièxie nǐ le', zhKana: 'タイ シエシエ ニーラ' },
+      { ja: 'すみません', en: 'Excuse me', ko: '실례합니다', koKana: 'シルレハムニダ', zh: '不好意思', zhPinyin: 'bù hǎoyìsi', zhKana: 'プー ハオイース' },
+      { ja: 'はじめまして', en: 'Nice to meet you', ko: '만나서 반갑습니다', koKana: 'マンナソ パンガッスムニダ', zh: '很高興認識你', zhPinyin: 'hěn gāoxìng rènshì nǐ', zhKana: 'ヘン ガオシン レンシーニー' },
+      { ja: 'お元気ですか', en: 'How are you?', ko: '어떻게 지내세요?', koKana: 'オットケ チネセヨ', zh: '你好嗎？', zhPinyin: 'nǐ hǎo ma', zhKana: 'ニー ハオ マ' },
+      { ja: 'さようなら', en: 'Goodbye', ko: '안녕히 가세요', koKana: 'アンニョンヒ カセヨ', zh: '再見', zhPinyin: 'zàijiàn', zhKana: 'ザイジェン' },
+      { ja: 'お願いします', en: 'Please', ko: '부탁합니다', koKana: 'プタカムニダ', zh: '麻煩你', zhPinyin: 'máfan nǐ', zhKana: 'マーファン ニー' },
+      { ja: 'お大事に', en: 'Take care', ko: '몸조리 잘 하세요', koKana: 'モムジョリ チャル ハセヨ', zh: '請多保重', zhPinyin: 'qǐng duō bǎozhòng', zhKana: 'チン ドゥオ バオジョン' },
     ],
   },
   shopping: {
     label: '買い物', emoji: '🛍️',
     items: [
-      { ja: 'いくらですか', en: 'How much is it?', es: '¿Cuánto cuesta?', esKana: 'クアント クエスタ' },
-      { ja: 'これをください', en: "I'll take this, please", es: 'Deme esto, por favor', esKana: 'デメ エスト、ポル ファボール' },
-      { ja: 'クレジットカードは使えますか', en: 'May I pay with a credit card?', es: '¿Puedo pagar con tarjeta?', esKana: 'プエド パガール コン タルヘタ' },
-      { ja: '試着してもいいですか', en: 'May I try this on?', es: '¿Puedo probármelo?', esKana: 'プエド プロバールメロ' },
-      { ja: 'もう少し安くなりますか', en: 'Could you make it a little cheaper?', es: '¿Puede rebajar el precio?', esKana: 'プエデ レバハール エル プレシオ' },
-      { ja: '袋は要りません', en: "I don't need a bag", es: 'No necesito bolsa', esKana: 'ノ ネセシト ボルサ' },
-      { ja: 'サイズはありますか', en: 'Do you have this in my size?', es: '¿Tiene esto en mi talla?', esKana: 'ティエネ エスト エン ミ タヤ' },
-      { ja: 'レシートをください', en: 'May I have the receipt, please?', es: '¿Me da el recibo, por favor?', esKana: 'メ ダ エル レシボ、ポル ファボール' },
-      { ja: '他の色はありますか', en: 'Do you have other colors?', es: '¿Tiene otros colores?', esKana: 'ティエネ オトロス コロレス' },
-      { ja: '返品できますか', en: 'May I return this?', es: '¿Puedo devolver esto?', esKana: 'プエド デボルベール エスト' },
+      { ja: 'いくらですか', en: 'How much is it?', ko: '이거 얼마예요?', koKana: 'イゴ オルマエヨ', zh: '這個多少錢？', zhPinyin: 'zhège duōshǎo qián', zhKana: 'ジャガ ドゥオシャオ チェン' },
+      { ja: 'これをください', en: "I'll take this, please", ko: '이거 주세요', koKana: 'イゴ ジュセヨ', zh: '我要這個', zhPinyin: 'wǒ yào zhège', zhKana: 'ウォ ヤオ ジャガ' },
+      { ja: 'クレジットカードは使えますか', en: 'May I pay with a credit card?', ko: '신용카드 돼요?', koKana: 'シニョンカドゥ トェヨ', zh: '可以刷卡嗎？', zhPinyin: 'kěyǐ shuākǎ ma', zhKana: 'クァイー シュアカー マ' },
+      { ja: '試着してもいいですか', en: 'May I try this on?', ko: '입어봐도 될까요?', koKana: 'イボブァド テルカヨ', zh: '可以試穿嗎？', zhPinyin: 'kěyǐ shìchuān ma', zhKana: 'クァイー シーチュアン マ' },
+      { ja: 'もう少し安くなりますか', en: 'Could you make it a little cheaper?', ko: '조금 싸게 해주실 수 있어요?', koKana: 'チョグム サゲ ヘジュシルス イッソヨ', zh: '可以算便宜一點嗎？', zhPinyin: 'kěyǐ suàn piányí yìdiǎn ma', zhKana: 'クァイー スワン ピエンイー イーディエン マ' },
+      { ja: '袋は要りません', en: "I don't need a bag", ko: '봉투는 필요 없어요', koKana: 'ポントゥヌン ピリョ オプソヨ', zh: '不需要袋子', zhPinyin: 'bù xūyào dàizi', zhKana: 'プー シュヤオ ダイズ' },
+      { ja: 'サイズはありますか', en: 'Do you have this in my size?', ko: '이 사이즈 있어요?', koKana: 'イ サイジュ イッソヨ', zh: '有這個尺寸嗎？', zhPinyin: 'yǒu zhège chǐcùn ma', zhKana: 'ヨウ ジャガ チーツン マ' },
+      { ja: 'レシートをください', en: 'May I have the receipt, please?', ko: '영수증 주세요', koKana: 'ヨンスジュン ジュセヨ', zh: '請給我收據', zhPinyin: 'qǐng gěi wǒ shōujù', zhKana: 'チン ゲイウォ ショウジュイ' },
+      { ja: '他の色はありますか', en: 'Do you have other colors?', ko: '다른 색깔 있어요?', koKana: 'タルン セッカル イッソヨ', zh: '有其他顏色嗎？', zhPinyin: 'yǒu qítā yánsè ma', zhKana: 'ヨウ チーター イエンサ マ' },
+      { ja: '返品できますか', en: 'May I return this?', ko: '반품할 수 있어요?', koKana: 'パンプムハルス イッソヨ', zh: '可以退貨嗎？', zhPinyin: 'kěyǐ tuìhuò ma', zhKana: 'クァイー トゥイフォ マ' },
     ],
   },
   restaurant: {
     label: 'レストラン', emoji: '🍽️',
     items: [
-      { ja: 'メニューを見せてください', en: 'May I see the menu?', es: '¿Me muestra el menú?', esKana: 'メ ムエストラ エル メヌ' },
-      { ja: 'おすすめは何ですか', en: 'What do you recommend?', es: '¿Qué me recomienda?', esKana: 'ケ メ レコミエンダ' },
-      { ja: 'お水をください', en: 'Water, please', es: 'Agua, por favor', esKana: 'アグア、ポル ファボール' },
-      { ja: '会計をお願いします', en: 'Could I have the check, please?', es: 'La cuenta, por favor', esKana: 'ラ クエンタ、ポル ファボール' },
-      { ja: 'これは辛いですか', en: 'Is this spicy?', es: '¿Esto es picante?', esKana: 'エスト エス ピカンテ' },
-      { ja: 'アレルギーがあります', en: 'I have an allergy', es: 'Tengo alergia', esKana: 'テンゴ アレルヒア' },
-      { ja: 'とてもおいしかったです', en: 'It was delicious', es: 'Estuvo delicioso', esKana: 'エストゥボ デリシオソ' },
-      { ja: '予約をしています', en: 'I have a reservation', es: 'Tengo una reserva', esKana: 'テンゴ ウナ レセルバ' },
-      { ja: '別々に払えますか', en: 'May we pay separately?', es: '¿Podemos pagar por separado?', esKana: 'ポデモス パガール ポル セパラド' },
-      { ja: '持ち帰りできますか', en: 'May I get this to go?', es: '¿Puedo llevarlo para llevar?', esKana: 'プエド ジェバルロ パラ ジェバール' },
+      { ja: 'メニューを見せてください', en: 'May I see the menu?', ko: '메뉴 좀 보여주세요', koKana: 'メニュ ジョム ポヨジュセヨ', zh: '請給我看菜單', zhPinyin: 'qǐng gěi wǒ kàn càidān', zhKana: 'チン ゲイウォ カン ツァイダン' },
+      { ja: 'おすすめは何ですか', en: 'What do you recommend?', ko: '뭐가 맛있어요?', koKana: 'モワ マシッソヨ', zh: '有什麼推薦的？', zhPinyin: 'yǒu shénme tuījiàn de', zhKana: 'ヨウ シェンマ トゥイジェンダ' },
+      { ja: 'お水をください', en: 'Water, please', ko: '물 좀 주세요', koKana: 'ムル ジョム ジュセヨ', zh: '請給我水', zhPinyin: 'qǐng gěi wǒ shuǐ', zhKana: 'チン ゲイウォ シュイ' },
+      { ja: '会計をお願いします', en: 'Could I have the check, please?', ko: '계산해 주세요', koKana: 'ケサネ ジュセヨ', zh: '買單', zhPinyin: 'mǎidān', zhKana: 'マイダン' },
+      { ja: 'これは辛いですか', en: 'Is this spicy?', ko: '이거 매워요?', koKana: 'イゴ メウォヨ', zh: '這個辣嗎？', zhPinyin: 'zhège là ma', zhKana: 'ジャガ ラー マ' },
+      { ja: 'アレルギーがあります', en: 'I have an allergy', ko: '알레르기가 있어요', koKana: 'アルレルギガ イッソヨ', zh: '我對食物過敏', zhPinyin: 'wǒ duì shíwù guòmǐn', zhKana: 'ウォ ドゥイ シーウー グオミン' },
+      { ja: 'とてもおいしかったです', en: 'It was delicious', ko: '정말 맛있었어요', koKana: 'チョンマル マシッソッソヨ', zh: '非常好吃', zhPinyin: 'fēicháng hǎochī', zhKana: 'フェイツァン ハオチー' },
+      { ja: '予約をしています', en: 'I have a reservation', ko: '예약했어요', koKana: 'イェヤケッソヨ', zh: '我有訂位', zhPinyin: 'wǒ yǒu dìngwèi', zhKana: 'ウォ ヨウ ディンウェイ' },
+      { ja: '別々に払えますか', en: 'May we pay separately?', ko: '따로 계산할 수 있어요?', koKana: 'タロ ケサナルス イッソヨ', zh: '可以分開付款嗎？', zhPinyin: 'kěyǐ fēnkāi fùkuǎn ma', zhKana: 'クァイー フェンカイ フークワン マ' },
+      { ja: '持ち帰りできますか', en: 'May I get this to go?', ko: '포장 되나요?', koKana: 'ポジャン テナヨ', zh: '可以打包嗎？', zhPinyin: 'kěyǐ dǎbāo ma', zhKana: 'クァイー ダーバオ マ' },
     ],
   },
 };
@@ -93,7 +93,7 @@ function showModeSelect() {
   shell.board.className = 's-board';
   shell.board.innerHTML = `
     <div class="kt-menu">
-      <p>クイズで力だめし、または辞書でじっくり眺めながら、日・英・スペイン語のフレーズを学べます。</p>
+      <p>クイズで力だめし、または辞書でじっくり眺めながら、日・英・韓・中（台湾）のフレーズを学べます。</p>
       <div class="kt-menu-row">
         <button class="kt-menu-btn" id="ktQuizBtn">
           <span class="kt-emoji">📝</span>
@@ -206,17 +206,10 @@ function onAnswer(btn, chosen, correctText, item) {
   feedback.className = 'kt-feedback';
   feedback.innerHTML = `
     <p class="kt-feedback-msg ${isCorrect ? 'kt-good' : 'kt-bad'}">${isCorrect ? '正解です！' : `残念、正解は「${correctText}」`}</p>
-    <button class="kt-es-reveal-btn">🇪🇸 スペイン語では？</button>
     <button class="kt-next-btn">次へ</button>
   `;
   shell.board.appendChild(feedback);
 
-  feedback.querySelector('.kt-es-reveal-btn').addEventListener('click', (e) => {
-    const line = document.createElement('div');
-    line.className = 'kt-es-line';
-    line.innerHTML = `🇪🇸 ${item.es}<span class="kt-es-kana">${item.esKana}</span>`;
-    e.target.replaceWith(line);
-  });
   feedback.querySelector('.kt-next-btn').addEventListener('click', () => {
     quiz.index++;
     if (quiz.index >= quiz.questions.length) finishQuiz();
@@ -280,18 +273,30 @@ function revealDictCard(card, item) {
   const en = document.createElement('div');
   en.className = 'kt-dict-en';
   en.textContent = item.en;
-  const esBtn = document.createElement('button');
-  esBtn.className = 'kt-dict-es-btn';
-  esBtn.textContent = '🇪🇸 スペイン語は？';
-  esBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const es = document.createElement('div');
-    es.className = 'kt-dict-es';
-    es.innerHTML = `🇪🇸 ${item.es}<span class="kt-es-kana">${item.esKana}</span>`;
-    esBtn.replaceWith(es);
-  });
   card.appendChild(en);
-  card.appendChild(esBtn);
+
+  const btnRow = document.createElement('div');
+  btnRow.className = 'kt-dict-lang-btns';
+  btnRow.innerHTML = `
+    <button class="kt-dict-lang-btn" data-lang="ko">🇰🇷 韓国語は？</button>
+    <button class="kt-dict-lang-btn" data-lang="zh">🇹🇼 中国語は？</button>
+  `;
+  card.appendChild(btnRow);
+
+  btnRow.querySelectorAll('.kt-dict-lang-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const lang = btn.dataset.lang;
+      const line = document.createElement('div');
+      line.className = 'kt-dict-lang-line';
+      if (lang === 'ko') {
+        line.innerHTML = `🇰🇷 ${item.ko}<span class="kt-lang-kana">${item.koKana}</span>`;
+      } else {
+        line.innerHTML = `🇹🇼 ${item.zh}<span class="kt-lang-kana">${item.zhPinyin}／${item.zhKana}</span>`;
+      }
+      btn.replaceWith(line);
+    });
+  });
 }
 
 /* ---------- プレイ前・リセット後のプレースホルダー ---------- */
@@ -299,7 +304,7 @@ function showPlaceholder() {
   shell.board.className = 's-board';
   shell.board.innerHTML = `
     <div class="kt-menu">
-      <p>あいさつ／買い物／レストランなど<br>日常会話のフレーズが学べます。<br>スペイン語訳もこっそり見られます。</p>
+      <p>あいさつ／買い物／レストランなど<br>日常会話のフレーズが学べます。<br>韓国語・中国語訳もこっそり見られます。</p>
       <p>「スタート」を押すとはじまります</p>
     </div>
   `;
