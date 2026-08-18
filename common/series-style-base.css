@@ -55,9 +55,9 @@ body {
   font-size: 14px;
 }
 
-/* 新規追加 */
+/* モード切替のヒント（バッジの左に常時添える、控えめな表示） */
 .s-mode-hint {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: normal;
   color: var(--text);
   opacity: 0.55;
@@ -117,15 +117,15 @@ body {
   height: 40px;
   padding: 0 16px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: bold;
   color: var(--text);
 }
 
-.s-hint { font-size: 12px; color: #6b7a72; margin-top: 8px; }
-.s-back-link { display: block; text-align: center; font-size: 13px; color: var(--accent); margin-top: 14px; text-decoration: none; }
+.s-hint { font-size: 13px; color: #6b7a72; margin-top: 8px; }
+.s-back-link { display: block; text-align: center; font-size: 14px; color: var(--accent); margin-top: 14px; text-decoration: none; }
 .s-back-link:hover { text-decoration: underline; }
-.s-copyright { font-size: 11px; color: #93a49c; margin-top: 14px; }
+.s-copyright { font-size: 12px; color: #93a49c; margin-top: 14px; }
 
 /* 得点ポップアップ（どのゲームでも共通利用） */
 .s-popup {
