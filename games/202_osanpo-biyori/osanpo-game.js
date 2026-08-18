@@ -103,7 +103,7 @@ const CATCH_LINE = 76;      // %。この位置あたりで犬とすれ違う
 const REMOVE_LINE = 108;    // %。これを超えたら盤面から除去
 const ADMIRE_HOLD_MS = 1400; // 発見直後、その場に留まって鑑賞できる時間
 
-const LANES = [16.5, 50, 83.5]; // %
+const LANES = [20, 50, 80]; // %（均等配置。原因だった反転時のワープを解消したため対称に戻せる）
 
 let findPool = [];      // 今回のセッションで出現しうる通常枠（季節フィルタ済み）
 let totalCount = 0;     // 今回の図鑑コンプ総数
@@ -117,7 +117,7 @@ let rafId = null;
 let lastTs = 0;
 let dogEl, zukanCountEl, boardEl;
 let zukanModalEl, zukanGridEl;
-let dogBodyEl, moodBadgeEl;
+let dogFlipEl, dogWagEl, moodBadgeEl;
 let streak = 0;
 let currentTheme = null;
 let themeAchieved = false;
@@ -220,11 +220,11 @@ function buildBoard() {
       <span class="osanpo-theme-status" id="osanpoThemeStatus"></span>
     </div>
     <div class="osanpo-field" id="osanpoField">
-      <div class="osanpo-lane-line" style="left:${LANES[0]}%"></div>
-      <div class="osanpo-lane-line" style="left:${LANES[1]}%"></div>
-      <div class="osanpo-lane-line" style="left:${LANES[2]}%"></div>
+      <div class="osanpo-lane-line" style="left:20%"></div>
+      <div class="osanpo-lane-line" style="left:50%"></div>
+      <div class="osanpo-lane-line" style="left:80%"></div>
       <div class="osanpo-dog" id="osanpoDog">
-        <span class="osanpo-dog-body" id="osanpoDogBody">🐕‍🦺</span>
+        <span class="osanpo-dog-flip" id="osanpoDogFlip"><span class="osanpo-dog-wag" id="osanpoDogWag">🐕‍🦺</span></span>
         <span class="osanpo-mood-badge" id="osanpoMoodBadge"></span>
       </div>
     </div>
@@ -235,7 +235,8 @@ function buildBoard() {
   `;
   boardEl = shell.board.querySelector('#osanpoField');
   dogEl = shell.board.querySelector('#osanpoDog');
-  dogBodyEl = shell.board.querySelector('#osanpoDogBody');
+  dogFlipEl = shell.board.querySelector('#osanpoDogFlip');
+  dogWagEl = shell.board.querySelector('#osanpoDogWag');
   moodBadgeEl = shell.board.querySelector('#osanpoMoodBadge');
   zukanCountEl = shell.board.querySelector('#osanpoCount');
   themeStatusEl = shell.board.querySelector('#osanpoThemeStatus');
@@ -275,12 +276,12 @@ function moveLane(dir) {
 function updateDogPosition() {
   if (!dogEl) return;
   dogEl.style.left = `${LANES[currentLane]}%`;
-  dogBodyEl.style.setProperty('--flip', facingLeft ? -1 : 1);
+  dogFlipEl.style.setProperty('--flip', facingLeft ? -1 : 1);
 }
 
 function flinchDog() {
-  dogBodyEl.classList.add('osanpo-dog-flinch');
-  setTimeout(() => dogBodyEl.classList.remove('osanpo-dog-flinch'), 350);
+  dogWagEl.classList.add('osanpo-dog-flinch');
+  setTimeout(() => dogWagEl.classList.remove('osanpo-dog-flinch'), 350);
 }
 
 /* ---------- ごきげんメーター ---------- */
@@ -291,10 +292,10 @@ const MOOD_LEVELS = [
 ];
 
 function updateMood() {
-  dogBodyEl.classList.remove('osanpo-mood-1', 'osanpo-mood-2', 'osanpo-mood-3');
+  dogWagEl.classList.remove('osanpo-mood-1', 'osanpo-mood-2', 'osanpo-mood-3');
   const level = MOOD_LEVELS.find((l) => streak >= l.min);
   if (level) {
-    dogBodyEl.classList.add(level.cls);
+    dogWagEl.classList.add(level.cls);
     moodBadgeEl.textContent = level.badge;
     moodBadgeEl.classList.add('osanpo-mood-badge-show');
   } else {

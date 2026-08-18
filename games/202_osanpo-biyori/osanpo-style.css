@@ -183,40 +183,45 @@
   transform: translate(-50%, 0);
   transition: left 0.18s ease-out;
 }
-.osanpo-dog-body {
+/* 向き反転はここだけが担当。originを中心のままにすることで、反転時に位置がズレない */
+.osanpo-dog-flip {
+  display: inline-block;
+  transform: scaleX(var(--flip, -1));
+}
+/* しっぽ振り・フリンチはここが担当。反転は親が既に処理済みなので、
+   ここでは向きを意識せず「軸を一方に寄せた回転」を書けばよい
+   （親が反転していれば、見た目の軸も自動的に逆側になる）。 */
+.osanpo-dog-wag {
   display: inline-block;
   font-size: 72px;
   line-height: 1;
-  transform: scaleX(var(--flip, -1));
-  /* 回転の軸を顔側に寄せることで、逆側（しっぽ側）が振れて見えるようにする。
-     ずれる場合は下の16pxの値を調整、逆側になる場合は符号(+/-)を入れ替えてください。 */
-  transform-origin: calc(50% - var(--flip, -1) * 16px) 85%;
+  transform-origin: 32% 88%;
 }
-.osanpo-dog-body.osanpo-dog-flinch {
+.osanpo-dog-wag.osanpo-dog-flinch {
   animation: osanpoFlinch 0.35s ease;
 }
 @keyframes osanpoFlinch {
-  0% { transform: scaleX(var(--flip, -1)); }
-  30% { transform: scaleX(var(--flip, -1)) translateY(6px) scale(0.92); }
-  100% { transform: scaleX(var(--flip, -1)); }
+  0% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(6px) scale(0.92); }
+  100% { transform: translateY(0) scale(1); }
 }
 
 /* ごきげんメーター：連続発見数に応じてしっぽ振りが激しくなる */
-.osanpo-dog-body.osanpo-mood-1 { animation: osanpoWag 1.1s ease-in-out infinite; }
-.osanpo-dog-body.osanpo-mood-2 { animation: osanpoWag 0.7s ease-in-out infinite; }
-.osanpo-dog-body.osanpo-mood-3 { animation: osanpoWagBig 0.45s ease-in-out infinite; }
+.osanpo-dog-wag.osanpo-mood-1 { animation: osanpoWag 1.1s ease-in-out infinite; }
+.osanpo-dog-wag.osanpo-mood-2 { animation: osanpoWag 0.7s ease-in-out infinite; }
+.osanpo-dog-wag.osanpo-mood-3 { animation: osanpoWagBig 0.45s ease-in-out infinite; }
 @keyframes osanpoWag {
-  0%, 100% { transform: scaleX(var(--flip, -1)) rotate(0deg); }
-  50% { transform: scaleX(var(--flip, -1)) rotate(6deg); }
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(6deg); }
 }
 @keyframes osanpoWagBig {
-  0%, 100% { transform: scaleX(var(--flip, -1)) rotate(0deg) scale(1); }
-  50% { transform: scaleX(var(--flip, -1)) rotate(10deg) scale(1.08); }
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(10deg) scale(1.08); }
 }
 
 .osanpo-mood-badge {
   position: absolute;
-  top: -30px;
+  top: -20px;
   right: -6px;
   font-size: 0;
   opacity: 0;
