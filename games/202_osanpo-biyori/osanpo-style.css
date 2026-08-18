@@ -100,6 +100,9 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
+
+/* 図鑑モーダル(z-index:20)より、豆知識トースト(共通土台)を手前に出す */
+.s-toast { z-index: 30; }
 .osanpo-zukan-cell {
   display: flex;
   flex-direction: column;
