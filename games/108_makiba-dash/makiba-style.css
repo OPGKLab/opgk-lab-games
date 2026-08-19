@@ -1,0 +1,110 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き）
+   牧場・野原イメージのソフトミント。既存のおさんぽ(#93b23f・黄緑)や
+   まよいみち(#2f6b4a・モスグリーン)とは別方向の爽やかな色に。 */
+:root {
+  --bg: #eaf6f0;
+  --board: #eef7f0;
+  --accent: #7fb8a0;
+  --hard: #e2574c;
+  --text: #33403a;
+  --popup-good: #4a9d7a;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+}
+
+.mk-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+/* 残機表示：ハートが減っていく。見た目でひと目でわかるように大きめ */
+.mk-lives { display: flex; gap: 3px; font-size: 18px; }
+.mk-life-lost { opacity: 0.25; filter: grayscale(1); }
+
+/* ステージ表示：現在何ステージ目かを表示 */
+.mk-stage {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* 進捗バー：ゴールまでの距離を可視化 */
+.mk-progress-wrap {
+  flex: 1;
+  height: 8px;
+  background: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.mk-progress-bar {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.15s linear;
+}
+
+.mk-canvas-wrap {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 0 auto;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.06);
+}
+#mkCanvas {
+  display: block;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
+
+.mk-jump-row { display: flex; justify-content: center; margin-top: 10px; }
+.mk-jump-btn {
+  font-size: 16px;
+  padding: 10px 40px;
+  border: none;
+  border-radius: 24px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mk-jump-btn:active { filter: brightness(0.95); transform: scale(0.97); }
+
+.mk-tap-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #5c6f58;
+  margin: 8px 0 0;
+}
+
+.mk-placeholder {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #4c5c46;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.mk-placeholder p { margin: 0; }
+.mk-placeholder b { color: var(--accent); }
+
+/* 連打・連続タップでブラウザの拡大やスクロールと誤認識されないようにする */
+body {
+  overscroll-behavior-y: contain;
+}
