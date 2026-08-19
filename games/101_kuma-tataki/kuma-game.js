@@ -6,7 +6,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'くまさんぽこぽこ🐻',
-  hint: 'ぱんだ🐼はよけて、くまとしろくまをタップ（タイトル5回タップで隠しモード）',
+  hint: 'ぱんだ🐼はよけて、くまとしろくまをタップしましょう。',
   hasScore: true,
   hasTimer: true,
   duration: 30,

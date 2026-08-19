@@ -152,40 +152,24 @@ function drawBlob(rect, shape) {
   }
 }
 
-// 岩の障害物：丸みのある岩塊を連ねて描き、苔アクセントと影を添える
+// 岩の障害物：台形寄りの多角形（角を落とした六角形）を濃いグレー1色で
 function drawBoulders(rect) {
-  const vertical = rect.h >= rect.w;
-  const n = 3;
-
-  ctx.fillStyle = 'rgba(0,0,0,0.14)';
+  const bevel = Math.min(rect.w, rect.h) * 0.32;
   ctx.beginPath();
-  if (vertical) ctx.ellipse(rect.x + rect.w / 2, rect.y + rect.h - 3, rect.w * 0.75, 5, 0, 0, Math.PI * 2);
-  else ctx.ellipse(rect.x + rect.w - 3, rect.y + rect.h / 2, 5, rect.h * 0.75, 0, 0, Math.PI * 2);
+  ctx.moveTo(rect.x + bevel, rect.y);
+  ctx.lineTo(rect.x + rect.w - bevel, rect.y);
+  ctx.lineTo(rect.x + rect.w, rect.y + bevel);
+  ctx.lineTo(rect.x + rect.w, rect.y + rect.h - bevel);
+  ctx.lineTo(rect.x + rect.w - bevel, rect.y + rect.h);
+  ctx.lineTo(rect.x + bevel, rect.y + rect.h);
+  ctx.lineTo(rect.x, rect.y + rect.h - bevel);
+  ctx.lineTo(rect.x, rect.y + bevel);
+  ctx.closePath();
+  ctx.fillStyle = '#5a5a56';
   ctx.fill();
-
-  for (let i = 0; i < n; i++) {
-    const t = (i + 0.5) / n;
-    const cx = vertical ? rect.x + rect.w / 2 : rect.x + rect.w * t;
-    const cy = vertical ? rect.y + rect.h * t : rect.y + rect.h / 2;
-    const r = (vertical ? rect.w : rect.h) * 0.56 * (i % 2 === 0 ? 1 : 0.82);
-    const grad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
-    grad.addColorStop(0, '#b5a284');
-    grad.addColorStop(1, '#7d6c52');
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = grad;
-    ctx.fill();
-  }
-
-  ctx.fillStyle = 'rgba(90,128,70,0.55)';
-  for (let i = 0; i < n; i++) {
-    const t = (i + 0.5) / n;
-    const cx = vertical ? rect.x + rect.w * 0.3 : rect.x + rect.w * t - rect.w * 0.14;
-    const cy = vertical ? rect.y + rect.h * t - rect.h * 0.07 : rect.y + rect.h * 0.3;
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 5, 3, 0.3, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 }
 
 function powerColor(ratio) {

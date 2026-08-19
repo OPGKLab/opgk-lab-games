@@ -9,7 +9,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: '落ちものパズル🧩',
-  hint: '下のボタンでブロックを動かそう。列を横一列そろえると消えます（タイトル5回タップで激むず・幅せまめ）',
+  hint: '下のボタンでブロックを動かしましょう。列を横一列そろえると消えます。',
   hasScore: true,
   hasTimer: false,
 });

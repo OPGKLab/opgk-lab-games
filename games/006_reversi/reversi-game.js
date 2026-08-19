@@ -9,7 +9,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'リバーシ⚫',
-  hint: 'マスをタップして石を置こう（タイトル5回タップで8×8の激むずモード）',
+  hint: 'マスをタップして石を置きましょう',
   hasScore: false,
   hasTimer: false,
 });

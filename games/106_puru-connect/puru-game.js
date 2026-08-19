@@ -10,7 +10,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'ぷるぷるコネクト🫧',
-  hint: '同じ色を4つ以上つなげて消そう。（矢印キーにも対応、タイトル5回タップで激むず）',
+  hint: '同じ色を4つ以上つなげて消しましょう。（矢印キーにも対応）',
   hasScore: true,
   hasTimer: false,
 });

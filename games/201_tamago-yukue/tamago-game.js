@@ -7,7 +7,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'たまごのゆくえ🐣',
-  hint: '画面をなぞってたまごを動かし、指を離すと落とせます（タイトル5回タップで激むず）',
+  hint: '同じたまごを合体させて進化させましょう。指を離すと落とせます。',
   hasScore: true,
   hasTimer: false,
 });

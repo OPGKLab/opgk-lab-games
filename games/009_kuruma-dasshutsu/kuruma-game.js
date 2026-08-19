@@ -10,7 +10,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'くるま脱出🚗',
-  hint: '車は前後方向にしか動かせません。ターゲットの車を出口まで動かそう！（タイトル5回タップで激むず）',
+  hint: '車は前後方向にしか動かせません。ターゲットの車を出口まで動かしましょう。',
   hasScore: false,
   hasTimer: false,
 });

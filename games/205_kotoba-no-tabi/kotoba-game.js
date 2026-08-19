@@ -13,7 +13,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'ことばの旅🌍',
-  hint: 'クイズか辞書を選んで、日常会話フレーズを学びましょう（タイトル5回タップで激むず＝全シーン12問ミックス／出題方向ランダム。プレイ中は切替不可）',
+  hint: 'クイズか辞書を選んで、日常会話フレーズを学びましょう',
   hasScore: true,
   hasTimer: false,
 });

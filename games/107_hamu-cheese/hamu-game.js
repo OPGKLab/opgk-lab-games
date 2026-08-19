@@ -8,7 +8,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'ハムスターのチーズ集め🧀',
-  hint: 'バーを動かしてハムスターを跳ね返そう。🧀に当たればクリア！（指操作／十字キー対応、タイトル5回タップで激むず）',
+  hint: 'バーを動かしてハムスターを跳ね返しましょう。🧀に当たればクリア！（指操作／十字キー対応）',
   hasScore: true,
   hasTimer: false,
 });

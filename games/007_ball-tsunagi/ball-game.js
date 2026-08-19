@@ -14,7 +14,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'ボールつなぎ🏀',
-  hint: '同じボールを指でなぞってつなごう。盤面のマスを全部使い切らないとクリアになりません（タイトル5回タップで激むず）',
+  hint: '同じボールを指でなぞってつなぎましょう。盤面のマスを全部使い切らないとクリアになりません',
   hasScore: false,
   hasTimer: false,
 });

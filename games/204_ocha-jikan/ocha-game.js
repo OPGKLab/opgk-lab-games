@@ -11,7 +11,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'お茶のじかん🍵',
-  hint: '下の絵をタップして、見本との違いを見つけよう。ヒントは何度でも使えます（タイトル5回タップで激むず）',
+  hint: '下の絵をタップして、見本との違いを見つけましょう。ヒントは何度でも使えます。',
   hasScore: true,
   hasTimer: false,
 });

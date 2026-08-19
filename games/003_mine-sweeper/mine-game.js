@@ -7,7 +7,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'マインスイーパー💣',
-  hint: 'モードを切り替えてマスをタップ（タイトル5回タップで激むず）',
+  hint: '👆／🚩／❓のモードを切り替えて、地雷のないマスをすべて開けましょう',
   hasScore: false,
   hasTimer: false,
 });

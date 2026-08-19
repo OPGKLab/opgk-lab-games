@@ -113,7 +113,7 @@ const POEM_MAP = new Map(POEMS.map((p) => [p[0], p]));
 const shell = new GameShell({
   rootSelector: '#app',
   title: '百人一首⛩️',
-  hint: '上の句に続く「下の句」を4枚から選びましょう（タイトル5回タップで激むず）',
+  hint: '上の句に続く「下の句」を4枚から選びましょう',
   hasScore: true,
   hasTimer: false,
 });

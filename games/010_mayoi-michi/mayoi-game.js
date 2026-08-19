@@ -26,7 +26,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'まよいみち🌲',
-  hint: '盤面をタップすると、その方向へ🐿️が1マス進みます。なかまを全員集めて巣穴（🌲の森）を目指そう（タイトル5回タップで激むず）',
+  hint: '盤面をタップすると、その方向へ🐿️が1マス進みます。なかまを全員集めて巣穴（🌲の森）を目指しましょう',
   hasScore: false,
   hasTimer: false,
 });

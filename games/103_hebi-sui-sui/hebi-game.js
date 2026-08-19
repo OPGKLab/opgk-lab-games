@@ -8,7 +8,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'へびすいすい🐍',
-  hint: '盤面の左右をタップして向きを変え、ネズミを食べて長くなろう（左半分＝左折／右半分＝右折、タイトル5回タップで激むず）',
+  hint: '盤面の左右をタップして向きを変え、ネズミを捕まえて長くなりましょう（左半分＝左折／右半分＝右折）',
   hasScore: true,
   hasTimer: false,
 });

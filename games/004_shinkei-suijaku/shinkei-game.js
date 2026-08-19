@@ -8,7 +8,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'どうぶつ神経衰弱🐾',
-  hint: 'カードを2枚めくってペアを探そう（タイトル5回タップで激むず）',
+  hint: 'カードを2枚めくってペアを探しましょう',
   hasScore: true,
   hasTimer: false,
 });

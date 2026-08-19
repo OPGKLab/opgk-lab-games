@@ -8,7 +8,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'おさんぽ日和🐕‍🦺',
-  hint: '左右ボタンでレーンを移動して「？」をキャッチ（タイトル5回タップで激むず）',
+  hint: '左右ボタンでレーンを移動して「？」をキャッチしましょう',
   hasScore: false,
   hasTimer: false,
 });

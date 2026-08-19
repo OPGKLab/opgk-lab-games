@@ -10,7 +10,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'スライドパズル🔀',
-  hint: 'タイトルを5回連続タップすると…激むずモード(5x5)に挑戦できます',
+  hint: '空いているマスへ数字をずらして、1・2・3・・の順番通りに並べましょう',
   hasScore: false,
   hasTimer: false,
 });

@@ -7,7 +7,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'じゃぐちパズル🚰',
-  hint: 'パイプをタップして回転させ、じゃぐちからバケツまで水路をつなげよう（タイトル5回タップで激むず）',
+  hint: 'パイプをタップして回転させ、じゃぐちからバケツまで水路をつなげましょう',
   hasScore: false,
   hasTimer: false,
 });

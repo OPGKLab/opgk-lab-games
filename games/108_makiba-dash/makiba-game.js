@@ -24,7 +24,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'まきばダッシュ🐑',
-  hint: 'タップまたはジャンプボタンで🐑がジャンプします。岩や水たまりを飛び越えて🍀を集めながら、全5ステージのゴールを目指そう（タイトル5回タップで激むず）',
+  hint: '障害物を飛び越えて🍀を集めながら、全5ステージのゴールを目指しましょう。',
   hasScore: true,
   hasTimer: false,
 });
@@ -180,9 +180,9 @@ function showPlaceholder() {
   shell.board.className = 's-board mk-board';
   shell.board.innerHTML = `
     <div class="mk-placeholder">
-      <p>🐑をタップでジャンプさせて、岩や水たまりを飛び越えましょう。</p>
+      <p>🐑をタップでジャンプさせて、障害物を飛び越えましょう。</p>
       <p>🍀クローバーを集めながら、全5ステージのゴールを目指します。</p>
-      <p>ぶつかると<b>残機</b>が減ります。0になると終了です。</p>
+      <p>ぶつかると<b>ライフ</b>が減ります。0になると終了です。</p>
       <p>「スタート」を押すとはじまります</p>
     </div>
   `;

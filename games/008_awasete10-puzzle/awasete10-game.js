@@ -20,7 +20,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'あわせて10🔟',
-  hint: 'マスを指でなぞって合計が10になるようつなげ、「きめる」で消そう（タイトル5回タップで激むず）',
+  hint: 'マスを指でなぞって合計が10になるようつなげ、「きめる」で消しましょう',
   hasScore: false,
   hasTimer: false,
 });

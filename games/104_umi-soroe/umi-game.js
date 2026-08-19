@@ -8,7 +8,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'うみそろえ🐳',
-  hint: '海の生き物を指でなぞって、同じ仲間を3つ並べよう（タイトル5回タップで激むず）',
+  hint: '海の生き物を指でなぞって、同じ仲間を3つ並べましょう',
   hasScore: true,
   hasTimer: true,
   duration: 45,

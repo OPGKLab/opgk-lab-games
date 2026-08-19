@@ -8,7 +8,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'さくさくジャッジ👀',
-  hint: 'お題に合うものだけ〇、違うものは✕（タイトル5回タップで激むず）',
+  hint: 'お題に合うものだけ〇、違うものは✕、を選びましょう。',
   hasScore: true,
   hasTimer: true,
   duration: 30,

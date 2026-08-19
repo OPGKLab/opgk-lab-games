@@ -8,7 +8,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'ヒット&ブロー🔢',
-  hint: '数字を当てよう。ヒントは何度でも使えます（タイトル5回タップで激むず・5桁）',
+  hint: '数字の位置とヒントから正解を推理しましょう。ヒントは何度でも使えます',
   hasScore: false,
   hasTimer: false,
 });

@@ -9,7 +9,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: '法則さがし🕵️',
-  hint: '数字や絵文字の並びから、次に来るものを当てよう（タイトル5回タップで激むず）',
+  hint: '数字や絵文字の並びから、次に来るものを当てましょう',
   hasScore: true,
   hasTimer: false,
 });
