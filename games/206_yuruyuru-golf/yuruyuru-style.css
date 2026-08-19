@@ -1,0 +1,84 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き）
+   既存の緑系（まよいみち#2f6b4a=深いモス、おさんぽ#93b23f=黄緑、
+   お茶#5c7a52=グレイッシュ）とは離れた、芝生らしいティール寄りのグリーンに。 */
+:root {
+  --bg: #eaf6f0;
+  --board: #dff0e4;
+  --accent: #14966b;
+  --hard: #e2574c;
+  --text: #253a30;
+  --popup-good: #14966b;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+}
+
+.golf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+.golf-badge {
+  background: #fff;
+  padding: 5px 12px;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+  color: var(--text);
+}
+.golf-badge b { color: var(--accent); }
+
+.golf-canvas-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.08);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
+.golf-canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+/* 強めのショットを打った時に盤面をキュッと弾ませる演出 */
+.golf-canvas-wrap.golf-punch {
+  animation: golfPunch 0.28s ease;
+}
+@keyframes golfPunch {
+  0% { transform: scale(1); }
+  35% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+.golf-tap-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #4c6459;
+  margin: 8px 0 0;
+}
+
+.golf-placeholder {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #3f5347;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.golf-placeholder p { margin: 0; }
+.golf-placeholder b { color: var(--accent); }
+
+body {
+  overscroll-behavior-y: contain;
+}
