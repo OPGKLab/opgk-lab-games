@@ -8,7 +8,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'おさんぽ日和🐕‍🦺',
-  hint: '左右ボタンでレーンを移動して「？」をキャッチしましょう',
+  hint: '左右ボタンでレーンを移動して「？」をキャッチ（タイトル5回タップで激むず）',
   hasScore: false,
   hasTimer: false,
 });
@@ -371,7 +371,7 @@ function catchNormalOrRare(item, ts) {
   if (item.kind === 'rare') {
     shell.playTone(900, 0.12);
     setTimeout(() => shell.playTone(1200, 0.15), 100);
-    showHeartBurst(item.el);
+    showLoveBurst(item.el, item.data.emoji);
   } else {
     shell.playTone(760, 0.1);
   }
@@ -381,6 +381,41 @@ function catchNormalOrRare(item, ts) {
 function showHeartBurst(targetEl) {
   const delays = [0, 90, 180, 260];
   delays.forEach((d) => setTimeout(() => shell.showPopup(targetEl, '💗', 'bonus'), d));
+}
+
+/* 「大好きレベル」専用：ハート＋笑顔をランダムな軌道で複数散らす特別演出 */
+function showLoveBurst(targetEl, subjectEmoji) {
+  const glyphs = ['💕', '💖', '💝', '😆', '💓', '😆', '💗'];
+  const originX = targetEl.offsetLeft + targetEl.offsetWidth / 2;
+  const originY = targetEl.offsetTop;
+  const count = 8;
+  for (let i = 0; i < count; i++) {
+    const span = document.createElement('span');
+    span.className = 'osanpo-love-particle';
+    span.textContent = glyphs[(Math.random() * glyphs.length) | 0];
+    const dx = (Math.random() - 0.5) * 100;
+    const rot = (Math.random() - 0.5) * 50;
+    const delay = Math.random() * 180;
+    span.style.left = `${originX}px`;
+    span.style.top = `${originY}px`;
+    span.style.setProperty('--dx', `${dx}px`);
+    span.style.setProperty('--rot', `${rot}deg`);
+    span.style.animationDelay = `${delay}ms`;
+    shell.board.appendChild(span);
+    setTimeout(() => span.remove(), 1100 + delay);
+  }
+
+  // 見つけた子→ハート→笑顔の順で、中央にドーンと連続表示
+  const megaGlyphs = [subjectEmoji, '💖', '😆'];
+  megaGlyphs.forEach((glyph, i) => {
+    setTimeout(() => {
+      const mega = document.createElement('div');
+      mega.className = 'osanpo-love-mega';
+      mega.textContent = glyph;
+      shell.board.appendChild(mega);
+      setTimeout(() => mega.remove(), 650);
+    }, i * 260);
+  });
 }
 
 function greetPasserby(item) {

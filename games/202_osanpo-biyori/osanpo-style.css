@@ -175,6 +175,41 @@
   opacity: 0.75;
 }
 
+/* 大好きレベル専用：ランダムな軌道で散らばるハート・笑顔 */
+.osanpo-love-particle {
+  position: absolute;
+  transform: translate(-50%, 0);
+  font-size: 20px;
+  pointer-events: none;
+  animation: osanpoLoveFloat 0.9s ease-out forwards;
+}
+@keyframes osanpoLoveFloat {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.5) rotate(0deg); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), -75px) scale(1.15) rotate(var(--rot)); }
+}
+
+/* 大好きレベル専用：中央にドーンと表示される拡大演出（対象→ハート→笑顔の順で連続表示） */
+.osanpo-love-mega {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  pointer-events: none;
+  z-index: 15;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  animation: osanpoMegaPop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+@keyframes osanpoMegaPop {
+  0% { opacity: 0; transform: scale(0.4) rotate(-4deg); }
+  35% { opacity: 1; transform: scale(1.4) rotate(3deg); }
+  70% { opacity: 1; transform: scale(1.6) rotate(-2deg); }
+  100% { opacity: 0; transform: scale(1.6) rotate(0deg); }
+}
+
 /* 犬（進行方向でscaleX反転、レーン移動でleftを変える） */
 .osanpo-dog {
   position: absolute;
