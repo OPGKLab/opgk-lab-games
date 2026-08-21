@@ -94,8 +94,10 @@ opgk-lab-games/
 5. 文言は「表記・文体ルール」に沿って統一する
 
 ##追加時のTipsMEMO（テーマアイコンの上の行に1行足す）
-✨New　→/*　<span class="card-badge">✨ NEW</span>
-🔄アップデート　→/*　<span class="card-badge card-badge-update">🔄 UPDATE</span>
+✨New　
+<span class="card-badge">✨ NEW</span>
+🔄アップデート　
+<span class="card-badge card-badge-update">🔄 UPDATE</span>
 
 
 ## PJ資料の運用方針
