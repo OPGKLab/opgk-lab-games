@@ -16,7 +16,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'ゆるゆるゴルフ⛳',
-  hint: 'ボールを狙いと反対方向にドラッグして、離すと打てます（タイトル5回タップで激むず）',
+  hint: 'ボールを狙いと反対方向にドラッグして、離すと打てます',
   hasScore: true,
   hasTimer: false,
 });
