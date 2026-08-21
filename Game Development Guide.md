@@ -93,10 +93,11 @@ opgk-lab-games/
 4. `新作-game.js` に `new GameShell({...})` の設定＋盤面生成＋ルールを書く（`common/`は一切編集しない）
 5. 文言は「表記・文体ルール」に沿って統一する
 
-##追加時のTipsMEMO（テーマアイコンの上の行に1行足す）
-✨New　
+##　追加時のTipsMEMO（テーマアイコンの上の行に1行足す）
+
+-　✨New　
 <span class="card-badge">✨ NEW</span>
-🔄アップデート　
+-　🔄アップデート　
 <span class="card-badge card-badge-update">🔄 UPDATE</span>
 
 
