@@ -1,0 +1,113 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #fdf1e4;
+  --board: #f7e2c8;
+  --accent: #d9822b;
+  --hard: #e2574c;
+  --text: #3a2c1d;
+  --popup-good: #d9822b;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+}
+
+.tower-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #6b5a45;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.tower-board { display: flex; flex-direction: column; align-items: center; }
+
+/* 盤面：塔が積み上がる表示領域（カメラスクロール方式） */
+.tower-viewport {
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--board);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+.tower-viewport.tower-miss { animation: towerShake 0.3s ease; }
+@keyframes towerShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* クレーンのレール（装飾） */
+.crane-rail {
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, #9a8468, #9a8468 4px, transparent 4px, transparent 8px);
+}
+
+/* 積み上がったブロックを収める内部コンテナ（translateYでカメラスクロール） */
+.tower-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.tower-block {
+  position: absolute;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+/* クレーンが運んでいる（落とす前の）ブロック */
+.crane-block {
+  position: absolute;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+.crane-block::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 2px;
+  height: 14px;
+  background: #9a8468;
+  transform: translateX(-50%);
+}
+
+/* ---- マイルストーンごとのテーマ柄（4種・cycle可、追加は容易） ---- */
+.theme-wood {
+  background: linear-gradient(180deg, #c68642, #8b5a2b);
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.15);
+}
+.theme-candy {
+  background: repeating-linear-gradient(45deg, #ff8fab, #ff8fab 8px, #fff 8px, #fff 16px);
+}
+.theme-stone {
+  background: linear-gradient(180deg, #b3b3b3, #7d7d7d);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.15);
+}
+.theme-gem {
+  background: linear-gradient(135deg, #a06fe0, #e0a52c);
+  box-shadow: 0 0 6px rgba(224,165,44,0.65), 0 1px 2px rgba(0,0,0,0.15);
+}
+
+/* つみつみボタン（専用ドロップボタン） */
+.tower-drop-btn {
+  display: block;
+  margin: 14px auto 0;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 12px 40px;
+  border: none;
+  border-radius: 24px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+.tower-drop-btn:disabled { opacity: 0.5; }
