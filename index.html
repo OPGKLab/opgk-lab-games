@@ -114,6 +114,14 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
+  @media (min-width: 700px) {
+    .s-app { max-width: 900px; }
+    .game-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1000px) {
+    .s-app { max-width: 1180px; }
+    .game-grid { grid-template-columns: repeat(4, 1fr); }
+  }
 
   .game-card {
     position: relative;
