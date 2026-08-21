@@ -110,6 +110,7 @@
   }
 
   .game-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -122,6 +123,24 @@
     text-decoration: none;
     color: var(--text);
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .card-badge {
+    position: absolute;
+    top: -9px;
+    left: -6px;
+    transform: rotate(-8deg);
+    background: linear-gradient(135deg, #ff9a76, #ff5f7e);
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.03em;
+    padding: 4px 11px;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+  }
+  .card-badge-update {
+    background: linear-gradient(135deg, #6fa8ff, #8f6fe0);
   }
 
   .game-card .icon-circle {
@@ -157,7 +176,7 @@
   <div class="s-app">
     <div class="s-brand" id="top">🌿 OPGK Lab</div>
     <h1 class="list-title">あそんでみる</h1>
-    <p class="list-catch">無料・広告なし。すきま時間にどうぞ。</p>
+    <p class="list-catch">無料・広告なし。むずかしい操作はありません。すきま時間にどうぞ。</p>
 
     <nav class="s-catnav" id="sCatNav">
       <a class="s-catnav-pill" href="#cat-atama">🧠 あたまを使う</a>
@@ -229,6 +248,7 @@
           <span class="play-btn">あそぶ</span>
         </a>
         <a class="game-card" style="--card-accent:#6d6ba0" href="./games/011_kimari-mitsuketa/index.html" data-no="011">
+          <span class="card-badge">✨ NEW</span>
           <span class="icon-circle">🕵️</span>
           <span class="label">法則さがし</span>
           <span class="desc">数字や絵文字の並びから、きまりを見つけましょう</span>
@@ -283,6 +303,7 @@
           <span class="play-btn">あそぶ</span>
         </a>
         <a class="game-card" style="--card-accent:#2f6b4a" href="./games/108_makiba-dash/index.html" data-no="108">
+          <span class="card-badge">✨ NEW</span>
           <span class="icon-circle">🐑</span>
           <span class="label">まきばダッシュ</span>
           <span class="desc">障害物を飛び越えてゴールを目指しましょう</span>
@@ -301,6 +322,7 @@
           <span class="play-btn">あそぶ</span>
         </a>
         <a class="game-card" style="--card-accent:#93b23f" href="./games/202_osanpo-biyori/index.html" data-no="202">
+          <span class="card-badge card-badge-update">🔄 UPDATE</span>
           <span class="icon-circle">🐕‍🦺</span>
           <span class="label">おさんぽ日和</span>
           <span class="desc">いろんな出会いを見つけましょう</span>
@@ -331,6 +353,7 @@
           <span class="play-btn">あそぶ</span>
         </a>
         <a class="game-card" style="--card-accent:#8a8f3a" href="./games/207_kyou-no-mame-chishiki/index.html" data-no="207">
+          <span class="card-badge">✨ NEW</span>
           <span class="icon-circle">📅</span>
           <span class="label">きょうの豆知識</span>
           <span class="desc">その日の豆知識クイズに挑戦しましょう</span>
