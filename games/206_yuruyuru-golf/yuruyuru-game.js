@@ -1,13 +1,19 @@
 /* =========================================================
-   ゆるゆるゴルフ⛳ 固有ロジック（v3）
+   ゆるゆるゴルフ⛳ 固有ロジック（v4）
    -----------------------------------------------------------
-   v2からの変更点：
-   - 操作を2ステップ・タップ式からドラッグ式に戻した
-     （ボールを狙いと反対方向にドラッグして離す、定番のゴルフゲームUI）
-   - ドラッグはボールに正確に触れなくても盤面上どこからでも開始できる
-     （50代以上ターゲットの精度負荷軽減）
-   - 軌道プレビューは「先端に向かって小さくなるドット列＋矢印」のまま維持
-   - 横長盤面（300×200）・砂地／水たまり・激むずのハチ🐝はそのまま維持
+   v3からの変更点：
+   - コースを「毎回スタート時にランダム生成」する方式に変更
+     （壁のゲート位置・砂地／水たまりの位置形状・スタート/ホール位置を
+     　都度ランダム化し、周回プレイでの飽きを防ぐ）
+   - 完全な自動生成だが、迷路/パイプパズルのような厳密な解探索検証は
+     行っていない（連続空間＋反射物理のため経路の解けなさをアルゴリズムで
+     保証するのが難しい）。代わりに「ゲート幅は常にボール直径の5倍以上」
+     「障害物は壁ゲートに重ねない」といった余裕を持った制約でランダム化し、
+     現実的にどんな狙い方でも通過できる範囲に収めている
+   - 盤面は300×240（比率0.8）に変更。真の縦長（比率1.3〜1.6）は
+     iPhone16eでスクロールが発生してしまうため不可（実測済みの反省点）。
+     一方で前バージョンの300×200（比率0.667）は縦方向のドラッグ量が
+     窮屈だったため、安全上限ぎりぎりまで縦を伸ばして両立させている
 
    衝突判定：矩形障害物・コース境界ともに「ボール中心から見た最近接点」
    を求める円対矩形の方式に統一。辺・角どちらでも破綻しない。
@@ -16,7 +22,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'ゆるゆるゴルフ⛳',
-  hint: 'ボールを狙いと反対方向にドラッグして、離すと打てます',
+  hint: 'ボールを狙いと反対方向にドラッグして、離すと打てます（タイトル5回タップで激むず）',
   hasScore: true,
   hasTimer: false,
 });
@@ -31,78 +37,88 @@ const POWER_SCALE = 0.072;   // ドラッグ距離→初速への変換係数
 const BOUNCE = 0.7;          // 壁・障害物での反発係数（1で完全弾性）
 const DPR = Math.min(window.devicePixelRatio || 1, 3);
 
-/* ---------- コース定義（5ホール。横長300×200前後、iPhone16e想定） ---------- */
-const HOLES = [
-  {
-    w: 300, h: 200,
-    start: { x: 35, y: 100 },
-    hole: { x: 265, y: 100, r: 13 },
-    walls: [],
-    sand: [],
-    water: [],
-  },
-  {
-    w: 300, h: 200,
-    start: { x: 35, y: 150 },
-    hole: { x: 265, y: 50, r: 12 },
-    walls: [
-      { x: 140, y: 0, w: 18, h: 120 }, // 下側が通り道
-    ],
-    sand: [
-      { x: 175, y: 130, w: 60, h: 40, shape: 'gourd' },
-    ],
-    water: [],
-  },
-  {
-    w: 300, h: 200,
-    start: { x: 30, y: 150 },
-    hole: { x: 270, y: 50, r: 12 },
-    walls: [
-      { x: 95, y: 0, w: 18, h: 120 },   // 下が通り道
-      { x: 185, y: 80, w: 18, h: 120 }, // 上が通り道（S字）
-    ],
-    sand: [
-      { x: 95, y: 130, w: 70, h: 35, shape: 'oval' },
-    ],
-    water: [],
-  },
-  {
-    w: 300, h: 200,
-    start: { x: 30, y: 160 },
-    hole: { x: 270, y: 40, r: 12 },
-    walls: [
-      { x: 85, y: 0, w: 18, h: 130 },   // 下が通り道
-      { x: 185, y: 60, w: 18, h: 130 }, // 上が通り道
-    ],
-    sand: [],
-    water: [
-      { x: 120, y: 150, w: 50, h: 30, shape: 'gourd' },
-    ],
-  },
-  {
-    w: 300, h: 200,
-    start: { x: 30, y: 150 },
-    hole: { x: 270, y: 150, r: 12 },
-    walls: [
-      { x: 70, y: 70, w: 18, h: 130 },  // 上が通り道
-      { x: 190, y: 0, w: 18, h: 130 },  // 下が通り道
-    ],
-    sand: [
-      { x: 95, y: 15, w: 55, h: 35, shape: 'oval' },
-    ],
-    water: [
-      { x: 195, y: 150, w: 55, h: 35, shape: 'gourd' },
-    ],
-    movingObstacles: [
-      { cx: 80, cy: 35, r: 11, axis: 'x', range: 18, speed: 0.0022 },
-      { cx: 210, cy: 165, r: 11, axis: 'x', range: 18, speed: 0.0024 },
-    ],
-  },
-];
+/* ---------- コース手続き生成（5ホール、盤面は共通300×240） ---------- */
+const COURSE_W = 300;
+const COURSE_H = 240;
+const HOLE_COUNT = 5;
+const GATE_COUNT_BY_HOLE = [0, 1, 2, 2, 3]; // ホールごとの壁ゲート数（難易度カーブ）
+const GAP_MIN = 78;  // 壁ゲートの最小開口（ボール直径14の5倍以上を確保）
+const GAP_MAX = 118;
+
+function randRange(min, max) { return min + Math.random() * (max - min); }
+
+function rectsOverlap(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+// 壁ゲート1本を生成（gapSide側が通り道として空く）
+function makeWallGate(x, gapSide, gapSize) {
+  const barW = 18;
+  if (gapSide === 'top') {
+    return { x, y: gapSize, w: barW, h: COURSE_H - gapSize }; // 上側が通り道
+  }
+  return { x, y: 0, w: barW, h: COURSE_H - gapSize }; // 下側が通り道
+}
+
+// 砂地／水たまりを1つ生成。壁ゲートと重ならない位置を探す（最大12回試行）
+function randomPatch(walls) {
+  const pw = randRange(45, 65);
+  const ph = randRange(26, 40);
+  const shape = Math.random() < 0.5 ? 'gourd' : 'oval';
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const x = randRange(85, COURSE_W - 85 - pw);
+    const y = randRange(18, COURSE_H - 18 - ph);
+    const rect = { x, y, w: pw, h: ph, shape };
+    const overlapsWall = walls.some((wall) =>
+      rectsOverlap(rect, { x: wall.x - 10, y: wall.y - 10, w: wall.w + 20, h: wall.h + 20 })
+    );
+    if (!overlapsWall) return rect;
+  }
+  return { x: COURSE_W * 0.5 - pw / 2, y: COURSE_H * 0.5 - ph / 2, w: pw, h: ph, shape };
+}
+
+// ホール1つ分のコースをランダム生成する
+function generateHole(index) {
+  const margin = 30;
+  const start = { x: 34, y: randRange(margin, COURSE_H - margin) };
+  const hole = { x: COURSE_W - 34, y: randRange(margin, COURSE_H - margin), r: 12 };
+
+  const gateCount = GATE_COUNT_BY_HOLE[index];
+  const walls = [];
+  let side = Math.random() < 0.5 ? 'top' : 'bottom';
+  for (let i = 0; i < gateCount; i++) {
+    const x = COURSE_W * ((i + 1) / (gateCount + 1)) + randRange(-14, 14);
+    const gapSize = randRange(GAP_MIN, GAP_MAX);
+    side = side === 'top' ? 'bottom' : 'top'; // ジグザグに開口を交互配置
+    walls.push(makeWallGate(x, side, gapSize));
+  }
+
+  const sand = [];
+  const water = [];
+  if (index >= 1 && Math.random() < 0.85) sand.push(randomPatch(walls));
+  if (index >= 3) water.push(randomPatch(walls));
+
+  const movingObstacles = [];
+  if (index === HOLE_COUNT - 1) {
+    for (let i = 0; i < 2; i++) {
+      movingObstacles.push({
+        cx: randRange(70, COURSE_W - 70),
+        cy: randRange(40, COURSE_H - 40),
+        r: 11,
+        axis: Math.random() < 0.5 ? 'x' : 'y',
+        range: 18,
+        speed: 0.002 + Math.random() * 0.0007,
+      });
+    }
+  }
+
+  return { w: COURSE_W, h: COURSE_H, start, hole, walls, sand, water, movingObstacles };
+}
 
 /* ---------- 状態 ---------- */
 let canvas = null, ctx = null;
 let course = null;
+let currentHoles = [];   // このプレイで生成された5ホール分のコースデータ
 let currentHoleIndex = 0;
 let holeStrokes = 0;
 let ball = { x: 0, y: 0, vx: 0, vy: 0 };
@@ -506,7 +522,7 @@ function setupCanvasSize() {
 }
 
 function loadHole(index) {
-  course = HOLES[index];
+  course = currentHoles[index];
   ball = { x: course.start.x, y: course.start.y, vx: 0, vy: 0 };
   ballMoving = false;
   sunk = false;
@@ -523,7 +539,7 @@ function loadHole(index) {
 }
 
 function updateBadges() {
-  if (elHoleNum) elHoleNum.textContent = `${currentHoleIndex + 1} / ${HOLES.length}`;
+  if (elHoleNum) elHoleNum.textContent = `${currentHoleIndex + 1} / ${HOLE_COUNT}`;
   if (elStrokeNum) elStrokeNum.textContent = holeStrokes;
 }
 
@@ -539,7 +555,7 @@ function sinkBall() {
   shell.toast(`ホール${currentHoleIndex + 1} クリア！ ${holeStrokes}打`);
   setTimeout(() => {
     currentHoleIndex++;
-    if (currentHoleIndex >= HOLES.length) {
+    if (currentHoleIndex >= HOLE_COUNT) {
       finishGame();
     } else {
       loadHole(currentHoleIndex);
@@ -552,7 +568,7 @@ function finishGame() {
   [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((f, i) =>
     setTimeout(() => shell.playTone(f, 0.15, 'triangle'), i * 100)
   );
-  shell.end(`全${HOLES.length}ホール終了！合計 ${total}打でまわりきりました⛳`);
+  shell.end(`全${HOLE_COUNT}ホール終了！合計 ${total}打でまわりきりました⛳`);
 }
 
 /* ---------- DOM構築 ---------- */
@@ -560,7 +576,7 @@ function buildDom() {
   shell.board.className = 's-board golf-board';
   shell.board.innerHTML = `
     <div class="golf-toolbar">
-      <span class="golf-badge">⛳ <b id="golfHoleNum">1 / ${HOLES.length}</b></span>
+      <span class="golf-badge">⛳ <b id="golfHoleNum">1 / ${HOLE_COUNT}</b></span>
       <span class="golf-badge">打数 <b id="golfStrokeNum">0</b></span>
     </div>
     <div class="golf-canvas-wrap">
@@ -578,6 +594,7 @@ function buildDom() {
   canvas.addEventListener('pointerup', onPointerUp);
   canvas.addEventListener('pointercancel', onPointerUp);
 
+  currentHoles = Array.from({ length: HOLE_COUNT }, (_, i) => generateHole(i));
   currentHoleIndex = 0;
   loadHole(0);
   ensureLoop();
