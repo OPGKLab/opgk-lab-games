@@ -16,6 +16,18 @@
   --hint-border: #4f7fe0;
 }
 
+/* スタート前のプレースホルダー（じゃぐちパズルと同じ体裁） */
+.slide-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  color: #5c7268;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 10px;
+}
+
 /* ツールバー（手数表示＋ヒントボタン） */
 .slide-toolbar {
   display: flex;

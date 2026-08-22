@@ -204,6 +204,11 @@ function greedyFallback(b, n) {
 }
 
 /* ---------- 描画 ---------- */
+function showPlaceholder() {
+  shell.board.className = 's-board';
+  shell.board.innerHTML = '<div class="slide-placeholder">「スタート」を押すとパズルが始まります</div>';
+}
+
 function buildGrid() {
   shell.board.classList.add('slide-board');
   shell.board.innerHTML = `
@@ -283,7 +288,7 @@ function setupPuzzle(shuffle) {
   updateGrid();
 }
 
-setupPuzzle(false); // 初期表示は完成形のプレビュー
+showPlaceholder(); // 初期表示はプレースホルダー（他ゲームと同じ挙動）
 
 shell.onStart(() => {
   setupPuzzle(true);
@@ -292,10 +297,10 @@ shell.onStart(() => {
 
 shell.onReset(() => {
   clearTimeout(hintTimeoutId);
-  setupPuzzle(false);
+  showPlaceholder();
 });
 
 shell.onHardModeChange((hard) => {
   size = hard ? SIZE_HARD : SIZE_NORMAL;
-  setupPuzzle(false);
+  showPlaceholder();
 });
