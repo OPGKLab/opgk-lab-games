@@ -1,0 +1,155 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #f7e9e4;
+  --board: #fbeee9;
+  --accent: #a83246;
+  --hard: #6b1b2c;
+  --text: #3a2224;
+  --popup-good: #a83246;
+  --popup-bad: #55606b;
+  --popup-bonus: #e0a52c;
+}
+
+.daruma-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.daruma-placeholder {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7a5a5e;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.daruma-stage-label { font-size: 13px; font-weight: bold; color: var(--accent); }
+.daruma-lives { font-size: 18px; letter-spacing: 4px; }
+
+.daruma-stack {
+  position: relative;
+  width: 120px;
+  height: 220px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-start;
+}
+.daruma-stack.shake { animation: darumaShake 0.3s ease; }
+@keyframes darumaShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* だるまの積み段：テトリスの盤面と同じ手法（斜めストライプ＋木目グラデーション）で質感を統一 */
+.daruma-disc {
+  width: 100px;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(100deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 2px, transparent 2px, transparent 9px),
+    linear-gradient(160deg, #f5deb3, #deb887);
+  box-shadow: inset 0 2px 4px rgba(139,101,54,0.25), inset 0 -3px 0 rgba(0,0,0,0.12);
+  margin-top: 4px;
+}
+.daruma-disc.alt {
+  background:
+    repeating-linear-gradient(100deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 2px, transparent 2px, transparent 9px),
+    linear-gradient(160deg, #deb887, #b8875b);
+}
+
+/* 頭部：丸い囲みは廃止し、マトリョーシカ単体を影で置く形に */
+.daruma-head {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 68px;
+  line-height: 1;
+  margin-top: 2px;
+  filter: drop-shadow(0 4px 3px rgba(58, 34, 36, 0.3));
+  transform-origin: bottom center;
+}
+/* ゲームオーバー：マトリョーシカが横に倒れる */
+.daruma-head.daruma-topple {
+  animation: darumaTopple 0.6s ease forwards;
+}
+@keyframes darumaTopple {
+  0% { transform: rotate(0deg) translateY(0); }
+  60% { transform: rotate(75deg) translateY(6px); }
+  100% { transform: rotate(90deg) translateY(10px); }
+}
+
+.daruma-track {
+  position: relative;
+  width: 260px;
+  height: 34px;
+  background: #fff;
+  border-radius: 17px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+.daruma-zone {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: rgba(168, 50, 70, 0.28);
+}
+.daruma-marker {
+  position: absolute;
+  top: -1px;
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25));
+}
+
+.daruma-strike-btn {
+  background: var(--accent);
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 14px 40px;
+  border-radius: 24px;
+  border: none;
+}
+.daruma-strike-btn:active { filter: brightness(0.92); }
+
+/* 全ステージクリア演出（シリーズ共通パターン：盤面のっとり型＋絵文字紙吹雪） */
+.daruma-allclear {
+  position: relative;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+}
+.daruma-allclear-title { font-size: 20px; font-weight: bold; color: var(--accent); }
+.daruma-allclear-sub { font-size: 14px; color: var(--text); }
+
+.daruma-confetti {
+  position: absolute;
+  top: -20px;
+  animation-name: darumaConfettiFall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+  pointer-events: none;
+}
+@keyframes darumaConfettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(260px) rotate(360deg); opacity: 0; }
+}
