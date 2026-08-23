@@ -1,7 +1,7 @@
 /* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
 :root {
   --bg: #f7e9e4;
-  --board: #fbeee9;
+  --board: #fff7f2;
   --accent: #a83246;
   --hard: #6b1b2c;
   --text: #3a2224;
@@ -89,6 +89,66 @@
   100% { transform: rotate(90deg) translateY(10px); }
 }
 
+.daruma-stack-wrap { position: relative; }
+
+/* 開始直後：狙う対象（最下段）を示す矢印。イントロ中のみ表示。常に一番下の段の位置に固定 */
+.daruma-target-arrow {
+  position: absolute;
+  left: -26px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 11px solid var(--accent);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+  animation: darumaArrowNudge 0.7s ease-in-out infinite;
+}
+.daruma-target-arrow.show { opacity: 0.75; }
+@keyframes darumaArrowNudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+/* イントロ中：ハンマーを反転させ、これから振り下ろす予備動作を表現 */
+.daruma-marker.daruma-marker-flip { transform: scaleX(-1); }
+
+/* 命中した段：右へ飛んでいって消える */
+.daruma-disc-fly {
+  animation: darumaFly 0.26s ease-in forwards;
+}
+@keyframes darumaFly {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(100px); opacity: 0; }
+}
+
+/* 新しい最下段：ストンと一段落ちるバウンド */
+.daruma-disc-drop {
+  animation: darumaDrop 0.26s ease-out;
+}
+@keyframes darumaDrop {
+  0% { transform: translateY(-14px); }
+  60% { transform: translateY(4px); }
+  100% { transform: translateY(0); }
+}
+
+/* 命中の勢いを表す効果線 */
+.daruma-speedline {
+  position: absolute;
+  left: 50%;
+  width: 34px;
+  height: 3px;
+  background: rgba(184, 135, 91, 0.55);
+  border-radius: 2px;
+  animation: darumaSpeedline 0.35s ease-out forwards;
+  pointer-events: none;
+  z-index: 4;
+}
+@keyframes darumaSpeedline {
+  0% { transform: translateX(0) scaleX(0.4); opacity: 0.9; }
+  100% { transform: translateX(70px) scaleX(1); opacity: 0; }
+}
 .daruma-track {
   position: relative;
   width: 260px;
