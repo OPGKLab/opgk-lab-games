@@ -19,6 +19,39 @@
   .list-title { text-align: center; font-size: 22px; margin: 4px 0 6px; }
   .list-catch { text-align: center; font-size: 13px; color: #6b7a72; margin: 0 0 20px; }
 
+  /* 今月のピックアップ（おすすめ台） */
+  .pickup-block { margin-bottom: 28px; }
+  .pickup-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 19px;
+    font-weight: bold;
+    color: var(--text);
+    margin: 0 0 10px 2px;
+  }
+  .pickup-title::before {
+    content: "";
+    width: 5px; height: 20px;
+    background: #d98c3d;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  /* おすすめ台のカードだけに付けるカテゴリの手がかり（絵文字チップ） */
+  .cat-chip {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 26px; height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    font-size: 13px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
   .category-block { margin-bottom: 24px; scroll-margin-top: 64px; }
   .category-title {
     display: flex;
@@ -122,7 +155,7 @@
   }
   @media (min-width: 1000px) {
     .s-app { max-width: 1180px; }
-    .game-grid { grid-template-columns: repeat(4, 1fr); }
+    .game-grid { grid-template-columns: repeat(3, 286px); justify-content: center; }
   }
 
   .game-card {
@@ -146,18 +179,37 @@
     top: -9px;
     left: -6px;
     transform: rotate(-8deg);
-    background: linear-gradient(135deg, #ff9a76, #ff5f7e); /* ← NEWの色（オレンジ→ピンク） */
     color: #fff;
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: bold;
     letter-spacing: 0.03em;
-    padding: 4px 11px;
+    padding: 5px 12px;
     border-radius: 12px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.18);
   }
-  .card-badge-update {
-    background: linear-gradient(135deg, #6fa8ff, #8f6fe0); /* ← UPDATEの色（青→紫） */
+  /* 🆕 New：新着 */
+  .card-badge-new { background: linear-gradient(135deg, #ff9a76, #ff5f7e); }
+  /* 💡 ピックアップ：意外性・発見感 */
+  .card-badge-pickup { background: linear-gradient(135deg, #c084fc, #f472b6); }
+
+  /* もっと見る（詳細は<details>のネイティブ機能、JS不要） */
+  .game-more { margin-top: 12px; }
+  .game-more summary {
+    list-style: none;
+    cursor: pointer;
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--accent);
+    padding: 9px;
+    user-select: none;
   }
+  .game-more summary::-webkit-details-marker,
+  .game-more summary::marker { display: none; }
+  .game-more .more-open { display: none; }
+  .game-more[open] .more-open { display: inline; }
+  .game-more[open] .more-closed { display: none; }
+  .game-more .game-grid { margin-top: 12px; }
 
   .game-card .icon-circle {
     width: 56px; height: 56px;
@@ -200,63 +252,43 @@
       <a class="s-catnav-pill" href="#cat-kurashi">🧸 くらし・まったり</a>
     </nav>
 
-    <div class="category-block" id="cat-atama">
-      <div class="category-title">🧠 あたまを使う<span class="count">(11)</span></div>
+    
+
+    <div class="pickup-block">
+      <div class="pickup-title">🌿 今月のピックアップ</div>
       <div class="game-grid">
-        <a class="game-card" style="--card-accent:#4f7fe0" href="./games/001_slide-puzzle/index.html" data-no="001">
-          <span class="icon-circle">🔀</span>
-          <span class="label">スライドパズル</span>
-          <span class="desc">数字をずらして、順番通りに並べましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#b84a39" href="./games/003_mine-sweeper/index.html" data-no="002">
-          <span class="icon-circle">💣</span>
-          <span class="label">マインスイーパー</span>
-          <span class="desc">地雷のないマスをすべて開けましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#2f8fd1" href="./games/002_juguchi-puzzle/index.html" data-no="003">
-          <span class="icon-circle">🚰</span>
-          <span class="label">じゃぐちパズル</span>
-          <span class="desc">パイプを回して、水の道をつなげましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#b84a39" href="./games/004_shinkei-suijaku/index.html" data-no="004">
-          <span class="icon-circle">🐾</span>
-          <span class="label">どうぶつ神経衰弱</span>
-          <span class="desc">絵柄を覚えて、ペアを探しましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#7c6fe0" href="./games/005_hit-and-blow/index.html" data-no="005">
-          <span class="icon-circle">🔢</span>
-          <span class="label">ヒット&ブロー</span>
-          <span class="desc">数字の位置とヒントから正解を推理しましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#2f8f5b" href="./games/006_reversi/index.html" data-no="006">
-          <span class="icon-circle">⚫</span>
-          <span class="label">リバーシ</span>
-          <span class="desc">相手より多く自分の色の石を並べましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
         <a class="game-card" style="--card-accent:#c9a227" href="./games/007_ball-tsunagi/index.html" data-no="007">
-          <span class="card-badge card-badge-update">👑 イチ押し</span>
+          <span class="cat-chip">🧠</span>
           <span class="icon-circle">🏀</span>
           <span class="label">ボールつなぎ</span>
           <span class="desc">全てのマスを使ってボール同士をつなぎましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#3d5a80" href="./games/008_awasete10-puzzle/index.html" data-no="008">
-          <span class="icon-circle">🔟</span>
-          <span class="label">あわせて10</span>
-          <span class="desc">合計が10になるようつなげて消しましょう</span>
+        <a class="game-card" style="--card-accent:#d9822b" href="./games/109_tsumitsumi-tower/index.html" data-no="109">
+          <span class="cat-chip">⚡</span>
+          <span class="icon-circle">🧱</span>
+          <span class="label">つみつみタワー</span>
+          <span class="desc">同じ場所を狙って、ブロックを積み上げましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#4fb8e0" href="./games/009_kuruma-dasshutsu/index.html" data-no="009">
-          <span class="card-badge card-badge-update">👑 イチ押し</span>
-          <span class="icon-circle">🚗</span>
-          <span class="label">くるま脱出</span>
-          <span class="desc">ターゲットの車を出口まで動かしましょう</span>
+        <a class="game-card" style="--card-accent:#8a8f3a" href="./games/207_kyou-no-mame-chishiki/index.html" data-no="207">
+          <span class="cat-chip">🧸</span>
+          <span class="icon-circle">📅</span>
+          <span class="label">きょうの豆知識</span>
+          <span class="desc">その日の豆知識クイズに挑戦しましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+      </div>
+    </div>
+
+
+    <div class="category-block" id="cat-atama">
+      <div class="category-title">🧠 あたまを使う<span class="count">(11)</span></div>
+      <div class="game-grid">
+        <a class="game-card" style="--card-accent:#6d6ba0" href="./games/011_kimari-mitsuketa/index.html" data-no="011">
+          <span class="icon-circle">🕵️</span>
+          <span class="label">法則さがし</span>
+          <span class="desc">数字や絵文字の並びから、きまりを見つけましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
         <a class="game-card" style="--card-accent:#2f6b4a" href="./games/010_mayoi-michi/index.html" data-no="010">
@@ -265,58 +297,87 @@
           <span class="desc">なかまを探して、みんなで森へ帰りましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#6d6ba0" href="./games/011_kimari-mitsuketa/index.html" data-no="011">
-          <span class="icon-circle">🕵️</span>
-          <span class="label">法則さがし</span>
-          <span class="desc">数字や絵文字の並びから、きまりを見つけましょう</span>
+        <a class="game-card" style="--card-accent:#4fb8e0" href="./games/009_kuruma-dasshutsu/index.html" data-no="009">
+          <span class="card-badge card-badge-pickup">💡 イチ押し</span>
+          <span class="icon-circle">🚗</span>
+          <span class="label">くるま脱出</span>
+          <span class="desc">ターゲットの車を出口まで動かしましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#3d5a80" href="./games/008_awasete10-puzzle/index.html" data-no="008">
+          <span class="icon-circle">🔟</span>
+          <span class="label">あわせて10</span>
+          <span class="desc">合計が10になるようつなげて消しましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#c9a227" href="./games/007_ball-tsunagi/index.html" data-no="007">
+          <span class="icon-circle">🏀</span>
+          <span class="label">ボールつなぎ</span>
+          <span class="desc">全てのマスを使ってボール同士をつなぎましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#2f8f5b" href="./games/006_reversi/index.html" data-no="006">
+          <span class="icon-circle">⚫</span>
+          <span class="label">リバーシ</span>
+          <span class="desc">相手より多く自分の色の石を並べましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
       </div>
+      <details class="game-more">
+        <summary>
+          <span class="more-closed">▾ もっと見る</span>
+          <span class="more-open">▴ 閉じる</span>
+        </summary>
+        <div class="game-grid">
+        <a class="game-card" style="--card-accent:#7c6fe0" href="./games/005_hit-and-blow/index.html" data-no="005">
+          <span class="icon-circle">🔢</span>
+          <span class="label">ヒット&ブロー</span>
+          <span class="desc">数字の位置とヒントから正解を推理しましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#b84a39" href="./games/004_shinkei-suijaku/index.html" data-no="004">
+          <span class="icon-circle">🐾</span>
+          <span class="label">どうぶつ神経衰弱</span>
+          <span class="desc">絵柄を覚えて、ペアを探しましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#2f8fd1" href="./games/002_juguchi-puzzle/index.html" data-no="003">
+          <span class="icon-circle">🚰</span>
+          <span class="label">じゃぐちパズル</span>
+          <span class="desc">パイプを回して、水の道をつなげましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#b84a39" href="./games/003_mine-sweeper/index.html" data-no="002">
+          <span class="icon-circle">💣</span>
+          <span class="label">マインスイーパー</span>
+          <span class="desc">地雷のないマスをすべて開けましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#4f7fe0" href="./games/001_slide-puzzle/index.html" data-no="001">
+          <span class="icon-circle">🔀</span>
+          <span class="label">スライドパズル</span>
+          <span class="desc">数字をずらして、順番通りに並べましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        </div>
+      </details>
     </div>
 
     <div class="category-block" id="cat-tossa">
       <div class="category-title">⚡ とっさに反応<span class="count">(10)</span></div>
       <div class="game-grid">
-        <a class="game-card" style="--card-accent:#a9713f" href="./games/101_kuma-tataki/index.html" data-no="101">
-          <span class="icon-circle">🐻</span>
-          <span class="label">くまさんぽこぽこ</span>
-          <span class="desc">くまをタップ、ぱんだは避けましょう</span>
+        <a class="game-card" style="--card-accent:#a83246" href="./games/110_daruma-otoshi/index.html" data-no="110">
+          <span class="card-badge card-badge-new">🆕 New</span>
+          <span class="icon-circle">🪆</span>
+          <span class="label">だるまさん落とし</span>
+          <span class="desc">タイミングよく、一段ずつ抜き飛ばしましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#e8a23c" href="./games/102_sakusaku-judge/index.html" data-no="102">
-          <span class="icon-circle">👀</span>
-          <span class="label">さくさくジャッジ</span>
-          <span class="desc">正しいものをすばやく見分けましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#12b886" href="./games/103_hebi-sui-sui/index.html" data-no="103">
-          <span class="icon-circle">🐍</span>
-          <span class="label">へびすいすい</span>
-          <span class="desc">たくさんネズミを捕まえて長くなりましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#1f7a8c" href="./games/104_umi-soroe/index.html" data-no="104">
-          <span class="icon-circle">🐳</span>
-          <span class="label">うみそろえ</span>
-          <span class="desc">指でなぞって、同じ仲間を3つ並べましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#7a4a2e" href="./games/105_tetris/index.html" data-no="105">
-          <span class="icon-circle">🧩</span>
-          <span class="label">落ちものパズル</span>
-          <span class="desc">ブロックを動かして横一列そろえて消しましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#b8a3d9" href="./games/106_puru-connect/index.html" data-no="106">
-          <span class="icon-circle">🫧</span>
-          <span class="label">ぷるぷるコネクト</span>
-          <span class="desc">同じ色を4つ以上つなげて消しましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#ff8fab" href="./games/107_hamu-cheese/index.html" data-no="107">
-          <span class="icon-circle">🧀</span>
-          <span class="label">はむはむチーズ</span>
-          <span class="desc">ハムスターを飛ばして、チーズを集めましょう</span>
+        <a class="game-card" style="--card-accent:#d9822b" href="./games/109_tsumitsumi-tower/index.html" data-no="109">
+          <span class="card-badge card-badge-pickup">💡 イチ押し</span>
+          <span class="icon-circle">🧱</span>
+          <span class="label">つみつみタワー</span>
+          <span class="desc">同じ場所を狙って、ブロックを積み上げましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
         <a class="game-card" style="--card-accent:#2f6b4a" href="./games/108_makiba-dash/index.html" data-no="108">
@@ -325,54 +386,67 @@
           <span class="desc">障害物を飛び越えてゴールを目指しましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#d9822b" href="./games/109_tsumitsumi-tower/index.html" data-no="109">
-          <span class="card-badge card-badge-update">👑 イチ押し</span>
-          <span class="icon-circle">🧱</span>
-          <span class="label">つみつみタワー</span>
-          <span class="desc">同じ場所を狙って、ブロックを積み上げましょう</span>
+        <a class="game-card" style="--card-accent:#ff8fab" href="./games/107_hamu-cheese/index.html" data-no="107">
+          <span class="icon-circle">🧀</span>
+          <span class="label">はむはむチーズ</span>
+          <span class="desc">ハムスターを飛ばして、チーズを集めましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#a83246" href="./games/110_daruma-otoshi/index.html" data-no="110">
-          <span class="card-badge">✨ NEW</span>
-          <span class="icon-circle">🪆</span>
-          <span class="label">だるまさん落とし</span>
-          <span class="desc">タイミングよく、一段ずつ抜き飛ばしましょう</span>
+        <a class="game-card" style="--card-accent:#b8a3d9" href="./games/106_puru-connect/index.html" data-no="106">
+          <span class="icon-circle">🫧</span>
+          <span class="label">ぷるぷるコネクト</span>
+          <span class="desc">同じ色を4つ以上つなげて消しましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#7a4a2e" href="./games/105_tetris/index.html" data-no="105">
+          <span class="icon-circle">🧩</span>
+          <span class="label">落ちものパズル</span>
+          <span class="desc">ブロックを動かして横一列そろえて消しましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
       </div>
+      <details class="game-more">
+        <summary>
+          <span class="more-closed">▾ もっと見る</span>
+          <span class="more-open">▴ 閉じる</span>
+        </summary>
+        <div class="game-grid">
+        <a class="game-card" style="--card-accent:#1f7a8c" href="./games/104_umi-soroe/index.html" data-no="104">
+          <span class="icon-circle">🐳</span>
+          <span class="label">うみそろえ</span>
+          <span class="desc">指でなぞって、同じ仲間を3つ並べましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#12b886" href="./games/103_hebi-sui-sui/index.html" data-no="103">
+          <span class="icon-circle">🐍</span>
+          <span class="label">へびすいすい</span>
+          <span class="desc">たくさんネズミを捕まえて長くなりましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#e8a23c" href="./games/102_sakusaku-judge/index.html" data-no="102">
+          <span class="icon-circle">👀</span>
+          <span class="label">さくさくジャッジ</span>
+          <span class="desc">正しいものをすばやく見分けましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#a9713f" href="./games/101_kuma-tataki/index.html" data-no="101">
+          <span class="icon-circle">🐻</span>
+          <span class="label">くまさんぽこぽこ</span>
+          <span class="desc">くまをタップ、ぱんだは避けましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        </div>
+      </details>
     </div>
 
     <div class="category-block" id="cat-kurashi">
       <div class="category-title">🧸 くらし・まったり<span class="count">(7)</span></div>
       <div class="game-grid">
-        <a class="game-card" style="--card-accent:#e8a23c" href="./games/201_tamago-yukue/index.html" data-no="201">
-          <span class="icon-circle">🐣</span>
-          <span class="label">たまごのゆくえ</span>
-          <span class="desc">同じ卵を合体させて進化させましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#93b23f" href="./games/202_osanpo-biyori/index.html" data-no="202">
-          <span class="icon-circle">🐕‍🦺</span>
-          <span class="label">おさんぽ日和</span>
-          <span class="desc">いろんな出会いを見つけましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#5c7a52" href="./games/204_ocha-jikan/index.html" data-no="204">
-          <span class="icon-circle">🍵</span>
-          <span class="label">お茶のじかん</span>
-          <span class="desc">違うところを見つけましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#5b2c6f" href="./games/203_hyakunin-isshu/index.html" data-no="203">
-          <span class="icon-circle">⛩️</span>
-          <span class="label">百人一首</span>
-          <span class="desc">上の句に続く「下の句」を選びましょう</span>
-          <span class="play-btn">あそぶ</span>
-        </a>
-        <a class="game-card" style="--card-accent:#d9784f" href="./games/205_kotoba-no-tabi/index.html" data-no="205">
-          <span class="icon-circle">🌍</span>
-          <span class="label">ことばの旅</span>
-          <span class="desc">旅で使う日常会話を4か国語で学びましょう</span>
+        <a class="game-card" style="--card-accent:#8a8f3a" href="./games/207_kyou-no-mame-chishiki/index.html" data-no="207">
+          <span class="card-badge card-badge-new">🆕 New</span>
+          <span class="icon-circle">📅</span>
+          <span class="label">きょうの豆知識</span>
+          <span class="desc">その日の豆知識クイズに挑戦しましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
         <a class="game-card" style="--card-accent:#14966b" href="./games/206_yuruyuru-golf/index.html" data-no="206">
@@ -381,14 +455,48 @@
           <span class="desc">ねらって打って、ホールに沈めましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
-        <a class="game-card" style="--card-accent:#8a8f3a" href="./games/207_kyou-no-mame-chishiki/index.html" data-no="207">
-          <span class="icon-circle">📅</span>
-          <span class="label">きょうの豆知識</span>
-          <span class="desc">その日の豆知識クイズに挑戦しましょう</span>
+        <a class="game-card" style="--card-accent:#d9784f" href="./games/205_kotoba-no-tabi/index.html" data-no="205">
+          <span class="icon-circle">🌍</span>
+          <span class="label">ことばの旅</span>
+          <span class="desc">旅で使う日常会話を4か国語で学びましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#5b2c6f" href="./games/203_hyakunin-isshu/index.html" data-no="203">
+          <span class="icon-circle">⛩️</span>
+          <span class="label">百人一首</span>
+          <span class="desc">上の句に続く「下の句」を選びましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#5c7a52" href="./games/204_ocha-jikan/index.html" data-no="204">
+          <span class="icon-circle">🍵</span>
+          <span class="label">お茶のじかん</span>
+          <span class="desc">違うところを見つけましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        <a class="game-card" style="--card-accent:#93b23f" href="./games/202_osanpo-biyori/index.html" data-no="202">
+          <span class="icon-circle">🐕‍🦺</span>
+          <span class="label">おさんぽ日和</span>
+          <span class="desc">いろんな出会いを見つけましょう</span>
           <span class="play-btn">あそぶ</span>
         </a>
       </div>
+      <details class="game-more">
+        <summary>
+          <span class="more-closed">▾ もっと見る</span>
+          <span class="more-open">▴ 閉じる</span>
+        </summary>
+        <div class="game-grid">
+        <a class="game-card" style="--card-accent:#e8a23c" href="./games/201_tamago-yukue/index.html" data-no="201">
+          <span class="card-badge card-badge-pickup">💡 イチ押し</span>
+          <span class="icon-circle">🐣</span>
+          <span class="label">たまごのゆくえ</span>
+          <span class="desc">同じ卵を合体させて進化させましょう</span>
+          <span class="play-btn">あそぶ</span>
+        </a>
+        </div>
+      </details>
     </div>
+
 
     <!-- 新作を追加したら、上のカードと同じ形で1つ追記するだけでOK（--card-accentで色を指定） -->
 
