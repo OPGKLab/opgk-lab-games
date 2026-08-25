@@ -20,9 +20,18 @@ const RESERVED = VIEW_H - CRANE_AREA; // カメラスクロール前に見える
 const BLOCK_H = 20;
 
 const NORMAL_START_W = 80;
-const HARD_START_W = 56;
+const HARD_START_W = 115; // 激むず＝幅広スタート（集中力の長期戦モード）
 const CRANE_CENTER = VIEW_W / 2;
 const CRANE_AMP = 80; // クレーンの振れ幅（左右のみ）
+
+// 激むずは序盤やさしく、通常レンジ＋「高速レンジを引く確率」が段を重ねるごとに上がる
+const NORMAL_SPEED_RANGE = [1.0, 1.9];
+const HARD_SPEED_BASE = [0.8, 1.5];
+const HARD_SPEED_FAST = [1.6, 2.6];
+const HARD_FAST_CHANCE_STEP = 0.08;
+const HARD_FAST_CHANCE_MAX = 0.6;
+let hardRampStep = 0;
+let hardFastChance = 0;
 
 const MILESTONE_INTERVAL = 15;
 // テーマ柄セット：見た目だけの節目演出。増やす場合はここにクラス名を追記するだけでOK。
@@ -34,7 +43,6 @@ let craneWidth = NORMAL_START_W;
 let craneSpeed = 1.3;
 let craneTargetSpeed = 1.3;
 let cranePhase = 0;
-let speedRange = [1.0, 1.9];
 let lastSpeedChange = 0;
 let lastTs = 0;
 let craneRaf = null;
@@ -67,8 +75,9 @@ function buildBoardDom() {
 function startGame() {
   stack = [];
   craneWidth = shell.hardMode ? HARD_START_W : NORMAL_START_W;
-  speedRange = shell.hardMode ? [1.7, 3.0] : [1.0, 1.9];
-  craneSpeed = craneTargetSpeed = randRange(speedRange);
+  hardRampStep = 0;
+  hardFastChance = 0;
+  craneSpeed = craneTargetSpeed = shell.hardMode ? randRange(HARD_SPEED_BASE) : randRange(NORMAL_SPEED_RANGE);
   cranePhase = 0;
   lastSpeedChange = 0;
 
@@ -107,7 +116,11 @@ function craneLoop(ts) {
   lastTs = ts;
   lastSpeedChange += dt;
   if (lastSpeedChange > 0.9 + Math.random() * 0.8) {
-    craneTargetSpeed = randRange(speedRange);
+    if (shell.hardMode) {
+      craneTargetSpeed = Math.random() < hardFastChance ? randRange(HARD_SPEED_FAST) : randRange(HARD_SPEED_BASE);
+    } else {
+      craneTargetSpeed = randRange(NORMAL_SPEED_RANGE);
+    }
     lastSpeedChange = 0;
   }
   craneSpeed += (craneTargetSpeed - craneSpeed) * Math.min(1, dt * 1.5);
@@ -183,6 +196,10 @@ function resolveDrop(x, w, topBlock) {
   if (placedCount > 0 && placedCount % MILESTONE_INTERVAL === 0) {
     shell.toast(`✨ ${placedCount}段達成！見た目がチェンジしました`);
     shell.playTone(880, 0.14, 'triangle');
+    if (shell.hardMode) {
+      hardRampStep++;
+      hardFastChance = Math.min(HARD_FAST_CHANCE_STEP * hardRampStep, HARD_FAST_CHANCE_MAX);
+    }
   }
 
   craneWidth = overlapW; // 次のブロックは今の重なり幅を引き継ぐ
