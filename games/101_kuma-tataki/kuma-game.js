@@ -26,18 +26,31 @@ const HARD_MODE   = { spawnIntervalMin: 500, spawnIntervalMax: 750,  showDuratio
 let holes = [];
 let spawnTimer = null;
 
-function buildBoard() {
-  shell.board.classList.add('kuma-board');
-  shell.board.innerHTML = `
+function ruleBarHTML() {
+  return `
     <div class="kuma-rule">
       <span class="kuma-rule-item kuma-rule-good">🐻 +10</span>
       <span class="kuma-rule-item kuma-rule-bonus">🐻‍❄️ 2倍✨</span>
       <span class="kuma-rule-item kuma-rule-bad">🐼 -10 よけて！</span>
     </div>
+  `;
+}
+
+function showPlaceholder() {
+  holes = [];
+  shell.board.innerHTML = `
+    ${ruleBarHTML()}
+    <div class="kuma-placeholder">「スタート」を押すとゲームが始まります</div>
+  `;
+}
+
+function buildBoard() {
+  holes = [];
+  shell.board.innerHTML = `
+    ${ruleBarHTML()}
     <div class="kuma-holes" id="kumaHoles"></div>
   `;
   const holesWrap = shell.board.querySelector('#kumaHoles');
-  holes = [];
   for (let i = 0; i < HOLE_COUNT; i++) {
     const hole = document.createElement('button');
     hole.className = 'kuma-hole';
@@ -47,7 +60,8 @@ function buildBoard() {
     holes.push({ el: hole, char: null, timeoutId: null });
   }
 }
-buildBoard();
+
+showPlaceholder();
 
 function pickChar() {
   const totalWeight = CHARACTERS.reduce((s, c) => s + c.weight, 0);
@@ -106,11 +120,12 @@ function whack(index) {
 
 /* ---- GameShellのライフサイクルに接続 ---- */
 shell.onStart(() => {
+  buildBoard();
   spawnLoop();
 });
 shell.onReset(() => {
   clearTimeout(spawnTimer);
-  holes.forEach(hideChar);
+  showPlaceholder();
 });
 shell.onTimeUp(() => {
   clearTimeout(spawnTimer);

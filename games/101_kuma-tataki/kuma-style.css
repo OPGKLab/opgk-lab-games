@@ -34,6 +34,17 @@
 .kuma-rule-bad { color: var(--popup-bad); }
 .kuma-rule-bonus { color: var(--popup-bonus); }
 
+.kuma-placeholder {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c7268;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 10px;
+}
+
 .kuma-holes {
   --cols: 3;
   display: grid;
