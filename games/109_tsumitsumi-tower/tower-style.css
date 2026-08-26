@@ -32,7 +32,7 @@
   background: var(--board);
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
 }
-.tower-viewport.tower-miss { animation: towerShake 0.3s ease; }
+.tower-board.tower-miss { animation: towerShake 0.26s ease; }
 @keyframes towerShake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-6px); }
@@ -111,3 +111,53 @@
   cursor: pointer;
 }
 .tower-drop-btn:disabled { opacity: 0.5; }
+
+/* ---- ふりかえり画面（ゲームオーバー後、台座〜失敗地点をスクロールで見返す） ---- */
+.tower-review-score {
+  text-align: center;
+  font-weight: bold;
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.tower-review-viewport {
+  position: relative;
+  margin: 0 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  background: var(--board);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+.tower-review-track { position: relative; }
+.tower-review-track::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(0,0,0,0.15);
+}
+/* 失敗したブロック：ズレた位置そのままに赤い破線で表示 */
+.tower-block-fail {
+  background: rgba(226, 87, 76, 0.28);
+  border: 2px dashed var(--hard);
+  box-shadow: none;
+}
+.tower-review-toolbar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.tower-review-toolbar button {
+  font-size: 13px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12);
+  cursor: pointer;
+}

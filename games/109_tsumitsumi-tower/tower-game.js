@@ -47,6 +47,7 @@ let lastSpeedChange = 0;
 let lastTs = 0;
 let craneRaf = null;
 let canDrop = false;
+let gameOverTimer = null;
 
 function randRange([a, b]) { return a + Math.random() * (b - a); }
 function trackOffset(heightPx) { return Math.max(0, heightPx - RESERVED); }
@@ -183,7 +184,7 @@ function resolveDrop(x, w, topBlock) {
   const overlapW = overlapRight - overlapLeft;
 
   if (overlapW <= 1) {
-    gameOver();
+    gameOver(x, w);
     return;
   }
 
@@ -206,13 +207,49 @@ function resolveDrop(x, w, topBlock) {
   spawnCraneBlock();
 }
 
-function gameOver() {
+function gameOver(failX, failW) {
   if (craneRaf) cancelAnimationFrame(craneRaf);
-  const viewport = document.getElementById('towerViewport');
-  if (viewport) viewport.classList.add('tower-miss');
   shell.playTone(200, 0.3, 'sawtooth');
   const placedCount = stack.length - 1;
+
+  shell.board.classList.add('tower-miss');
+  gameOverTimer = setTimeout(() => {
+    shell.board.classList.remove('tower-miss');
+    buildReviewDom(failX, failW, placedCount);
+    gameOverTimer = null;
+  }, 260);
+
   shell.end(`ゲームオーバー！ ${placedCount}段まで積めました`);
+}
+
+/* 台座〜失敗地点までスクロールで見返せる、ふりかえり画面を組み立てる */
+function buildReviewDom(failX, failW, placedCount) {
+  const trackH = (stack.length + 1) * BLOCK_H; // 成功ブロック＋失敗ブロック分
+
+  const blocksHtml = stack.map((b, i) => (
+    `<div class="tower-block theme-${themeAt(i)}" style="left:${b.x - b.w / 2}px;width:${b.w}px;bottom:${i * BLOCK_H}px;height:${BLOCK_H}px;"></div>`
+  )).join('');
+  const failHtml = `<div class="tower-block tower-block-fail" style="left:${failX - failW / 2}px;width:${failW}px;bottom:${stack.length * BLOCK_H}px;height:${BLOCK_H}px;"></div>`;
+
+  shell.board.className = 's-board tower-board';
+  shell.board.innerHTML = `
+    <div class="tower-review-score">🏆 ${placedCount}段まで積みました</div>
+    <div class="tower-review-viewport" id="towerReviewViewport" style="width:${VIEW_W}px;height:${VIEW_H}px;">
+      <div class="tower-review-track" id="towerReviewTrack" style="height:${trackH}px;">
+        ${blocksHtml}
+        ${failHtml}
+      </div>
+    </div>
+    <div class="tower-review-toolbar">
+      <button type="button" id="towerReviewTop">⬆ 失敗地点</button>
+      <button type="button" id="towerReviewBottom">⬇ 台座</button>
+    </div>
+  `;
+
+  const vp = document.getElementById('towerReviewViewport');
+  vp.scrollTop = 0; // 最初から失敗地点（一番上）が見える状態にする
+  document.getElementById('towerReviewTop').addEventListener('click', () => { vp.scrollTop = 0; });
+  document.getElementById('towerReviewBottom').addEventListener('click', () => { vp.scrollTop = vp.scrollHeight; });
 }
 
 /* ---- GameShellのライフサイクルに接続 ---- */
@@ -221,5 +258,6 @@ shell.onStart(() => {
 });
 shell.onReset(() => {
   if (craneRaf) cancelAnimationFrame(craneRaf);
+  if (gameOverTimer) { clearTimeout(gameOverTimer); gameOverTimer = null; }
   showPlaceholder();
 });
