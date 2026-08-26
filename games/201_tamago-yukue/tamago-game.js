@@ -27,8 +27,16 @@ const MAX_STAGE = STAGES.length - 1;
 /* ---------- 難易度別サイズ ---------- */
 const NORMAL_SIZE = { w: 320, h: 420, lineY: 78 };
 const HARD_SIZE = { w: 260, h: 420, lineY: 78 };
-const NEXT_WEIGHTS_NORMAL = [5, 3, 1];
-const NEXT_WEIGHTS_HARD = [3, 3, 2];
+
+/* ---------- 出現する卵の重み（動的難易度） ----------
+   直接落とせるのは 🥚🐣🐔🦃（stage 0〜3）まで。
+   スコア0の時点ではSPAWN_START_WEIGHTS、スコアがSCORE_RAMP_FULLに達すると
+   SPAWN_END_WEIGHTSまで直線的に重みがシフトする（＝大きい卵の比率が徐々に増える）。
+   激むずは同じスコアでも少し早めに難化するよう、進行度にHARD_PROGRESS_BONUSを上乗せする。 */
+const SPAWN_START_WEIGHTS = [6, 3, 1, 0]; // 序盤：ほぼ🥚🐣
+const SPAWN_END_WEIGHTS = [1, 2, 3, 3];   // 終盤：🐔🦃が主体に
+const SCORE_RAMP_FULL = 500;   // このスコアで終盤の重みに到達（要調整）
+const HARD_PROGRESS_BONUS = 0.15;
 
 /* ---------- 物理パラメータ ---------- */
 const GRAVITY = 1500;          // px/s^2
@@ -55,8 +63,16 @@ let gameOverTriggered = false;
 let dragging = false;
 
 /* ---------- ユーティリティ ---------- */
+// 0（序盤）〜1（終盤）の難易度進行度。スコアが伸びるほど1に近づく。
+function difficultyProgress() {
+  const raw = shell.getScore() / SCORE_RAMP_FULL;
+  const bonus = shell.hardMode ? HARD_PROGRESS_BONUS : 0;
+  return Math.min(1, raw + bonus);
+}
+
 function pickNextStage() {
-  const weights = shell.hardMode ? NEXT_WEIGHTS_HARD : NEXT_WEIGHTS_NORMAL;
+  const t = difficultyProgress();
+  const weights = SPAWN_START_WEIGHTS.map((w0, i) => w0 + (SPAWN_END_WEIGHTS[i] - w0) * t);
   const total = weights.reduce((s, w) => s + w, 0);
   let r = Math.random() * total;
   for (let i = 0; i < weights.length; i++) {
