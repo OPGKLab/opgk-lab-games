@@ -86,12 +86,12 @@
 
 .pin {
   position: absolute;
-  width: 12%;
+  width: 16%;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(14px, 4.5vw, 20px);
+  font-size: clamp(18px, 5.5vw, 26px);
   transform: translate(-50%, -50%);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
