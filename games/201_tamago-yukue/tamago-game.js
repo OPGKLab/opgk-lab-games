@@ -14,13 +14,17 @@ const shell = new GameShell({
 
 /* ---------- 進化ステージ定義 ---------- */
 const STAGES = [
-  { emoji: '🥚', r: 18, color: '#f5e6c8' },
-  { emoji: '🐣', r: 24, color: '#fff1b8' },
-  { emoji: '🐔', r: 30, color: '#ffd8a8' },
-  { emoji: '🦃', r: 37, color: '#e8b98a' },
-  { emoji: '🦢', r: 44, color: '#eef3f7' },
-  { emoji: '🦚', r: 50, color: '#bfe3d0' },
-  { emoji: '🍳', r: 55, color: '#fff4d6' },
+  { emoji: '🥚', r: 14, color: '#f5e6c8' },
+  { emoji: '🐣', r: 18, color: '#fff1b8' },
+  { emoji: '🐤', r: 22, color: '#ffe9a8' },
+  { emoji: '🐔', r: 27, color: '#ffd8a8' },
+  { emoji: '🦆', r: 32, color: '#cfe8e0' },
+  { emoji: '🪿', r: 37, color: '#e9e9e2' },
+  { emoji: '🦃', r: 42, color: '#e8b98a' },
+  { emoji: '🦢', r: 47, color: '#eef3f7' },
+  { emoji: '🦩', r: 51, color: '#ffd6e0' },
+  { emoji: '🦚', r: 55, color: '#bfe3d0' },
+  { emoji: '🍳', r: 59, color: '#fff4d6' },
 ];
 const MAX_STAGE = STAGES.length - 1;
 
@@ -29,20 +33,23 @@ const NORMAL_SIZE = { w: 320, h: 420, lineY: 78 };
 const HARD_SIZE = { w: 260, h: 420, lineY: 78 };
 
 /* ---------- 出現する卵の重み（動的難易度） ----------
-   直接落とせるのは 🥚🐣🐔🦃（stage 0〜3）まで。
+   直接落とせるのは 🥚🐣🐤🐔🦆🪿（stage 0〜5）まで。それより先（🦃🦢🦩🦚🍳）は
+   合体でしか出会えない「奥に眠っている」枠として残す。
    スコア0の時点ではSPAWN_START_WEIGHTS、スコアがSCORE_RAMP_FULLに達すると
-   SPAWN_END_WEIGHTSまで直線的に重みがシフトする（＝大きい卵の比率が徐々に増える）。
-   激むずは同じスコアでも少し早めに難化するよう、進行度にHARD_PROGRESS_BONUSを上乗せする。 */
-const SPAWN_START_WEIGHTS = [6, 3, 1, 0]; // 序盤：ほぼ🥚🐣
-const SPAWN_END_WEIGHTS = [1, 2, 3, 3];   // 終盤：🐔🦃が主体に
-const SCORE_RAMP_FULL = 500;   // このスコアで終盤の重みに到達（要調整）
-const HARD_PROGRESS_BONUS = 0.15;
+   SPAWN_END_WEIGHTSまで直線的に重みがシフトする。
+   種類が11に増えたことで、同じ盤面上で1種類あたりの個体数が薄まり、
+   「たまたま同じ種類が隣り合う」確率が下がる（本家すいかゲームの11段階構成を参考に調整）。
+   激むずは同じスコアでも早めに難化するよう、進行度にHARD_PROGRESS_BONUSを上乗せする。 */
+const SPAWN_START_WEIGHTS = [6, 3, 1, 0, 0, 0]; // 序盤：ほぼ🥚🐣
+const SPAWN_END_WEIGHTS = [0, 0, 1, 2, 3, 4];   // 終盤：🦆🪿が主体に
+const SCORE_RAMP_FULL = 200;   // このスコアで終盤の重みに到達（要調整）
+const HARD_PROGRESS_BONUS = 0.25;
 
 /* ---------- 物理パラメータ ---------- */
 const GRAVITY = 1500;          // px/s^2
 const RESTITUTION = 0.22;      // 円同士の反発係数
 const WALL_RESTITUTION = 0.28; // 壁・床の反発係数
-const AIR_DAMPING = 0.999;
+const AIR_DAMPING = 0.95;      // 横方向の減衰（強め）。これが弱いと着地後も横滑りして遠くの同種と勝手に合体してしまう
 const GROUND_FRICTION = 0.96;
 const MERGE_LOCK_MS = 250;     // 生成直後、この間は合体対象外
 const OVER_LINE_LIMIT_MS = 2000; // 赤線超え継続でゲームオーバーになるまでの時間
@@ -282,11 +289,19 @@ function resolveVelocitiesAndMerges() {
   mergeQueue.forEach(({ type, a, b }) => (type === 'evolve' ? doMerge(a, b) : doVanish(a, b)));
 }
 
+// これ未満の縦速度なら「もう落下していない＝着地/支えられている」とみなす
+const REST_VY_SPEED = 20;
+
 // 数値誤差で残るごく小さい速度を完全に0へスナップする（見た目の微振動と誤判定を防ぐ）
 function settleSlowParticles() {
   particles.forEach((p) => {
     if (Math.hypot(p.vx, p.vy) < SETTLE_ZERO_SPEED) {
       p.vx = 0; p.vy = 0;
+    }
+    // 縦方向が止まっている＝着地している卵は、横方向の動きも即座に止める（滑走禁止）。
+    // これがないと、ほぼ無限に横へじわじわ移動して離れた同種を見つけ出してしまう。
+    if (Math.abs(p.vy) < REST_VY_SPEED) {
+      p.vx = 0;
     }
   });
 }
