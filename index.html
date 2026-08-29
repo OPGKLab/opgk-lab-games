@@ -22,10 +22,15 @@
   /* ピックアップ（おすすめ台） */
   .pickup-block {
     margin: 20px 4px 28px;
-    padding: 6px;
-    border: 3px double #d9b46a;
+    padding: 7px;
     border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background:
+      radial-gradient(circle at 22% 28%, rgba(255,255,255,0.35) 0 1.4px, transparent 2px),
+      radial-gradient(circle at 60% 65%, rgba(255,255,255,0.2) 0 1.4px, transparent 2px),
+      radial-gradient(circle at 80% 25%, rgba(0,0,0,0.14) 0 1.4px, transparent 2px),
+      linear-gradient(160deg, #f0dcae, #c99a4a);
+    background-size: 7px 7px, 7px 7px, 7px 7px, 100% 100%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   }
   .pickup-inner {
     background: #fdf8ee;
@@ -260,9 +265,9 @@
     <p class="list-catch">無料・広告なし。むずかしい操作はありません。すきま時間にどうぞ。</p>
 
     <nav class="s-catnav" id="sCatNav">
-      <a class="s-catnav-pill" href="#cat-atama">🧠 あたまを使う</a>
-      <a class="s-catnav-pill" href="#cat-tossa">⚡ とっさに反応</a>
-      <a class="s-catnav-pill" href="#cat-kurashi">🧸 くらし・まったり</a>
+      <a class="s-catnav-pill" href="#cat-atama">🧠 考える</a>
+      <a class="s-catnav-pill" href="#cat-tossa">⚡ 反応する</a>
+      <a class="s-catnav-pill" href="#cat-kurashi">🧸 のんびり遊ぶ</a>
     </nav>
 
     
@@ -301,16 +306,9 @@
 
 
     <div class="category-block" id="cat-atama">
-      <div class="category-title">🧠 あたまを使う<span class="count">(12)</span></div>
+      <div class="category-title">🧠 考える<span class="count">(11)</span></div>
       <div class="game-grid">
-        <a class="game-card" style="--card-accent:#8fd0e0" href="./games/012_penguin-bowl/index.html" data-no="012">
-          <span class="card-badge card-badge-new">🆕 New</span>
-          <span class="icon-circle">🎳</span>
-          <span class="label">ペンギンボウル</span>
-          <span class="desc">ねらって滑らせ、こおりピンを倒しましょう</span>
-          <span class="game-no">No.012</span>
-          <span class="play-btn">あそぶ</span>
-        </a>        <a class="game-card" style="--card-accent:#6d6ba0" href="./games/011_kimari-mitsuketa/index.html" data-no="011">
+        <a class="game-card" style="--card-accent:#6d6ba0" href="./games/011_kimari-mitsuketa/index.html" data-no="011">
           <span class="icon-circle">🕵️</span>
           <span class="label">法則さがし</span>
           <span class="desc">数字や絵文字からきまりを見つけましょう</span>
@@ -346,13 +344,6 @@
           <span class="game-no">No.007</span>
           <span class="play-btn">あそぶ</span>
         </a>
-      </div>
-      <details class="game-more">
-        <summary>
-          <span class="more-closed">▾ もっと見る</span>
-          <span class="more-open">▴ 閉じる</span>
-        </summary>
-        <div class="game-grid">
         <a class="game-card" style="--card-accent:#2f8f5b" href="./games/006_reversi/index.html" data-no="006">
           <span class="icon-circle">⚫</span>
           <span class="label">リバーシ</span>
@@ -360,6 +351,13 @@
           <span class="game-no">No.006</span>
           <span class="play-btn">あそぶ</span>
         </a>
+      </div>
+      <details class="game-more">
+        <summary>
+          <span class="more-closed">▾ もっと見る</span>
+          <span class="more-open">▴ 閉じる</span>
+        </summary>
+        <div class="game-grid">
         <a class="game-card" style="--card-accent:#7c6fe0" href="./games/005_hit-and-blow/index.html" data-no="005">
           <span class="icon-circle">🔢</span>
           <span class="label">ヒット&ブロー</span>
@@ -400,7 +398,7 @@
     </div>
 
     <div class="category-block" id="cat-tossa">
-      <div class="category-title">⚡ とっさに反応<span class="count">(10)</span></div>
+      <div class="category-title">⚡ 反応する<span class="count">(10)</span></div>
       <div class="game-grid">
         <a class="game-card" style="--card-accent:#a83246" href="./games/110_daruma-otoshi/index.html" data-no="110">
           <span class="card-badge card-badge-new">🆕 New</span>
@@ -486,7 +484,7 @@
     </div>
 
     <div class="category-block" id="cat-kurashi">
-      <div class="category-title">🧸 くらし・まったり<span class="count">(7)</span></div>
+      <div class="category-title">🧸 のんびり遊ぶ<span class="count">(7)</span></div>
       <div class="game-grid">
         <a class="game-card" style="--card-accent:#8a8f3a" href="./games/207_kyou-no-mame-chishiki/index.html" data-no="207">
           <span class="card-badge card-badge-new">🆕 New</span>
@@ -519,7 +517,7 @@
         </a>
         <a class="game-card" style="--card-accent:#5c7a52" href="./games/204_ocha-jikan/index.html" data-no="204">
           <span class="icon-circle">🍵</span>
-          <span class="label">間違い探し</span>
+          <span class="label">お茶のじかん</span>
           <span class="desc">違うところを見つけましょう</span>
           <span class="game-no">No.204</span>
           <span class="play-btn">あそぶ</span>
