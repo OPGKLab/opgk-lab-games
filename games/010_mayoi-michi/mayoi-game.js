@@ -26,7 +26,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'まよいみち🌲',
-  hint: '盤面をタップすると、その方向へ🐿️が1マス進みます。なかまを全員集めて巣穴（🌲の森）を目指しましょう',
+  hint: '盤面をタップすると、その方向へ🐿️が進みます。なかまを全員集めて巣穴🌲を目指しましょう',
   hasScore: false,
   hasTimer: false,
 });
@@ -494,9 +494,9 @@ function showPlaceholder() {
   shell.board.className = 's-board maze-board';
   shell.board.innerHTML = `
     <div class="maze-placeholder">
-      <p>🐿️を動かして、なかまを全員見つけてから、巣穴の森🌲を目指しましょう。</p>
-      <p>🦊がいる道は通れません。別の道を探しましょう。</p>
-      <p>🧭コンパスは道しるべに、💡ライトはしばらく足元を明るくします。</p>
+      <p>なかまを全員見つけて、みんなで巣穴🌲を目指しましょう。</p>
+      <p>🦊がいる道は通れません。</p>
+      <p>🧭道しるべや💡ライトのヒントアイテムあり。</p>
       <p>「スタート」を押すとはじまります</p>
     </div>
   `;
@@ -572,7 +572,7 @@ function flinchAt(dir) {
   playerEl.classList.remove('mz-flinch');
   void playerEl.offsetWidth;
   playerEl.classList.add('mz-flinch');
-  showGridMessage(playerPos.r, playerPos.c, 'ピャッ💦', 'bad');
+  showGridMessage(playerPos.r, playerPos.c, 'ぴゃっ💦', 'bad');
 }
 
 function addFollowerEl(emoji) {
