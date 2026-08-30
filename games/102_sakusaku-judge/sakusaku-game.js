@@ -290,7 +290,22 @@ function playCorrectChime() {
 
 function showPlaceholder() {
   shell.board.className = 's-board';
-  shell.board.innerHTML = '<div class="sj-placeholder">「スタート」を押すと出題が始まります</div>';
+  shell.board.innerHTML = `
+   <div class="sj-placeholder">
+    <div class="sj-rule-row">
+      <span class="sj-rule-label">お題に合うもの</span>
+      <span class="sj-rule-arrow">➩</span>
+      <span class="sj-rule-mark sj-rule-yes">〇</span>
+    </div>
+    <div class="sj-rule-row">
+      <span class="sj-rule-label">ちがうもの</span>
+      <span class="sj-rule-arrow">➩</span>
+      <span class="sj-rule-mark sj-rule-no">✕</span>
+    </div>
+    <p>を選びましょう。</p>
+    <p>「スタート」を押すと出題が始まります。</p>
+    </div>
+  `;
 }
 
 showPlaceholder();
