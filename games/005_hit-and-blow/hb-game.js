@@ -8,7 +8,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'ヒット&ブロー🔢',
-  hint: '数字の位置とヒントから正解を推理しましょう。ヒントは何度でも使えます',
+  hint: '数字の位置とヒントから正解を推理しましょう。ヒントは何度でも使えます。',
   hasScore: false,
   hasTimer: false,
 });
@@ -196,9 +196,9 @@ function showPlaceholder() {
   shell.board.innerHTML = `
     <div class="hb-placeholder">
       <p>コンピュータが決めた重複しない数字を当てるゲームです。</p>
-      <p>数字を入力して「きめる」を押すと、<b>位置も数字も正解</b>の数が<b>Hit</b>、<b>数字は合っているが位置が違う</b>数が<b>Blow</b>で表示されます。</p>
-      <p>全部Hitになれば正解です。ヒントは💡ボタンでいつでも使えます。</p>
-      <p class="hb-placeholder-start">「スタート」を押すとはじまります</p>
+      <p>数字を入力して「きめる」を押すと、<b>位置も数字も正解</b>➩<b>Hit</b>、<b>数字は合っているが位置が違う</b>➩<b>Blow</b>で表示されます。</p>
+      <p>ヒントは💡ボタンでいつでも使えます。</p>
+      <p class="hb-placeholder-start">「スタート」を押すとはじまります。</p>
     </div>
   `;
 }
