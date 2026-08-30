@@ -14,7 +14,7 @@
 const shell = new GameShell({
   rootSelector: '#app',
   title: 'ボールつなぎ🏀',
-  hint: '同じボールを指でなぞってつなぎましょう。盤面のマスを全部使い切らないとクリアになりません',
+  hint: '同じボールをつなぎましょう。盤面のマスを全部使い切らないとクリアになりません。',
   hasScore: false,
   hasTimer: false,
 });
@@ -200,10 +200,10 @@ function showPlaceholder() {
   shell.board.className = 's-board';
   shell.board.innerHTML = `
     <div class="ball-placeholder">
-      <p>同じ絵柄のボール同士を、指でなぞってつなぐゲームです。</p>
-      <p><b>盤面のマスを1つ残らず使い切る</b>と、はじめてクリアになります。線をつなぐだけでは終わりません。</p>
-      <p>最短で近道すると、他のボールが孤立して詰んでしまうことがあります。あせらず、先を見ながらつなぎましょう。</p>
-      <p class="ball-placeholder-start">「スタート」を押すとはじまります</p>
+      <p>同じボール同士をつなぐゲームです。</p>
+      <p><b>盤面のマスを全て使い切るとクリアになります。</b></p>
+      <p>線をつなぐだけでは終わりません。</p>
+      <p class="ball-placeholder-start">「スタート」を押すとはじまります。</p>
     </div>
   `;
 }
