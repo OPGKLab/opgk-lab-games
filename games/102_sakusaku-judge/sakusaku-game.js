@@ -31,7 +31,7 @@ const GENRES = [
       { emoji: '🍌', name: 'バナナ', tags: ['くだもの', 'きいろ'] },
       { emoji: '🍇', name: 'ぶどう', tags: ['くだもの'] },
       { emoji: '🍊', name: 'みかん', tags: ['くだもの'] },
-      { emoji: '🍉', name: 'すいか', tags: ['くだもの', 'みどり'] },
+      { emoji: '🍉', name: 'すいか', tags: ['くだもの', 'みどり', 'あか'] },
       { emoji: '🥝', name: 'キウイ', tags: ['くだもの', 'みどり'] },
       { emoji: '🍒', name: 'さくらんぼ', tags: ['くだもの', 'あか'] },
       { emoji: '🍋', name: 'レモン', tags: ['くだもの', 'きいろ'] },
