@@ -537,10 +537,9 @@ function showPlaceholder() {
   shell.board.className = 's-board kuruma-board';
   shell.board.innerHTML = `
     <div class="kuruma-placeholder">
-  <p><b>🚗 ターゲットの車</b>を<b>🚪出口</b>まで動かして脱出させるパズルです。</p>
-  <p>車は前後方向にしか動きません。ドラッグで自由な距離を動かせます。</p>
+  <p><b>🚗 車</b>を<b>🚪出口</b>まで動かして脱出させるパズルです。</p>
+  <p>車は前後方向にしか動きません。</p>
   <p>他の車をどかしながら道すじを作りましょう。</p>
-  <p>全10問、ヒントは何度でも使えます。</p>
   <p>「スタート」を押すとはじまります</p>
 </div>
   `;
