@@ -1,0 +1,72 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き）※トラ猫カラー */
+:root {
+  --bg: #f5ede1;
+  --board: #f2e3c8;
+  --accent: #c1652f;
+  --hard: #e2574c;
+  --text: #22333b;
+  --popup-good: #c1652f;
+  --popup-bad: #e2574c;
+  --popup-bonus: #d98c3d;
+}
+
+/* このゲーム固有：ライフ表示（キャンバス上部の外側に配置） */
+.keito-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 320px;
+  margin: 0 auto 8px;
+}
+.keito-lives {
+  font-size: 26px;
+  letter-spacing: 4px;
+}
+.keito-goal {
+  font-size: 17px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+/* このゲーム固有：ページ全体(.s-app)の横幅を絞る（ヒント文などが横に伸びすぎるのを防ぐ） */
+.s-app {
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* このゲーム固有：外枠(.s-board)の横幅を盤面サイズに合わせて絞る（共通CSSの上書き） */
+.s-board {
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* このゲーム固有：盤面（縦長320×380、くるま脱出の320px幅に合わせたサイズ感） */
+.keito-canvas {
+  display: block;
+  width: 320px;
+  height: 380px;
+  max-width: 100%;
+  margin: 0 auto;
+  background: var(--board);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+  touch-action: none; /* ドラッグ操作をブラウザのスクロールと競合させない */
+}
+
+.keito-placeholder {
+  max-width: 320px;
+  min-height: 260px; /* ボールつなぎ等、他ゲームのプレースホルダーに合わせたサイズ感 */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  color: #5c7268;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: center;
+  padding: 0 14px;
+}
+.keito-placeholder p { margin: 0; }
