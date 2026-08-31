@@ -55,23 +55,58 @@ body {
   font-size: 14px;
 }
 
-/* モード切替のヒント（バッジの左に常時添える、控えめな表示） */
-.s-mode-hint {
-  font-size: 13px;
-  font-weight: normal;
-  color: var(--text);
-  opacity: 0.55;
-  white-space: nowrap;
+/* 激むずスイッチ（電源トグル風・左右ラベル付き） */
+.s-hard-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
 }
+.s-hard-switch input { display: none; }
 
-.s-badge {
-  background: var(--accent);
-  color: #fff;
-  padding: 2px 10px;
-  border-radius: 12px;
+.s-hard-switch-label {
+  font-size: 12.5px;
   font-weight: bold;
+  white-space: nowrap;
+  transition: color 0.2s ease, opacity 0.2s ease;
 }
-.s-badge-hard { background: var(--hard); }
+/* 初期状態＝通常が濃く、激むずは薄く */
+.s-hard-switch-label-off { color: var(--accent); opacity: 1; }
+.s-hard-switch-label-on { color: var(--text); opacity: 0.4; }
+/* 激むずON時は反転 */
+.s-hard-switch input:checked ~ .s-hard-switch-label-off { color: var(--text); opacity: 0.4; }
+.s-hard-switch input:checked ~ .s-hard-switch-label-on { color: var(--hard); opacity: 1; }
+
+.s-hard-switch-track {
+  position: relative;
+  width: 44px;
+  height: 25px;
+  background: #ccc;
+  border-radius: 13px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.25);
+  transition: background 0.2s ease;
+}
+.s-hard-switch-thumb {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 21px; height: 21px;
+  background: #fff;
+  border-radius: 50%;
+  /* つまみに立体感を出し、指で押せることを示す */
+  background-image: linear-gradient(180deg, #fff, #eee);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease;
+}
+.s-hard-switch input:checked ~ .s-hard-switch-track {
+  background: var(--hard);
+}
+.s-hard-switch input:checked ~ .s-hard-switch-track .s-hard-switch-thumb {
+  transform: translateX(19px);
+}
+.s-hard-switch input:disabled ~ .s-hard-switch-track {
+  opacity: 0.5;
+}
 
 /* 盤面コンテナ：中身のレイアウトはゲームごとの個別CSSが担当する */
 .s-board {

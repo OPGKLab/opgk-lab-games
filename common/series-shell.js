@@ -3,9 +3,9 @@
    -----------------------------------------------------------
    役割（これだけ）:
      - ブランド/タイトル/スコア/タイマー表示などの枠組みを描画
-     - スタート・リセット・サウンドボタンの動作
-     - 隠しトリガー（タイトル5回タップ→激むず切替）
-     - 効果音エンジン・得点ポップアップ・トースト通知
+     - スタート・リセットボタンの動作
+     - 激むずスイッチ（ワンタッチ切替、プレイ中はロック）
+     - 効果音エンジン（常時ON）・得点ポップアップ・トースト通知
 
    役割ではない（各ゲーム側で実装すること）:
      - 盤面のマス目・レイアウト
@@ -34,10 +34,7 @@ class GameShell {
     this.timeLeft = this.cfg.duration;
     this.running = false;
     this.hardMode = false;
-    this.soundOn = true; // デフォルトON、保存はしない
     this.audioCtx = null;
-    this._secretTapCount = 0;
-    this._secretTapTimer = null;
     this._countdownTimer = null;
     this._hooks = { start: [], reset: [], timeUp: [], hardModeChange: [] };
 
@@ -53,8 +50,12 @@ class GameShell {
       <div class="s-header">
         <h1 class="s-title" id="sTitle">${this.cfg.title}</h1>
         <div class="s-status">
-          <span class="s-mode-hint">👆5タップでモード切替</span>
-          <span class="s-badge" id="sModeBadge">通常</span>
+          <label class="s-hard-switch" id="sHardSwitch">
+            <input type="checkbox" id="sHardCheckbox" />
+            <span class="s-hard-switch-label s-hard-switch-label-off">通常</span>
+            <span class="s-hard-switch-track"><span class="s-hard-switch-thumb"></span></span>
+            <span class="s-hard-switch-label s-hard-switch-label-on">激むず</span>
+          </label>
           ${this.cfg.hasScore ? '<span>スコア: <b id="sScore">0</b></span>' : ''}
           ${this.cfg.hasTimer ? `<span>残り: <b id="sTime">${this.cfg.duration}</b>秒</span>` : ''}
         </div>
@@ -64,7 +65,6 @@ class GameShell {
         <div class="s-controls">
           <button class="s-btn" id="sStartBtn">スタート</button>
           <button class="s-icon-btn s-icon-btn-text" id="sResetBtn">🔄 リセット</button>
-          <button class="s-icon-btn" id="sSoundBtn">🔊</button>
         </div>
         <p class="s-hint">${this.cfg.hint || ''}</p>
         <a class="s-back-link" href="../../index.html">← ゲーム一覧に戻る</a>
@@ -77,9 +77,8 @@ class GameShell {
       time: root.querySelector('#sTime'),
       startBtn: root.querySelector('#sStartBtn'),
       resetBtn: root.querySelector('#sResetBtn'),
-      soundBtn: root.querySelector('#sSoundBtn'),
       title: root.querySelector('#sTitle'),
-      modeBadge: root.querySelector('#sModeBadge'),
+      hardCheckbox: root.querySelector('#sHardCheckbox'),
     };
   }
 
@@ -89,27 +88,18 @@ class GameShell {
       this._start();
     });
     this.el.resetBtn.addEventListener('click', () => this._reset());
-    this.el.soundBtn.addEventListener('click', () => {
-      this.soundOn = !this.soundOn;
-      this.el.soundBtn.textContent = this.soundOn ? '🔊' : '🔇';
-    });
-    // 隠しトリガー: タイトルを5回連続タップで激むずモード切替（プレイ中は不可）
-    this.el.title.addEventListener('click', () => {
-      this._secretTapCount++;
-      clearTimeout(this._secretTapTimer);
-      this._secretTapTimer = setTimeout(() => (this._secretTapCount = 0), 1200);
-      if (this._secretTapCount >= 5) {
-        this._secretTapCount = 0;
-        this._toggleHardMode();
+    // 激むずスイッチ（ワンタッチ切替、プレイ中は不可）
+    this.el.hardCheckbox.addEventListener('change', () => {
+      if (this.running) {
+        this.el.hardCheckbox.checked = this.hardMode;
+        return;
       }
+      this._setHardMode(this.el.hardCheckbox.checked);
     });
   }
 
-  _toggleHardMode() {
-    if (this.running) return;
-    this.hardMode = !this.hardMode;
-    this.el.modeBadge.textContent = this.hardMode ? '激むず' : '通常';
-    this.el.modeBadge.classList.toggle('s-badge-hard', this.hardMode);
+  _setHardMode(hard) {
+    this.hardMode = hard;
     this.toast(this.hardMode ? '激むずモード解禁！' : '通常モードに戻りました');
     this._hooks.hardModeChange.forEach((fn) => fn(this.hardMode));
   }
@@ -136,6 +126,7 @@ class GameShell {
     }
     this.el.startBtn.disabled = true;
     this.el.startBtn.textContent = 'プレイ中...';
+    this.el.hardCheckbox.disabled = true;
     this.playTone(660, 0.15);
     this._hooks.start.forEach((fn) => fn());
   }
@@ -145,6 +136,7 @@ class GameShell {
     this.running = false;
     this.el.startBtn.disabled = false;
     this.el.startBtn.textContent = 'もう一度あそぶ';
+    this.el.hardCheckbox.disabled = false;
     this.playTone(440, 0.25, 'triangle');
     this._hooks.timeUp.forEach((fn) => fn());
   }
@@ -155,6 +147,7 @@ class GameShell {
     this.running = false;
     this.el.startBtn.disabled = false;
     this.el.startBtn.textContent = 'もう一度あそぶ';
+    this.el.hardCheckbox.disabled = false;
     this.playTone(440, 0.25, 'triangle');
     if (message) this.toast(message);
   }
@@ -169,6 +162,7 @@ class GameShell {
     }
     this.el.startBtn.disabled = false;
     this.el.startBtn.textContent = 'スタート';
+    this.el.hardCheckbox.disabled = false;
     this.toast('リセットしました');
     this._hooks.reset.forEach((fn) => fn());
   }
@@ -189,7 +183,6 @@ class GameShell {
     }
   }
   playTone(freq, duration = 0.12, type = 'sine') {
-    if (!this.soundOn) return;
     this._ensureAudio();
     if (!this.audioCtx) return;
     const ctx = this.audioCtx;
