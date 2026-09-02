@@ -1,31 +1,42 @@
 /* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
 :root {
-  --bg: #fbf3e4;
-  --board: #ecdfc0;
-  --accent: #4f7fe0;
+  --bg: #f6f2e8;
+  --board: #e6ddc7;
+  --accent: #caa052;
   --hard: #e2574c;
   --text: #2b3a67;
   --popup-good: #3f9d63;
   --popup-bad: #e2574c;
   --popup-bonus: #e0a52c;
 
-  /* このゲーム固有：タイルは目に優しいクリーム系、ヒントのみ水色で強調 */
-  --tile-bg: #f6ecd4;
+  /* このゲーム固有：タイルは彩度を抑えたクリーム系、ヒントは氷のような淡い水色 */
+  --tile-bg: #eee4cd;
   --tile-text: #2b3a67;
-  --hint-bg: #e8f2ff;
-  --hint-border: #4f7fe0;
+  --hint-bg: #dcedff;
+  --hint-border: #5b93e6;
+  /* 数字マスを囲う枠（トレイ）の色 */
+  --tile-frame-border: #b89a5c;
 }
 
-/* スタート前のプレースホルダー（じゃぐちパズルと同じ体裁） */
+/* 数字マスを囲う枠（トレイ）。ゲーム画面・スタート画面共通で使用 */
+.slide-frame {
+  max-width: 320px;
+  margin: 0 auto;
+  border: 3px solid var(--tile-frame-border);
+  border-radius: 16px;
+  background: var(--board);
+  padding: 10px;
+}
+
+/* スタート前のプレースホルダー（枠を流用し、正方形に近いサイズ・左右余白をゲーム画面と統一） */
 .slide-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 160px;
+  min-height: 260px;
   color: #5c7268;
   font-size: 14px;
   text-align: center;
-  padding: 0 10px;
 }
 
 /* ツールバー（手数表示＋ヒントボタン） */
@@ -39,34 +50,40 @@
 .slide-count b { color: var(--accent); }
 .slide-hint-btn { font-size: 13px; }
 
-/* 盤面レイアウト（共通の .s-board の中身）：じゃぐちパズルと同じ340px基準 */
+/* 盤面レイアウト（.slide-frame の中身） */
 .slide-grid {
   --size: 4;
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
-  gap: 6px;
-  max-width: 340px;
-  margin: 0 auto;
+  gap: 8px;
 }
 
 .slide-tile {
   aspect-ratio: 1 / 1;
   border: none;
-  border-radius: 16px;
+  border-radius: 12px;
   background:
-    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 46%),
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 46%),
     var(--tile-bg);
   color: var(--tile-text);
-  font-size: calc(300px / var(--size) * 0.42);
+  font-size: calc(280px / var(--size) * 0.42);
   font-weight: 900;
-  box-shadow: 0 2px 4px rgba(120,90,40,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+  /* 下の「段差」＋落ち影＋上端ハイライト＋下端の陰で、実物のプラスチック製ボタンのような厚みを出す */
+  box-shadow:
+    0 3px 0 rgba(120,90,40,0.35),
+    0 5px 6px rgba(120,90,40,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.8),
+    inset 0 -2px 3px rgba(120,90,40,0.15);
   cursor: pointer;
-  transition: transform 0.08s ease-out, box-shadow 0.15s, background 0.15s;
+  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.15s;
 }
 .slide-tile:disabled { cursor: default; }
 .slide-tile:not(:disabled):active {
-  transform: scale(0.94);
-  box-shadow: 0 1px 2px rgba(120,90,40,0.18), inset 0 1px 0 rgba(255,255,255,0.4);
+  /* 段差が沈み込み、実際にボタンを押し込んだ感触を出す */
+  transform: translateY(2px) scale(0.97);
+  box-shadow:
+    0 1px 0 rgba(120,90,40,0.3),
+    inset 0 2px 4px rgba(120,90,40,0.28);
 }
 .slide-tile.slide-blank {
   background: transparent !important;
@@ -81,6 +98,18 @@
   animation: slideHintPulse 0.9s ease-in-out infinite alternate;
 }
 @keyframes slideHintPulse {
-  0% { box-shadow: 0 0 0 2px var(--hint-border), 0 2px 3px rgba(0,0,0,0.12); }
-  100% { box-shadow: 0 0 0 4px var(--hint-border), 0 0 12px 2px rgba(79,127,224,0.45); }
+  0% {
+    box-shadow:
+      0 0 0 2px var(--hint-border),
+      0 3px 0 rgba(120,90,40,0.35),
+      0 5px 6px rgba(120,90,40,0.22),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  100% {
+    box-shadow:
+      0 0 0 4px var(--hint-border),
+      0 0 12px 2px rgba(91,147,230,0.45),
+      0 3px 0 rgba(120,90,40,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+  }
 }

@@ -206,7 +206,7 @@ function greedyFallback(b, n) {
 /* ---------- 描画 ---------- */
 function showPlaceholder() {
   shell.board.className = 's-board';
-  shell.board.innerHTML = '<div class="slide-placeholder">「スタート」を押すとパズルが始まります</div>';
+  shell.board.innerHTML = '<div class="slide-frame"><div class="slide-placeholder">「スタート」を押すとパズルが始まります</div></div>';
 }
 
 function buildGrid() {
@@ -216,7 +216,9 @@ function buildGrid() {
       <span class="slide-count">手数: <b id="slideMoves">0</b></span>
       <button class="s-icon-btn-text slide-hint-btn" id="slideHintBtn">💡 ヒント</button>
     </div>
-    <div class="slide-grid" id="slideGrid" style="--size:${size}"></div>
+    <div class="slide-frame">
+      <div class="slide-grid" id="slideGrid" style="--size:${size}"></div>
+    </div>
   `;
   const grid = shell.board.querySelector('#slideGrid');
   tileEls = [];
