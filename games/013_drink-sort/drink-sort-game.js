@@ -17,14 +17,14 @@ const shell = new GameShell({
    🧉は🍵と同系の緑で紛らわしいため除外。🍵自体もあまり可愛くないため除外。 */
 const DRINKS = ['☕', '🍷', '🍸', '🍹', '🍺', '🧋'];
 
-/* カップ1つ1つに敷く、飲み物に合わせた薄い色（視認性アップ用） */
+/* カップ1つ1つに敷く、飲み物に合わせた色（視認性アップ用・やや濃いめ） */
 const TINTS = {
-  '☕': '#f3e2d0', // コーヒー：ベージュ
-  '🍷': '#f7dde2', // 赤ワイン：ローズ
-  '🍸': '#e3f2f5', // カクテル：アイスブルー
-  '🍹': '#fde3c0', // トロピカル：オレンジ
-  '🍺': '#faf0c4', // ビール：ゴールド
-  '🧋': '#efe0da', // タピオカ：モカ
+  '☕': '#e8c9a0', // コーヒー：濃いめベージュ
+  '🍷': '#eeb9c4', // 赤ワイン：濃いめローズ
+  '🍸': '#b9e0e6', // カクテル：濃いめアイスブルー
+  '🍹': '#fbc98a', // トロピカル：濃いめオレンジ
+  '🍺': '#f2df85', // ビール：濃いめゴールド
+  '🧋': '#ddbdae', // タピオカ：濃いめモカ
 };
 
 const CAPACITY = 4;
@@ -135,6 +135,82 @@ function buildTrays(speciesCount, emptyCount, minDepth) {
   return best || randomDeal(speciesCount, emptyCount); // 保険（通常ここには来ない）
 }
 
+/* いまの状態から完成までの最短手順を求め、その最初の1手（a→b）を返す（ヒント用）。
+   詰み判定と同じBFSに、経路を逆算するための親情報を追加しただけの構成。 */
+function findHintMove(initial) {
+  const key = (s) => s.map((t) => t.join(',')).join('|');
+  if (isSolved(initial)) return null;
+
+  const startKey = key(initial);
+  const cameFrom = new Map(); // key -> { prevKey, move: [a, b] }
+  const seen = new Set([startKey]);
+  let queue = [{ state: initial, key: startKey }];
+  let nodes = 0;
+  const nodeCap = 200000;
+  const timeCapMs = 900;
+  const t0 = Date.now();
+
+  while (queue.length) {
+    const next = [];
+    for (const { state, key: k } of queue) {
+      for (let a = 0; a < state.length; a++) {
+        if (state[a].length === 0) continue;
+        for (let b = 0; b < state.length; b++) {
+          if (!canMoveOn(state, a, b)) continue;
+          const ns = state.map((t) => t.slice());
+          const item = ns[a].pop();
+          ns[b].push(item);
+          const nk = key(ns);
+          if (seen.has(nk)) continue;
+          seen.add(nk);
+          cameFrom.set(nk, { prevKey: k, move: [a, b] });
+
+          if (isSolved(ns)) {
+            // 完成状態からスタート直後の1手まで、親をたどって逆算する
+            let curKey = nk;
+            let firstMove = cameFrom.get(curKey).move;
+            while (cameFrom.get(curKey).prevKey !== startKey) {
+              curKey = cameFrom.get(curKey).prevKey;
+              firstMove = cameFrom.get(curKey).move;
+            }
+            return firstMove;
+          }
+          next.push({ state: ns, key: nk });
+          nodes++;
+          if (nodes > nodeCap || Date.now() - t0 > timeCapMs) return null;
+        }
+      }
+    }
+    queue = next;
+    if (queue.length === 0) return null;
+  }
+  return null;
+}
+
+/* ヒントボタン：最初の1手を、移動元(青緑)→移動先(金)で光らせて教える */
+function showHint() {
+  if (locked) {
+    shell.toast('「はじめから」でやり直しましょう');
+    return;
+  }
+  const move = findHintMove(trays);
+  if (!move) {
+    shell.toast('ヒントが見つかりませんでした');
+    return;
+  }
+  const [a, b] = move;
+  const trayEls = trayAreaEl.querySelectorAll('.sort-tray');
+  const fromEl = trayEls[a];
+  const toEl = trayEls[b];
+  fromEl.classList.add('sort-hint-from');
+  toEl.classList.add('sort-hint-to');
+  shell.playTone(700, 0.1, 'triangle');
+  setTimeout(() => {
+    fromEl.classList.remove('sort-hint-from');
+    toEl.classList.remove('sort-hint-to');
+  }, 1600);
+}
+
 function canMove(a, b) {
   return canMoveOn(trays, a, b);
 }
@@ -161,11 +237,13 @@ function renderBoard() {
   shell.board.className = 's-board sort-board';
   shell.board.innerHTML = `
     <div class="sort-toolbar">
+      <button class="s-icon-btn-text" id="sortHintBtn">💡 ヒント</button>
       <button class="s-icon-btn-text" id="sortRetryBtn">↩️ はじめから</button>
     </div>
     <div class="sort-tray-area" id="sortTrayArea"></div>
   `;
   trayAreaEl = shell.board.querySelector('#sortTrayArea');
+  shell.board.querySelector('#sortHintBtn').addEventListener('click', showHint);
   shell.board.querySelector('#sortRetryBtn').addEventListener('click', retryPuzzle);
 
   trays.forEach((tray, idx) => {
