@@ -1,0 +1,170 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #eaf6f5;
+  --board: #dcefec;
+  --accent: #3e9b93;
+  --hard: #e2574c;
+  --text: #20342f;
+  --popup-good: #3e9b93;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：トレイの色（common側には存在しない変数） */
+  --tray-bg: #ffffff;
+  --tray-border: rgba(32, 52, 47, 0.12);
+}
+
+/* このゲーム固有：盤面レイアウト */
+.sort-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+.sort-toolbar button { font-size: 13px; }
+
+.sort-tray-area {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, clamp(46px, calc(46px + (100vw - 390px) * 0.2), 64px));
+  justify-content: center;
+  column-gap: clamp(4px, calc(4px + (100vw - 390px) * 0.0333), 7px);
+  padding: 4px 0;
+}
+
+.sort-placeholder {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  color: #5c7268;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.sort-tray {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 0 10px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.95), rgba(255,255,255,0.6));
+  border-radius: 8px 8px 26px 26px;
+  box-shadow:
+    inset 2px 0 0 rgba(255,255,255,0.8),
+    inset 0 0 0 2px var(--tray-border);
+  touch-action: none;
+  cursor: grab;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+  margin-bottom: 8px;
+}
+/* グラスの脚っぽい台座（トロピカルなグラス感を演出） */
+.sort-tray::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 6px;
+  background: var(--tray-bg);
+  border-radius: 0 0 6px 6px;
+  box-shadow: inset 0 0 0 2px var(--tray-border);
+}
+.sort-tray.sort-drag-over {
+  box-shadow: inset 0 0 0 3px var(--accent);
+  transform: scale(1.04);
+}
+.sort-tray.sort-drag-invalid {
+  box-shadow: inset 0 0 0 3px var(--hard);
+}
+.sort-tray.sort-complete {
+  box-shadow: inset 0 0 0 3px var(--accent);
+}
+
+/* クリア演出：トレイが左から順に光って波打つ */
+@keyframes sortTrayWave {
+  0% { box-shadow: inset 0 0 0 2px var(--tray-border); transform: scale(1); }
+  45% {
+    box-shadow: 0 0 16px 4px rgba(62, 155, 147, 0.55), inset 0 0 0 3px var(--accent);
+    transform: scale(1.1);
+  }
+  100% { box-shadow: inset 0 0 0 3px var(--accent); transform: scale(1); }
+}
+.sort-tray.sort-wave { animation: sortTrayWave 0.55s ease; }
+
+/* クリア演出：盤面全体を斜めに走る光の帯 */
+.sort-light-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.sort-light-sweep::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -60%;
+  width: 60%;
+  height: 180%;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-18deg);
+  animation: sortLightSweep 1s ease forwards;
+}
+@keyframes sortLightSweep {
+  0% { left: -60%; }
+  100% { left: 130%; }
+}
+
+/* 詰み演出：盤面がふるっと小さく震える */
+@keyframes sortBoardShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+.sort-tray-area.sort-stuck { animation: sortBoardShake 0.4s ease; }
+
+.sort-slot {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  line-height: 1;
+}
+.sort-slot.sort-empty {
+  border: 1.5px dotted var(--tray-border);
+  background: rgba(255, 255, 255, 0.35);
+}
+.sort-slot.sort-filled {
+  background: #f5faf9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.sort-slot.sort-top.sort-filled {
+  box-shadow: 0 2px 6px rgba(62, 155, 147, 0.35);
+}
+
+/* ドラッグ中に指/カーソルへ追従する絵文字 */
+.sort-drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  font-size: 34px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 999;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.25));
+}

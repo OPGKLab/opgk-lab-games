@@ -1,0 +1,328 @@
+/* =========================================================
+   ドリンクそーと🍹 固有ロジック
+   共通土台(GameShell)のAPIだけを使い、盤面生成・ドラッグ&ドロップ・判定を実装。
+   トレイの中身をドラッグでまとめ、同じ種類ごとに揃えたらクリア。
+   ========================================================= */
+
+const shell = new GameShell({
+  rootSelector: '#app',
+  title: 'ドリンクそーと🍹',
+  hint: 'カップをドラッグして、同じ種類ごとにまとめましょう',
+  hasScore: false,
+  hasTimer: false,
+});
+
+/* 形・色がはっきり分かれる6種のみ採用。
+   🍶(白い徳利)・🥛(白い牛乳)は白系で紛らわしいため除外。
+   🧉は🍵と同系の緑で紛らわしいため除外。🍵自体もあまり可愛くないため除外。 */
+const DRINKS = ['☕', '🍷', '🍸', '🍹', '🍺', '🧋'];
+
+/* カップ1つ1つに敷く、飲み物に合わせた薄い色（視認性アップ用） */
+const TINTS = {
+  '☕': '#f3e2d0', // コーヒー：ベージュ
+  '🍷': '#f7dde2', // 赤ワイン：ローズ
+  '🍸': '#e3f2f5', // カクテル：アイスブルー
+  '🍹': '#fde3c0', // トロピカル：オレンジ
+  '🍺': '#faf0c4', // ビール：ゴールド
+  '🧋': '#efe0da', // タピオカ：モカ
+};
+
+const CAPACITY = 4;
+const NORMAL_SETTING = { species: 4, empty: 2, minDepth: 10 };
+const HARD_SETTING = { species: 5, empty: 1, minDepth: 14 };
+
+let trays = [];
+let initialTrays = null;
+let solved = false;
+let locked = false;
+let dragState = null;
+let trayAreaEl = null;
+
+/* トレイを移動した時の効果音：明るい2音チャイム（ピロリン） */
+function playCupChime() {
+  shell.playTone(880, 0.05, 'triangle');
+  setTimeout(() => shell.playTone(1174.66, 0.08, 'triangle'), 45);
+}
+
+function shuffleArray(arr) {
+  const list = arr.slice();
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = (Math.random() * (i + 1)) | 0;
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+function isSolved(state) {
+  return state.every((t) => t.length === 0 || (t.length === CAPACITY && t.every((v) => v === t[0])));
+}
+
+function canMoveOn(state, a, b) {
+  if (a === b) return false;
+  if (state[a].length === 0) return false;
+  const t = state[b];
+  if (t.length >= CAPACITY) return false;
+  if (t.length === 0) return true;
+  return t[t.length - 1] === state[a][state[a].length - 1];
+}
+
+/* 種類ごとに満杯のカップを全部まとめて完全にシャッフルし、トレイへランダムに配る。
+   （「完成状態から少し戻す」方式だと簡単に元へ戻せてしまうため、あえて総崩し配置にする） */
+function randomDeal(speciesCount, emptyCount) {
+  const picked = shuffleArray(DRINKS).slice(0, speciesCount);
+  let items = [];
+  picked.forEach((emoji) => { for (let i = 0; i < CAPACITY; i++) items.push(emoji); });
+  items = shuffleArray(items);
+
+  const trayCount = speciesCount + emptyCount;
+  const state = Array.from({ length: trayCount }, () => []);
+  const fillTargets = shuffleArray([...Array(trayCount).keys()]).slice(0, speciesCount);
+  let itemIdx = 0;
+  fillTargets.forEach((idx) => {
+    for (let c = 0; c < CAPACITY; c++) state[idx].push(items[itemIdx++]);
+  });
+  return state;
+}
+
+/* BFSで最短クリア手数を求める（解けない/手数が少なすぎる場合は作り直すための判定用）。
+   ノード数・時間に上限を設け、盤面サイズが小さいためすぐに終わる。 */
+function minSolveDepth(initial, nodeCap = 250000, timeCapMs = 1200) {
+  const key = (s) => s.map((t) => t.join(',')).join('|');
+  if (isSolved(initial)) return 0;
+  const seen = new Set([key(initial)]);
+  let queue = [initial];
+  let depth = 0;
+  let nodes = 0;
+  const t0 = Date.now();
+  while (queue.length) {
+    depth++;
+    const next = [];
+    for (const state of queue) {
+      for (let a = 0; a < state.length; a++) {
+        if (state[a].length === 0) continue;
+        for (let b = 0; b < state.length; b++) {
+          if (!canMoveOn(state, a, b)) continue;
+          const ns = state.map((t) => t.slice());
+          const item = ns[a].pop();
+          ns[b].push(item);
+          const k = key(ns);
+          if (seen.has(k)) continue;
+          if (isSolved(ns)) return depth;
+          seen.add(k);
+          next.push(ns);
+          nodes++;
+          if (nodes > nodeCap || Date.now() - t0 > timeCapMs) return -2; // 打ち切り
+        }
+      }
+    }
+    queue = next;
+    if (queue.length === 0) return -1; // 解けない配置
+  }
+  return -1;
+}
+
+/* 「最低◯手は必要」を満たす配置になるまで作り直す（最低10手以上の歯応えを保証） */
+function buildTrays(speciesCount, emptyCount, minDepth) {
+  const maxAttempts = 30;
+  let best = null;
+  let bestDepth = -1;
+  for (let i = 0; i < maxAttempts; i++) {
+    const state = randomDeal(speciesCount, emptyCount);
+    const depth = minSolveDepth(state);
+    if (depth >= minDepth) return state;
+    if (depth > bestDepth) { bestDepth = depth; best = state; }
+  }
+  return best || randomDeal(speciesCount, emptyCount); // 保険（通常ここには来ない）
+}
+
+function canMove(a, b) {
+  return canMoveOn(trays, a, b);
+}
+
+function buildPuzzle(speciesCount, emptyCount, minDepth) {
+  solved = false;
+  locked = false;
+  trays = buildTrays(speciesCount, emptyCount, minDepth);
+  initialTrays = trays.map((t) => t.slice());
+  renderBoard();
+}
+
+/* 今回の問題を、最初に生成された配置まで戻す（「はじめから」ボタン用） */
+function retryPuzzle() {
+  if (!initialTrays) return;
+  trays = initialTrays.map((t) => t.slice());
+  solved = false;
+  locked = false;
+  renderBoard();
+  shell.toast('はじめの配置に戻しました');
+}
+
+function renderBoard() {
+  shell.board.className = 's-board sort-board';
+  shell.board.innerHTML = `
+    <div class="sort-toolbar">
+      <button class="s-icon-btn-text" id="sortRetryBtn">↩️ はじめから</button>
+    </div>
+    <div class="sort-tray-area" id="sortTrayArea"></div>
+  `;
+  trayAreaEl = shell.board.querySelector('#sortTrayArea');
+  shell.board.querySelector('#sortRetryBtn').addEventListener('click', retryPuzzle);
+
+  trays.forEach((tray, idx) => {
+    const trayEl = document.createElement('div');
+    trayEl.className = 'sort-tray';
+    trayEl.dataset.idx = idx;
+
+    for (let slot = 0; slot < CAPACITY; slot++) {
+      const slotEl = document.createElement('div');
+      const filled = slot < tray.length;
+      slotEl.className = `sort-slot ${filled ? 'sort-filled' : 'sort-empty'}`;
+      if (filled) {
+        const emoji = tray[slot];
+        if (slot === tray.length - 1) slotEl.classList.add('sort-top');
+        slotEl.style.background = TINTS[emoji] || '#f5faf9';
+        slotEl.textContent = emoji;
+      }
+      trayEl.appendChild(slotEl);
+    }
+
+    trayEl.addEventListener('pointerdown', onTrayPointerDown);
+    trayAreaEl.appendChild(trayEl);
+  });
+}
+
+function onTrayPointerDown(e) {
+  if (!shell.running || locked) return;
+  const idx = Number(e.currentTarget.dataset.idx);
+  if (trays[idx].length === 0) return;
+  e.preventDefault();
+
+  const emoji = trays[idx][trays[idx].length - 1];
+  const ghost = document.createElement('div');
+  ghost.className = 'sort-drag-ghost';
+  ghost.textContent = emoji;
+  document.body.appendChild(ghost);
+
+  dragState = { sourceIndex: idx, ghost, hoverEl: null };
+  moveGhost(e.clientX, e.clientY);
+
+  document.addEventListener('pointermove', onPointerMove);
+  document.addEventListener('pointerup', onPointerUp);
+}
+
+function moveGhost(x, y) {
+  dragState.ghost.style.left = `${x}px`;
+  dragState.ghost.style.top = `${y}px`;
+}
+
+function trayUnderPoint(x, y) {
+  const el = document.elementFromPoint(x, y);
+  return el ? el.closest('.sort-tray') : null;
+}
+
+function onPointerMove(e) {
+  if (!dragState) return;
+  moveGhost(e.clientX, e.clientY);
+
+  const hoverEl = trayUnderPoint(e.clientX, e.clientY);
+  if (dragState.hoverEl && dragState.hoverEl !== hoverEl) {
+    dragState.hoverEl.classList.remove('sort-drag-over', 'sort-drag-invalid');
+  }
+  if (hoverEl) {
+    const destIdx = Number(hoverEl.dataset.idx);
+    const ok = canMove(dragState.sourceIndex, destIdx);
+    hoverEl.classList.toggle('sort-drag-over', ok);
+    hoverEl.classList.toggle('sort-drag-invalid', !ok && destIdx !== dragState.sourceIndex);
+  }
+  dragState.hoverEl = hoverEl;
+}
+
+function onPointerUp(e) {
+  document.removeEventListener('pointermove', onPointerMove);
+  document.removeEventListener('pointerup', onPointerUp);
+  if (!dragState) return;
+
+  dragState.ghost.remove();
+  if (dragState.hoverEl) dragState.hoverEl.classList.remove('sort-drag-over', 'sort-drag-invalid');
+
+  const dropEl = trayUnderPoint(e.clientX, e.clientY);
+  const sourceIndex = dragState.sourceIndex;
+  dragState = null;
+
+  if (!dropEl) return;
+  const destIndex = Number(dropEl.dataset.idx);
+  if (!canMove(sourceIndex, destIndex)) {
+    if (destIndex !== sourceIndex) shell.playTone(220, 0.1);
+    return;
+  }
+
+  const item = trays[sourceIndex].pop();
+  trays[destIndex].push(item);
+  playCupChime();
+  renderBoard();
+
+  checkAfterMove();
+}
+
+/* 1手ごとに、まだ解ける状態かを裏で確認する。
+   完全に詰んだ（このBFSで解なしと断定できた）場合だけゲーム終了にする。
+   判定できない場合（時間切れ）は誤判定を避けるため何もしない。 */
+function checkAfterMove() {
+  if (isSolved(trays)) {
+    solved = true;
+    locked = true;
+    playClear();
+    return;
+  }
+  const result = minSolveDepth(trays, 200000, 900);
+  if (result === -1) {
+    locked = true;
+    playStuck();
+  }
+}
+
+function playStuck() {
+  trayAreaEl.classList.add('sort-stuck');
+  setTimeout(() => trayAreaEl.classList.remove('sort-stuck'), 450);
+  shell.playTone(320, 0.18, 'square');
+  setTimeout(() => shell.playTone(190, 0.32, 'square'), 150);
+  setTimeout(() => shell.toast('これ以上動かせません…😢「はじめから」でやり直しましょう'), 350);
+}
+
+function playClear() {
+  trayAreaEl.classList.add('sort-complete');
+
+  // 光の帯を盤面に一閃させる
+  const sweep = document.createElement('div');
+  sweep.className = 'sort-light-sweep';
+  trayAreaEl.appendChild(sweep);
+  setTimeout(() => sweep.remove(), 1100);
+
+  // トレイを左から順に光らせて波打たせる
+  const trayEls = Array.from(trayAreaEl.querySelectorAll('.sort-tray'));
+  trayEls.forEach((el, i) => {
+    setTimeout(() => el.classList.add('sort-wave'), i * 70);
+  });
+
+  const notes = [659.25, 880, 1046.5, 1318.51];
+  notes.forEach((freq, i) => setTimeout(() => shell.playTone(freq, 0.14, 'triangle'), i * 90));
+  setTimeout(() => shell.playTone(1567.98, 0.35, 'triangle'), notes.length * 90);
+
+  setTimeout(() => shell.end('かんせい！ぜんぶそろったよ🍹'), trayEls.length * 70 + 500);
+}
+
+function showPlaceholder() {
+  shell.board.className = 's-board';
+  shell.board.innerHTML = '<div class="sort-placeholder">「スタート」を押すとパズルが始まります</div>';
+}
+
+showPlaceholder();
+
+/* ---- GameShellのライフサイクルに接続 ---- */
+shell.onStart(() => {
+  const setting = shell.hardMode ? HARD_SETTING : NORMAL_SETTING;
+  buildPuzzle(setting.species, setting.empty, setting.minDepth);
+});
+shell.onReset(() => {
+  showPlaceholder();
+});
