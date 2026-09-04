@@ -243,6 +243,7 @@ function buildPuzzle(speciesCount, emptyCount, capacity, minDepth) {
   locked = false;
   activeHint = null;
   CAPACITY = capacity;
+  document.documentElement.style.setProperty('--capacity', CAPACITY);
   trays = buildTrays(speciesCount, emptyCount, minDepth);
   initialTrays = trays.map((t) => t.slice());
   renderBoard();

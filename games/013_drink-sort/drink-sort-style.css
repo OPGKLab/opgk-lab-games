@@ -13,9 +13,18 @@
   --tray-bg: #ffffff;
   --tray-border: rgba(32, 52, 47, 0.12);
 
-  /* カップ（丸）のサイズ：トレイ幅と連動して画面幅に応じて拡大（5本レイアウト用）。
-     PCで縦スクロールが出ないよう、激むず(容量5)でも高さが収まる範囲に上限を設定。 */
-  --cup: clamp(41px, calc(41px + (100vw - 390px) * 0.189), 58px);
+  /* カップ（丸）のサイズ：横幅(vw)と縦幅(vh)の両方から算出し、狭い方に合わせる。
+     スマホは縦に余裕があるぶん横幅優先で大きくなり、PCは縦が窮屈な時だけ自動で縮む。
+     --capacity は現在の1トレイの容量(4 or 5)。JS側でモード切替時に設定する。 */
+  --capacity: 4;
+  --cup: clamp(
+    32px,
+    min(
+      calc((min(100vw, 480px) - 106px) / 5),
+      calc((100vh - 402px - (var(--capacity) - 1) * 4px) / var(--capacity))
+    ),
+    78px
+  );
 }
 
 /* このゲーム固有：盤面レイアウト */
@@ -30,9 +39,9 @@
 .sort-tray-area {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(5, calc(var(--cup) + 16px));
+  grid-template-columns: repeat(5, calc(var(--cup) + 6px));
   justify-content: center;
-  column-gap: clamp(4px, calc(4px + (100vw - 390px) * 0.0333), 7px);
+  column-gap: 4px;
   padding: 4px 0;
 }
 
