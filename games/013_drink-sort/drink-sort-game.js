@@ -27,9 +27,9 @@ const TINTS = {
   '🧋': '#ddbdae', // タピオカ：濃いめモカ
 };
 
-const CAPACITY = 4;
-const NORMAL_SETTING = { species: 4, empty: 2, minDepth: 10 };
-const HARD_SETTING = { species: 5, empty: 1, minDepth: 14 };
+let CAPACITY = 4; // 通常/激むずで切り替える（buildPuzzle内で設定）
+const NORMAL_SETTING = { species: 4, empty: 1, capacity: 4, minDepth: 14 };
+const HARD_SETTING = { species: 4, empty: 1, capacity: 5, minDepth: 20 };
 
 let trays = [];
 let initialTrays = null;
@@ -37,6 +37,7 @@ let solved = false;
 let locked = false;
 let dragState = null;
 let trayAreaEl = null;
+let activeHint = null; // { a, b } ヒントで提示中の手（他の手を選んだ時に知らせるため）
 
 /* トレイを移動した時の効果音：明るい2音チャイム（ピロリン） */
 function playCupChime() {
@@ -199,25 +200,49 @@ function showHint() {
     return;
   }
   const [a, b] = move;
+  activeHint = { a, b };
   const trayEls = trayAreaEl.querySelectorAll('.sort-tray');
   const fromEl = trayEls[a];
   const toEl = trayEls[b];
   fromEl.classList.add('sort-hint-from');
   toEl.classList.add('sort-hint-to');
+
+  // 移動方向の矢印（右のトレイへ移動なら➡️、左のトレイへ移動なら⬅️）
+  const arrow = document.createElement('div');
+  const goesRight = b > a;
+  arrow.className = `sort-hint-arrow ${goesRight ? 'sort-hint-arrow-right' : 'sort-hint-arrow-left'}`;
+  arrow.textContent = goesRight ? '➡️' : '⬅️';
+  fromEl.appendChild(arrow);
+
   shell.playTone(700, 0.1, 'triangle');
   setTimeout(() => {
     fromEl.classList.remove('sort-hint-from');
     toEl.classList.remove('sort-hint-to');
+    arrow.remove();
+    if (activeHint && activeHint.a === a && activeHint.b === b) activeHint = null;
   }, 1600);
+}
+
+/* ヒントと違う手を選んだ時の警告：shell.toast()は1.6秒で消えて読み切れないため、
+   このゲーム専用にもっと長く表示される警告を用意する（約5秒、タップでも消せる） */
+function showAlert(msg) {
+  const el = document.createElement('div');
+  el.className = 'sort-alert';
+  el.textContent = msg;
+  el.addEventListener('click', () => el.remove());
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 5200);
 }
 
 function canMove(a, b) {
   return canMoveOn(trays, a, b);
 }
 
-function buildPuzzle(speciesCount, emptyCount, minDepth) {
+function buildPuzzle(speciesCount, emptyCount, capacity, minDepth) {
   solved = false;
   locked = false;
+  activeHint = null;
+  CAPACITY = capacity;
   trays = buildTrays(speciesCount, emptyCount, minDepth);
   initialTrays = trays.map((t) => t.slice());
   renderBoard();
@@ -229,6 +254,7 @@ function retryPuzzle() {
   trays = initialTrays.map((t) => t.slice());
   solved = false;
   locked = false;
+  activeHint = null;
   renderBoard();
   shell.toast('はじめの配置に戻しました');
 }
@@ -337,6 +363,13 @@ function onPointerUp(e) {
   const item = trays[sourceIndex].pop();
   trays[destIndex].push(item);
   playCupChime();
+
+  // 提示中のヒントと違う手を選んだ場合はその場で知らせる（方向の取り違え対策）
+  if (activeHint && (activeHint.a !== sourceIndex || activeHint.b !== destIndex)) {
+    showAlert('⚠️ ヒントと違う手です。向きが逆になっていませんか？');
+  }
+  activeHint = null;
+
   renderBoard();
 
   checkAfterMove();
@@ -399,7 +432,7 @@ showPlaceholder();
 /* ---- GameShellのライフサイクルに接続 ---- */
 shell.onStart(() => {
   const setting = shell.hardMode ? HARD_SETTING : NORMAL_SETTING;
-  buildPuzzle(setting.species, setting.empty, setting.minDepth);
+  buildPuzzle(setting.species, setting.empty, setting.capacity, setting.minDepth);
 });
 shell.onReset(() => {
   showPlaceholder();

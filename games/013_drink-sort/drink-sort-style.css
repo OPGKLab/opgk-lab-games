@@ -12,6 +12,10 @@
   /* このゲーム固有：トレイの色（common側には存在しない変数） */
   --tray-bg: #ffffff;
   --tray-border: rgba(32, 52, 47, 0.12);
+
+  /* カップ（丸）のサイズ：トレイ幅と連動して画面幅に応じて拡大（5本レイアウト用）。
+     PCで縦スクロールが出ないよう、激むず(容量5)でも高さが収まる範囲に上限を設定。 */
+  --cup: clamp(41px, calc(41px + (100vw - 390px) * 0.189), 58px);
 }
 
 /* このゲーム固有：盤面レイアウト */
@@ -26,7 +30,7 @@
 .sort-tray-area {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(6, clamp(46px, calc(46px + (100vw - 390px) * 0.2), 64px));
+  grid-template-columns: repeat(5, calc(var(--cup) + 16px));
   justify-content: center;
   column-gap: clamp(4px, calc(4px + (100vw - 390px) * 0.0333), 7px);
   padding: 4px 0;
@@ -147,14 +151,61 @@
 .sort-tray.sort-hint-from { animation: sortHintPulseFrom 0.55s ease-in-out infinite alternate; }
 .sort-tray.sort-hint-to { animation: sortHintPulseTo 0.55s ease-in-out infinite alternate; }
 
+/* ヒント矢印：移動元トレイの一番上のカップ横に表示し、方向へ軽くバウンドさせる */
+.sort-hint-arrow {
+  position: absolute;
+  top: 6px;
+  font-size: 22px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 6;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+.sort-hint-arrow-right { right: -22px; animation: sortHintArrowBounceRight 0.6s ease-in-out infinite alternate; }
+.sort-hint-arrow-left { left: -22px; animation: sortHintArrowBounceLeft 0.6s ease-in-out infinite alternate; }
+@keyframes sortHintArrowBounceRight {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(5px); }
+}
+@keyframes sortHintArrowBounceLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-5px); }
+}
+
+/* ヒントと違う手を選んだ時の警告：shell.toast()より長く表示される専用アラート */
+.sort-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #e2574c;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  z-index: 1000;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  animation: sortAlertFade 5.2s ease forwards;
+}
+@keyframes sortAlertFade {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  6% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  88% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 .sort-slot {
-  width: 44px;
-  height: 44px;
+  width: var(--cup);
+  height: var(--cup);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 34px;
+  font-size: calc(var(--cup) * 0.72);
   line-height: 1;
 }
 .sort-slot.sort-empty {
@@ -174,7 +225,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  font-size: 34px;
+  font-size: calc(var(--cup) * 0.72);
   line-height: 1;
   pointer-events: none;
   z-index: 999;
