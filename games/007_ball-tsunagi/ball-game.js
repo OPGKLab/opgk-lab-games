@@ -45,7 +45,7 @@ let cellEls = [];
 let dragging = false;
 let activeColor = null;
 let hintTimeoutId = null;
-let moveHistory = [];    // { type:'add', color, cell } | { type:'remove', color, cells:[...] }（色を跨いだ全体の操作履歴）
+let hintGhostCells = []; // ヒントで表示中の幻影ルートのセル（消去用に保持）
 
 /* ---------- ユーティリティ ---------- */
 function neighborsOf(r, c, n) {
@@ -151,7 +151,6 @@ function buildPuzzle() {
   endpoints = [];
   canonicalSegments = segments;
   paths = Array.from({ length: COLOR_COUNT }, () => []);
-  moveHistory = [];
 
   segments.forEach((seg, idx) => {
     const [r1, c1] = seg[0];
@@ -173,7 +172,7 @@ function buildDom() {
       <span class="ball-progress">つながった: <b id="ballProgress">0</b> / ${COLOR_COUNT}</span>
       <div class="ball-toolbar-actions">
         <button class="s-icon-btn-text" id="ballHintBtn">💡 ヒント</button>
-        <button class="s-icon-btn-text" id="ballUndoBtn">⬅️ 戻す</button>
+        <button class="s-icon-btn-text" id="ballRestartBtn">↩️ はじめから</button>
       </div>
     </div>
     <div class="ball-grid" id="ballGrid" style="--cols:${SIZE}"></div>
@@ -193,7 +192,7 @@ function buildDom() {
     }
   }
   shell.board.querySelector('#ballHintBtn').addEventListener('click', showHint);
-  shell.board.querySelector('#ballUndoBtn').addEventListener('click', undoLastMove);
+  shell.board.querySelector('#ballRestartBtn').addEventListener('click', restartCurrentPuzzle);
 }
 
 function showPlaceholder() {
@@ -276,7 +275,6 @@ function startDrag(r, c) {
   if (cell.isEndpoint) {
     if (path.length === 0) {
       paths[color] = [[r, c]];
-      moveHistory.push({ type: 'add', color, cell: [r, c] });
     } else {
       const tip = path[path.length - 1];
       const head = path[0];
@@ -285,13 +283,11 @@ function startDrag(r, c) {
         if (!sameCell(tip, [r, c])) {
           clearColorPath(color);
           paths[color] = [[r, c]];
-          moveHistory.push({ type: 'add', color, cell: [r, c] });
         }
       } else {
         // 既に両端がつながっている状態でどちらかを再タップ→引き直し
         clearColorPath(color);
         paths[color] = [[r, c]];
-        moveHistory.push({ type: 'add', color, cell: [r, c] });
       }
     }
   } else {
@@ -307,29 +303,35 @@ function startDrag(r, c) {
 
 function truncatePath(color, keepUntilIdx) {
   const path = paths[color];
-  const removed = path.slice(keepUntilIdx + 1); // 前方向の順番のまま保持（戻す時に再現するため）
+  const removed = path.slice(keepUntilIdx + 1);
   removed.forEach(([r, c]) => {
     if (!board[r][c].isEndpoint) board[r][c] = { color: null, isEndpoint: false };
     renderCell(r, c);
   });
   paths[color] = path.slice(0, keepUntilIdx + 1);
-  if (removed.length) moveHistory.push({ type: 'remove', color, cells: removed });
   updateCanonicalGlow(color);
   updateProgress();
 }
 
 function clearColorPath(color) {
-  const removed = paths[color].slice();
-  removed.forEach(([r, c]) => {
+  paths[color].forEach(([r, c]) => {
     if (!board[r][c].isEndpoint) {
       board[r][c] = { color: null, isEndpoint: false };
       renderCell(r, c);
     }
   });
   paths[color] = [];
-  if (removed.length) moveHistory.push({ type: 'remove', color, cells: removed });
   updateCanonicalGlow(color);
   updateProgress();
+}
+
+/* 「↩️ はじめから」：同じ盤面のまま、すべての色の線を消して最初の状態に戻す */
+function restartCurrentPuzzle() {
+  if (!shell.running) return;
+  clearTimeout(hintTimeoutId);
+  clearHintGhost();
+  for (let i = 0; i < COLOR_COUNT; i++) clearColorPath(i);
+  shell.toast('はじめからやり直しましょう');
 }
 
 function extendTo(r, c) {
@@ -350,7 +352,6 @@ function extendTo(r, c) {
       const [tr, tc] = path.pop();
       if (!board[tr][tc].isEndpoint) board[tr][tc] = { color: null, isEndpoint: false };
       renderCell(tr, tc);
-      moveHistory.push({ type: 'remove', color, cells: [[tr, tc]] });
       updateCanonicalGlow(color);
       updateProgress();
       return;
@@ -367,7 +368,6 @@ function extendTo(r, c) {
   const wasEmpty = target.color === null;
   board[r][c] = { color, isEndpoint: target.isEndpoint };
   renderCell(r, c);
-  moveHistory.push({ type: 'add', color, cell: [r, c] });
   if (wasEmpty) shell.playTone(520 + color * 30, 0.04);
 
   if (target.isEndpoint && isColorConnected(color)) {
@@ -379,36 +379,6 @@ function extendTo(r, c) {
   updateCanonicalGlow(color);
   updateProgress();
   checkWin();
-}
-
-/* 全体の操作履歴から直前の1手だけ取り消す（色を跨いだ「一手戻す」） */
-function undoLastMove() {
-  if (!shell.running) return;
-  const entry = moveHistory.pop();
-  if (!entry) {
-    shell.toast('これ以上は戻せません');
-    return;
-  }
-  const { color } = entry;
-  if (entry.type === 'add') {
-    const path = paths[color];
-    const last = path[path.length - 1];
-    if (last && sameCell(last, entry.cell)) {
-      path.pop();
-      const [r, c] = entry.cell;
-      if (!board[r][c].isEndpoint) board[r][c] = { color: null, isEndpoint: false };
-      renderCell(r, c);
-    }
-  } else if (entry.type === 'remove') {
-    entry.cells.forEach(([r, c]) => {
-      paths[color].push([r, c]);
-      const isEndpointCell = endpoints[color].some((e) => sameCell(e, [r, c]));
-      board[r][c] = { color, isEndpoint: isEndpointCell };
-      renderCell(r, c);
-    });
-  }
-  updateCanonicalGlow(color);
-  updateProgress();
 }
 
 document.addEventListener('pointermove', (e) => {
@@ -423,21 +393,19 @@ document.addEventListener('pointerup', () => {
 });
 
 /* ---------- ヒント ---------- */
-/* 未接続の色から1つ選び、基準ルート上の「次の1マス」だけをそっと教える。
-   現在の線が基準ルートから外れている場合は、次の1マスを特定できないため
-   軌道修正を促すメッセージにとどめる（別解を否定しないため）。 */
-function findNextHintCell(color) {
-  const path = paths[color];
-  const canon = canonicalSegments[color];
-  if (path.length === 0) return canon[1]; // まだ描いていない→基準ルートの2マス目を提案
-
-  const [eA] = endpoints[color];
-  const ref = sameCell(path[0], eA) ? canon : canon.slice().reverse();
-  let k = 0;
-  while (k < path.length && k < ref.length && sameCell(path[k], ref[k])) k++;
-  if (k !== path.length) return null; // 基準ルートから外れている
-  if (k >= ref.length) return null; // 既に最後まで一致（＝接続済みのはず）
-  return ref[k];
+/* 未接続の色を1つ選び、その色の基準ルート全体を「ふわっと幻影」のように一時表示する。
+   実際に置くかどうかはプレイヤー次第（消えてもクリア判定には影響しない演出のみ）。 */
+function clearHintGhost() {
+  hintGhostCells.forEach(([r, c]) => {
+    const el = cellEls[r][c];
+    if (!el) return;
+    el.classList.remove('ball-hint-ghost', 'ball-hint-ghost-fill');
+    if (board[r][c].color === null) {
+      for (let i = 0; i < COLORS.length; i++) el.classList.remove(`ball-c${i}`);
+      el.textContent = '';
+    }
+  });
+  hintGhostCells = [];
 }
 
 function showHint() {
@@ -449,19 +417,21 @@ function showHint() {
     return;
   }
   clearTimeout(hintTimeoutId);
-  const shuffled = shuffleArr(unconnected.slice());
-  for (const color of shuffled) {
-    const next = findNextHintCell(color);
-    if (!next) continue;
-    const [r, c] = next;
-    cellEls[r][c].classList.add('ball-hint-next');
-    shell.toast(`${COLORS[color].emoji} は、光っているマスに進めそうです`);
-    hintTimeoutId = setTimeout(() => {
-      cellEls[r][c] && cellEls[r][c].classList.remove('ball-hint-next');
-    }, 1800);
-    return;
-  }
-  shell.toast('今の線が少し複雑なようです。「戻す」で調整してみましょう');
+  clearHintGhost();
+
+  const color = unconnected[(Math.random() * unconnected.length) | 0];
+  const route = canonicalSegments[color];
+  route.forEach(([r, c]) => {
+    const el = cellEls[r][c];
+    el.classList.add('ball-hint-ghost');
+    if (board[r][c].color === null) {
+      el.classList.add(`ball-c${color}`, 'ball-hint-ghost-fill');
+      el.textContent = COLORS[color].emoji;
+    }
+  });
+  hintGhostCells = route;
+  shell.toast(`${COLORS[color].emoji} の正解ルートをそっと映しました`);
+  hintTimeoutId = setTimeout(clearHintGhost, 2600);
 }
 
 /* ---------- 判定 ---------- */
@@ -518,6 +488,7 @@ shell.onStart(() => {
 });
 shell.onReset(() => {
   clearTimeout(hintTimeoutId);
+  clearHintGhost();
   dragging = false;
   activeColor = null;
   showPlaceholder();
