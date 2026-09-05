@@ -33,6 +33,7 @@ const HARD_SETTING = { species: 4, empty: 1, capacity: 5, minDepth: 20 };
 
 let trays = [];
 let initialTrays = null;
+let history = []; // 1手戻る用：これまでの手を打つ直前の状態を積んでいく
 let solved = false;
 let locked = false;
 let dragState = null;
@@ -191,7 +192,7 @@ function findHintMove(initial) {
 /* ヒントボタン：最初の1手を、移動元(青緑)→移動先(金)で光らせて教える */
 function showHint() {
   if (locked) {
-    shell.toast('「はじめから」でやり直しましょう');
+    shell.toast('「ひとつ戻る」でやり直しましょう');
     return;
   }
   const move = findHintMove(trays);
@@ -242,6 +243,7 @@ function buildPuzzle(speciesCount, emptyCount, capacity, minDepth) {
   solved = false;
   locked = false;
   activeHint = null;
+  history = [];
   CAPACITY = capacity;
   document.documentElement.style.setProperty('--capacity', CAPACITY);
   trays = buildTrays(speciesCount, emptyCount, minDepth);
@@ -249,15 +251,19 @@ function buildPuzzle(speciesCount, emptyCount, capacity, minDepth) {
   renderBoard();
 }
 
-/* 今回の問題を、最初に生成された配置まで戻す（「はじめから」ボタン用） */
-function retryPuzzle() {
-  if (!initialTrays) return;
-  trays = initialTrays.map((t) => t.slice());
+/* 直前の1手を取り消す（「ひとつ戻る」ボタン用）。連打すれば最初まで戻れる。
+   詰んでロックされている状態からも、これで復帰できる。 */
+function undoMove() {
+  if (history.length === 0) {
+    shell.toast('これ以上戻れません');
+    return;
+  }
+  trays = history.pop();
   solved = false;
   locked = false;
   activeHint = null;
   renderBoard();
-  shell.toast('はじめの配置に戻しました');
+  shell.toast('ひとつ前に戻しました');
 }
 
 function renderBoard() {
@@ -265,13 +271,13 @@ function renderBoard() {
   shell.board.innerHTML = `
     <div class="sort-toolbar">
       <button class="s-icon-btn-text" id="sortHintBtn">💡 ヒント</button>
-      <button class="s-icon-btn-text" id="sortRetryBtn">↩️ はじめから</button>
+      <button class="s-icon-btn-text" id="sortUndoBtn">↩️ ひとつ戻る</button>
     </div>
     <div class="sort-tray-area" id="sortTrayArea"></div>
   `;
   trayAreaEl = shell.board.querySelector('#sortTrayArea');
   shell.board.querySelector('#sortHintBtn').addEventListener('click', showHint);
-  shell.board.querySelector('#sortRetryBtn').addEventListener('click', retryPuzzle);
+  shell.board.querySelector('#sortUndoBtn').addEventListener('click', undoMove);
 
   trays.forEach((tray, idx) => {
     const trayEl = document.createElement('div');
@@ -361,6 +367,9 @@ function onPointerUp(e) {
     return;
   }
 
+  // 「ひとつ戻る」用に、動かす直前の状態を保存しておく
+  history.push(trays.map((t) => t.slice()));
+
   const item = trays[sourceIndex].pop();
   trays[destIndex].push(item);
   playCupChime();
@@ -398,7 +407,7 @@ function playStuck() {
   setTimeout(() => trayAreaEl.classList.remove('sort-stuck'), 450);
   shell.playTone(320, 0.18, 'square');
   setTimeout(() => shell.playTone(190, 0.32, 'square'), 150);
-  setTimeout(() => shell.toast('これ以上動かせません…😢「はじめから」でやり直しましょう'), 350);
+  setTimeout(() => shell.toast('これ以上動かせません…😢「ひとつ戻る」でやり直しましょう'), 350);
 }
 
 function playClear() {
