@@ -271,7 +271,7 @@ function renderBoard() {
   shell.board.innerHTML = `
     <div class="sort-toolbar">
       <button class="s-icon-btn-text" id="sortHintBtn">💡 ヒント</button>
-      <button class="s-icon-btn-text" id="sortUndoBtn">↩️ ひとつ戻る</button>
+      <button class="s-icon-btn-text" id="sortUndoBtn">⬅️ ひとつ戻る</button>
     </div>
     <div class="sort-tray-area" id="sortTrayArea"></div>
   `;
