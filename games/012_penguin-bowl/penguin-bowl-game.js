@@ -22,12 +22,12 @@ const LANE_H = 420;
 const BALL_START = { x: 150, y: 390 };
 const GUTTER_MARGIN_NORMAL = 28;
 const GUTTER_MARGIN_HARD = 38;
-const PIN_RADIUS_NORMAL = 26;
-const PIN_RADIUS_HARD = 19;
-const CHAIN_RADIUS_NORMAL = 30;
-const CHAIN_RADIUS_HARD = 22;
-const CHAIN_CHANCE_NORMAL = 0.5;
-const CHAIN_CHANCE_HARD = 0.3;
+const PIN_RADIUS_NORMAL = 34;
+const PIN_RADIUS_HARD = 26;
+const CHAIN_RADIUS_NORMAL = 55;
+const CHAIN_RADIUS_HARD = 40;
+const CHAIN_CHANCE_NORMAL = 0.6;
+const CHAIN_CHANCE_HARD = 0.35;
 const ZOOM_TRIGGER_Y = 230;
 
 let pins = [];
@@ -51,9 +51,9 @@ function pinLayout() {
   // 4-3-2-1 三角配置（頂点＝1番ピンがプレイヤー側手前）
   const rows = [
     { y: 150, xs: [150] },
-    { y: 118, xs: [130, 170] },
-    { y: 86, xs: [110, 150, 190] },
-    { y: 54, xs: [90, 130, 170, 210] },
+    { y: 116, xs: [115, 185] },
+    { y: 82, xs: [80, 150, 220] },
+    { y: 48, xs: [45, 115, 185, 255] },
   ];
   const list = [];
   let id = 0;
