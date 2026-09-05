@@ -249,6 +249,9 @@ function resolveOverlapsOnce() {
 }
 
 // 速度の解決（反発）と合体判定。位置補正が済んだ後の最終的な重なり状態を見て判定する。
+// 合体判定は物理的な当たり判定より少し広めにする（隙間が少し空いていても合体できるように）
+const MERGE_TOLERANCE = 1.18;
+
 function resolveVelocitiesAndMerges() {
   const mergeQueue = [];
   const now = Date.now();
@@ -258,22 +261,27 @@ function resolveVelocitiesAndMerges() {
       const dx = b.x - a.x, dy = b.y - a.y;
       const dist = Math.hypot(dx, dy);
       const minDist = a.r + b.r;
-      if (dist === 0 || dist >= minDist) continue;
+      const mergeDist = minDist * MERGE_TOLERANCE;
+      if (dist === 0 || dist >= mergeDist) continue;
 
-      const nx = dx / dist, ny = dy / dist;
-      const rvx = b.vx - a.vx, rvy = b.vy - a.vy;
-      const velAlongNormal = rvx * nx + rvy * ny;
-      if (velAlongNormal < 0) {
-        // 衝突速度が小さい（=ほぼ静止して押し合っているだけ）場合は跳ね返さず吸収する。
-        // これをやらないと接触状態のまま永久に微振動し続け、静止判定に到達できない。
-        const usedRestitution = Math.abs(velAlongNormal) < MIN_BOUNCE_SPEED ? 0 : RESTITUTION;
-        const jImpulse = (-(1 + usedRestitution) * velAlongNormal) / (1 / a.mass + 1 / b.mass);
-        a.vx -= (jImpulse * nx) / a.mass;
-        a.vy -= (jImpulse * ny) / a.mass;
-        b.vx += (jImpulse * nx) / b.mass;
-        b.vy += (jImpulse * ny) / b.mass;
+      // 物理的な反発（跳ね返り）は実際に重なっている時だけ計算する
+      if (dist < minDist) {
+        const nx = dx / dist, ny = dy / dist;
+        const rvx = b.vx - a.vx, rvy = b.vy - a.vy;
+        const velAlongNormal = rvx * nx + rvy * ny;
+        if (velAlongNormal < 0) {
+          // 衝突速度が小さい（=ほぼ静止して押し合っているだけ）場合は跳ね返さず吸収する。
+          // これをやらないと接触状態のまま永久に微振動し続け、静止判定に到達できない。
+          const usedRestitution = Math.abs(velAlongNormal) < MIN_BOUNCE_SPEED ? 0 : RESTITUTION;
+          const jImpulse = (-(1 + usedRestitution) * velAlongNormal) / (1 / a.mass + 1 / b.mass);
+          a.vx -= (jImpulse * nx) / a.mass;
+          a.vy -= (jImpulse * ny) / a.mass;
+          b.vx += (jImpulse * nx) / b.mass;
+          b.vy += (jImpulse * ny) / b.mass;
+        }
       }
 
+      // 合体判定はmergeDist（少し広め）で成立させる
       if (!a.merging && !b.merging && now - a.bornAt > MERGE_LOCK_MS && now - b.bornAt > MERGE_LOCK_MS) {
         if (a.stage === b.stage && a.stage < MAX_STAGE) {
           a.merging = true; b.merging = true;
@@ -292,16 +300,26 @@ function resolveVelocitiesAndMerges() {
 // これ未満の縦速度なら「もう落下していない＝着地/支えられている」とみなす
 const REST_VY_SPEED = 20;
 
+// 着地後の横方向の転がりやすさ（サイズ依存）。値が1に近いほど減衰が弱く長く転がる。
+const MIN_R = STAGES[0].r;
+const MAX_R = STAGES[MAX_STAGE].r;
+const SMALL_REST_FRICTION = 0.985; // 一番小さい卵：よく転がる
+const LARGE_REST_FRICTION = 0.88;  // 一番大きい卵：あまり転がらない（少しだけ動く）
+function restFrictionFor(r) {
+  const t = (r - MIN_R) / (MAX_R - MIN_R); // 0(小)〜1(大)
+  return SMALL_REST_FRICTION + (LARGE_REST_FRICTION - SMALL_REST_FRICTION) * t;
+}
+
 // 数値誤差で残るごく小さい速度を完全に0へスナップする（見た目の微振動と誤判定を防ぐ）
 function settleSlowParticles() {
   particles.forEach((p) => {
+    // 縦方向が止まっている＝着地している卵は、横方向にサイズなりの摩擦をかけて減速させる。
+    // 即ゼロにすると「ドスッ」と砂袋が落ちたような動きになるため、少し転がってから止まるようにする。
+    if (Math.abs(p.vy) < REST_VY_SPEED) {
+      p.vx *= restFrictionFor(p.r);
+    }
     if (Math.hypot(p.vx, p.vy) < SETTLE_ZERO_SPEED) {
       p.vx = 0; p.vy = 0;
-    }
-    // 縦方向が止まっている＝着地している卵は、横方向の動きも即座に止める（滑走禁止）。
-    // これがないと、ほぼ無限に横へじわじわ移動して離れた同種を見つけ出してしまう。
-    if (Math.abs(p.vy) < REST_VY_SPEED) {
-      p.vx = 0;
     }
   });
 }
