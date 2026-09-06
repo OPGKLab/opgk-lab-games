@@ -271,7 +271,7 @@ function renderBoard() {
   shell.board.innerHTML = `
     <div class="sort-toolbar">
       <button class="s-icon-btn-text" id="sortHintBtn">💡 ヒント</button>
-      <button class="s-icon-btn-text" id="sortUndoBtn">⬅️ ひとつ戻る</button>
+      <button class="s-icon-btn-text" id="sortUndoBtn">↩️ ひとつ戻る</button>
     </div>
     <div class="sort-tray-area" id="sortTrayArea"></div>
   `;
@@ -372,7 +372,6 @@ function onPointerUp(e) {
 
   const item = trays[sourceIndex].pop();
   trays[destIndex].push(item);
-  playCupChime();
 
   // 提示中のヒントと違う手を選んだ場合はその場で知らせる（方向の取り違え対策）
   if (activeHint && (activeHint.a !== sourceIndex || activeHint.b !== destIndex)) {
@@ -382,32 +381,37 @@ function onPointerUp(e) {
 
   renderBoard();
 
-  checkAfterMove();
+  // 詰み/クリアになる手では、移動音(ぴこっ)を鳴らさずNG音・クリア音だけにする（音が被って聞き取れなくなるため）
+  const outcome = checkAfterMove();
+  if (outcome === 'ok') playCupChime();
 }
 
 /* 1手ごとに、まだ解ける状態かを裏で確認する。
    完全に詰んだ（このBFSで解なしと断定できた）場合だけゲーム終了にする。
-   判定できない場合（時間切れ）は誤判定を避けるため何もしない。 */
+   判定できない場合（時間切れ）は誤判定を避けるため何もしない。
+   戻り値: 'solved' | 'stuck' | 'ok' */
 function checkAfterMove() {
   if (isSolved(trays)) {
     solved = true;
     locked = true;
     playClear();
-    return;
+    return 'solved';
   }
   const result = minSolveDepth(trays, 200000, 900);
   if (result === -1) {
     locked = true;
     playStuck();
+    return 'stuck';
   }
+  return 'ok';
 }
 
 function playStuck() {
   trayAreaEl.classList.add('sort-stuck');
   setTimeout(() => trayAreaEl.classList.remove('sort-stuck'), 450);
-  shell.playTone(320, 0.18, 'square');
-  setTimeout(() => shell.playTone(190, 0.32, 'square'), 150);
-  setTimeout(() => shell.toast('これ以上動かせません…😢「ひとつ戻る」でやり直しましょう'), 350);
+  // 単音・短め・音階変化なしのクリアな「ブッ」。和音や下降音階にすると不快感/曖昧さが増すため避ける。
+  shell.playTone(300, 0.13, 'square');
+  setTimeout(() => shell.toast('これ以上動かせません…😢「ひとつ戻る」でやり直しましょう'), 200);
 }
 
 function playClear() {
