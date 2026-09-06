@@ -61,10 +61,10 @@
 .lane-inner {
   position: absolute;
   inset: 0;
-  transform-origin: 50% 30%;
+  transform-origin: 50% 24%;
   transition: transform 0.4s ease;
 }
-.lane-inner.zoomed { transform: scale(1.5); }
+.lane-inner.zoomed { transform: scale(1.15); }
 
 @keyframes strikeFlash {
   0% { filter: brightness(1); }
