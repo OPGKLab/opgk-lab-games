@@ -1,0 +1,240 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #eef3f6;
+  --board: #dfe9ee;
+  --accent: #3d6b8c;
+  --hard: #e2574c;
+  --text: #223140;
+  --popup-good: #3d6b8c;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：行列・乗車口・駐車場の色（common側には存在しない変数） */
+  --queue-bg: #ffffff;
+  --bay-bg: #ffffff;
+  --bay-border: rgba(0, 0, 0, 0.15);
+  --pool-bg: #cfd8dc;
+}
+
+/* 色×動物の凡例（案内板っぽい見た目にして、他要素と区別する） */
+.donadona-legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 16px;
+  margin-bottom: 8px;
+  background: #fff6df;
+  border: 2px dashed var(--accent);
+  border-radius: 10px;
+  padding: 8px 6px;
+}
+.donadona-legend-sep {
+  color: #b8ab90;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+/* セクション見出し */
+.donadona-section-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #5c6f7c;
+  margin: 8px 0 4px 2px;
+}
+.donadona-bays-label {
+  display: flex;
+  justify-content: space-between;
+  padding-right: 4px;
+}
+
+/* 動物の行列（Sの字に折り返し、先頭の行が一番下＝乗車レーンに近い側に来る） */
+.donadona-queue {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 4px;
+  background: var(--queue-bg);
+  border-radius: 10px;
+  padding: 8px 6px;
+  min-height: 40px;
+}
+.donadona-queue-row {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+/* 偶数行（先頭を含む最下段など）は右詰め、奇数行は左詰めで折り返し、
+   本物の行列のようにお尻から続いて見えるようにする */
+.donadona-queue-row-rev {
+  flex-direction: row-reverse;
+}
+.donadona-queue-heart {
+  font-size: 13px;
+  opacity: 0.55;
+  line-height: 1;
+}
+.donadona-queue-front {
+  font-size: 26px;
+  opacity: 1;
+  border: none;
+  background: none;
+  padding: 0 2px;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  animation: donadonaFrontPulse 1s ease-in-out infinite alternate;
+}
+@keyframes donadonaFrontPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.12); }
+}
+
+/* 乗車レーンの導線表示（行列→乗車口の流れを示すだけの装飾） */
+.donadona-lane {
+  text-align: center;
+  font-size: 11px;
+  color: #8a99a3;
+  letter-spacing: 0.15em;
+  margin: 2px 0 4px;
+}
+
+/* 乗車口＋待避を同じ行に（待避は右寄せ） */
+.donadona-bays-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.donadona-bays {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+}
+.donadona-bay {
+  flex: 1;
+  min-height: 54px;
+  border-radius: 10px;
+  background: var(--bay-bg);
+  box-shadow: inset 0 0 0 2px var(--bay-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text);
+}
+.donadona-bay-empty { color: #9aa9b2; font-size: 12px; }
+.donadona-bay-emoji { font-size: 20px; line-height: 1; }
+.donadona-bay-count { font-size: 11px; font-weight: bold; }
+
+.donadona-holding {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.donadona-holding-slot {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--bay-bg);
+  box-shadow: inset 0 0 0 2px var(--bay-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+.donadona-holding-slot-filled { box-shadow: inset 0 0 0 2px var(--accent); }
+
+/* 駐車場：斜め駐車場っぽい背景＋トラックを斜め上向きに */
+.donadona-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(58deg, rgba(255, 255, 255, 0.55) 0 2px, transparent 2px 26px),
+    var(--pool-bg);
+  border-radius: 12px;
+  padding: 12px 10px;
+}
+.donadona-pool-btn {
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transform: skewX(-12deg);
+}
+.donadona-pool-btn:active { filter: brightness(0.95); }
+.donadona-pool-btn:disabled { opacity: 0.35; cursor: default; }
+.donadona-pool-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transform: skewX(12deg); /* ボタン自体の傾きを打ち消して中身は読みやすく保つ */
+}
+.donadona-pool-emoji {
+  display: inline-block;
+  font-size: 20px;
+  line-height: 1;
+  transform: rotate(40deg); /* トラックだけ斜め上向きに（向きは実機で要再調整） */
+}
+.donadona-pool-count { font-size: 12px; font-weight: bold; color: var(--accent); }
+
+/* アニメーション再生中は誤タップ防止のため操作をロック */
+.donadona-animating .donadona-queue-front,
+.donadona-animating .donadona-pool-btn {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* 行列・駐車場から乗車口へ実際に飛んでいく絵文字 */
+.donadona-fly {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 6;
+  transition: left 0.24s ease-in, top 0.24s ease-in, opacity 0.24s ease-in;
+}
+
+/* 出発演出：BIG絵文字オーバーレイ */
+.donadona-bigpop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 5;
+  animation: donadonaPop 1s ease forwards;
+}
+.donadona-bigpop-emoji { font-size: 64px; }
+.donadona-bigpop-count { font-size: 28px; font-weight: 900; color: var(--accent); }
+/* ドナドナのイメージで、ぱっと出た後に画面左へすーっと流れながら消える */
+@keyframes donadonaPop {
+  0% { opacity: 0; transform: translateX(0) scale(0.4); }
+  25% { opacity: 1; transform: translateX(0) scale(1.15); }
+  45% { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-130px) scale(0.85); }
+}
+
+.donadona-placeholder {
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #4c5c68;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.donadona-placeholder p { margin: 0; }
