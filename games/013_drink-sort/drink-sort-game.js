@@ -190,12 +190,27 @@ function findHintMove(initial) {
 }
 
 /* ヒントボタン：最初の1手を、移動元(青緑)→移動先(金)で光らせて教える */
+let hintBtnEl = null;
+
 function showHint() {
+  if (!hintBtnEl || hintBtnEl.disabled) return;
   if (locked) {
     shell.toast('「ひとつ戻る」でやり直しましょう');
     return;
   }
+  // 探索処理(findHintMove)は最大0.9秒ほど画面をブロックしうるため、
+  // 先にボタンを無効化してタップに即座に反応させ、実際の計算は次のフレームへ回す
+  hintBtnEl.disabled = true;
+  hintBtnEl.textContent = '💡 考え中…';
+  setTimeout(runHintSearch, 10);
+}
+
+function runHintSearch() {
   const move = findHintMove(trays);
+  if (hintBtnEl) {
+    hintBtnEl.disabled = false;
+    hintBtnEl.textContent = '💡 ヒント';
+  }
   if (!move) {
     shell.toast('ヒントが見つかりませんでした');
     return;
@@ -208,10 +223,10 @@ function showHint() {
   fromEl.classList.add('sort-hint-from');
   toEl.classList.add('sort-hint-to');
 
-  // 移動方向の矢印（右のトレイへ移動なら➡️、左のトレイへ移動なら⬅️）
+  // 移動方向の矢印：動かす元トレイの真上・中央に固定表示（左右にずらすとスマホで隣のレーンと混同しやすいため）
   const arrow = document.createElement('div');
   const goesRight = b > a;
-  arrow.className = `sort-hint-arrow ${goesRight ? 'sort-hint-arrow-right' : 'sort-hint-arrow-left'}`;
+  arrow.className = 'sort-hint-arrow';
   arrow.textContent = goesRight ? '➡️' : '⬅️';
   fromEl.appendChild(arrow);
 
@@ -276,7 +291,8 @@ function renderBoard() {
     <div class="sort-tray-area" id="sortTrayArea"></div>
   `;
   trayAreaEl = shell.board.querySelector('#sortTrayArea');
-  shell.board.querySelector('#sortHintBtn').addEventListener('click', showHint);
+  hintBtnEl = shell.board.querySelector('#sortHintBtn');
+  hintBtnEl.addEventListener('click', showHint);
   shell.board.querySelector('#sortUndoBtn').addEventListener('click', undoMove);
 
   trays.forEach((tray, idx) => {
