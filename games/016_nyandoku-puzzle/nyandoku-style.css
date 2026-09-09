@@ -1,0 +1,116 @@
+/* このゲーム固有：テーマカラー（シルバータビー系のダスティブルー、既存ゲームと非重複） */
+:root {
+  --bg: #eef1f6;
+  --board: #e3e8f1;
+  --accent: #6b7ea8;
+  --hard: #e2574c;
+  --text: #2e3540;
+  --popup-good: #6b7ea8;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+}
+
+.nya-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.nya-progress b { color: var(--accent); font-size: 15px; }
+
+/* モード切替（マインスイーパーと同じ構造） */
+.nya-modes { display: flex; gap: 6px; }
+.nya-mode-btn {
+  font-size: 13px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+.nya-mode-btn.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: bold;
+}
+
+/* 盤面 */
+.nya-grid {
+  --cols: 6;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 4px;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.nya-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(320px / var(--cols) * 0.5);
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+  user-select: none;
+}
+.nya-cell.nya-has-cat { font-size: calc(320px / var(--cols) * 0.62); }
+.nya-cell.nya-marked { color: #8a97a8; font-weight: 900; }
+
+.nya-cell.nya-shake { animation: nyaShake 0.3s ease; }
+@keyframes nyaShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.nya-cell.nya-hint { animation: nyaHintPulse 0.9s ease-in-out infinite alternate; }
+@keyframes nyaHintPulse {
+  0% { box-shadow: inset 0 0 0 2px var(--accent); }
+  100% { box-shadow: inset 0 0 0 4px var(--accent), 0 0 10px 2px rgba(107,126,168,0.5); }
+}
+
+.nya-cell.nya-wrong { animation: nyaWrongFlash 0.9s ease; }
+@keyframes nyaWrongFlash {
+  0%, 100% { box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08); }
+  30% { box-shadow: inset 0 0 0 3px var(--hard); }
+}
+
+.nya-cell.nya-solved { animation: nyaSolvedGlow 0.5s ease; }
+@keyframes nyaSolvedGlow {
+  0% { filter: none; }
+  50% { filter: brightness(1.3); }
+  100% { filter: none; }
+}
+
+.nya-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.nya-placeholder {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #556075;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.nya-placeholder p { margin: 0; }
+.nya-placeholder b { color: var(--accent); }
