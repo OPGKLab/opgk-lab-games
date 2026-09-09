@@ -196,7 +196,12 @@
   line-height: 1;
   transform: rotate(40deg); /* トラックだけ斜め上向きに（向きは実機で要再調整） */
 }
-.donadona-pool-count { font-size: 12px; font-weight: bold; color: var(--accent); }
+.donadona-pool-count {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--accent);
+  transform: translateX(-6px);
+}
 
 /* アニメーション再生中は誤タップ防止のため操作をロック */
 .donadona-animating .donadona-queue-front,
