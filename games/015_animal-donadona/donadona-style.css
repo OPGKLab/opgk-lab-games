@@ -88,6 +88,15 @@
   0% { transform: scale(1); }
   100% { transform: scale(1.12); }
 }
+.donadona-queue-front-arrow {
+  font-size: 15px;
+  line-height: 1;
+  animation: donadonaArrowNudge 0.7s ease-in-out infinite alternate;
+}
+@keyframes donadonaArrowNudge {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(3px); }
+}
 
 /* 乗車レーンの導線表示（行列→乗車口の流れを示すだけの装飾） */
 .donadona-lane {
@@ -150,14 +159,18 @@
 /* 駐車場：斜め駐車場っぽい背景＋トラックを斜め上向きに */
 .donadona-pool {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
-  justify-content: center;
   background:
-    repeating-linear-gradient(58deg, rgba(255, 255, 255, 0.55) 0 2px, transparent 2px 26px),
+    repeating-linear-gradient(-58deg, rgba(255, 255, 255, 0.55) 0 2px, transparent 2px 26px),
     var(--pool-bg);
   border-radius: 12px;
   padding: 12px 10px;
+}
+.donadona-pool-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
 }
 .donadona-pool-btn {
   border: none;
@@ -166,7 +179,7 @@
   padding: 8px 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transform: skewX(-12deg);
+  transform: skewX(12deg);
 }
 .donadona-pool-btn:active { filter: brightness(0.95); }
 .donadona-pool-btn:disabled { opacity: 0.35; cursor: default; }
@@ -175,7 +188,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  transform: skewX(12deg); /* ボタン自体の傾きを打ち消して中身は読みやすく保つ */
+  transform: skewX(-12deg); /* ボタン自体の傾きを打ち消して中身は読みやすく保つ */
 }
 .donadona-pool-emoji {
   display: inline-block;

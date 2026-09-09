@@ -58,6 +58,7 @@ let bays = [];     // [{ color: null|colorId, loaded: number }, ...]
 let pool = {};     // colorId -> 残りトラック台数
 let gameEnded = false;
 let animating = false; // アニメーション再生中は入力を受け付けない
+let queueBoxMinHeight = 40; // 行列ボックスの高さ（生成時の行数から算出し、以後は固定して画面のガタつきを防ぐ）
 
 /* ---------- ユーティリティ ---------- */
 function randColor() { return Math.floor(Math.random() * ANIMALS.length); }
@@ -177,6 +178,10 @@ function generatePuzzle() {
   gameEnded = false;
   animating = false;
 
+  // 行数から必要な高さを見積もり、以後クリアまで固定する（動的縮小によるガタつき防止）
+  const totalRows = Math.ceil(queue.length / QUEUE_ROW_SIZE);
+  queueBoxMinHeight = totalRows * 26 + 10 + Math.max(0, totalRows - 1) * 4 + 16;
+
   renderBoard();
 }
 
@@ -251,7 +256,7 @@ function renderBoard() {
     <div class="donadona-lane">▼ 乗車レーン ▼</div>
 
     <div class="donadona-section-label donadona-bays-label">
-      <span>🚪 乗車口</span><span>🅿️ 待避</span>
+      <span>🚪 乗車口</span><span>⏳ 待避</span>
     </div>
     <div class="donadona-bays-row">
       <div class="donadona-bays" id="donadonaBays"></div>
@@ -266,14 +271,19 @@ function renderBoard() {
   // 奇数行は左詰めにして、前の行のお尻から続いて見えるようにする。
   // column-reverseで包んでいるので、最初に追加した行（先頭を含む行）が一番下に来る。
   const queueEl = shell.board.querySelector('#donadonaQueue');
+  queueEl.style.minHeight = queueBoxMinHeight + 'px';
   for (let start = 0; start < queue.length; start += QUEUE_ROW_SIZE) {
     const rowIdx = start / QUEUE_ROW_SIZE;
     const rowItems = queue.slice(start, start + QUEUE_ROW_SIZE);
     const rowEl = document.createElement('div');
-    rowEl.className = 'donadona-queue-row' + (rowIdx % 2 === 0 ? ' donadona-queue-row-rev' : '');
+    rowEl.className = 'donadona-queue-row' + (rowIdx % 2 === 1 ? ' donadona-queue-row-rev' : '');
     rowItems.forEach((c, i) => {
       const globalIdx = start + i;
       if (globalIdx === 0) {
+        const arrow = document.createElement('span');
+        arrow.className = 'donadona-queue-front-arrow';
+        arrow.textContent = '🔽';
+        rowEl.appendChild(arrow);
         const btn = document.createElement('button');
         btn.className = 'donadona-queue-front';
         btn.textContent = ANIMALS[c].heart;
@@ -315,7 +325,12 @@ function renderBoard() {
   });
 
   const poolEl = shell.board.querySelector('#donadonaPool');
-  ANIMALS.forEach((a) => {
+  const poolRow1 = document.createElement('div');
+  poolRow1.className = 'donadona-pool-row';
+  const poolRow2 = document.createElement('div');
+  poolRow2.className = 'donadona-pool-row';
+  const POOL_ROW1_SIZE = 3; // 画面幅によらず常に3・2の2段になるよう固定
+  ANIMALS.forEach((a, idx) => {
     const btn = document.createElement('button');
     btn.className = 'donadona-pool-btn';
     btn.disabled = !pool[a.id];
@@ -326,8 +341,10 @@ function renderBoard() {
       </span>
     `;
     btn.addEventListener('click', (e) => onPoolTap(a.id, e.currentTarget));
-    poolEl.appendChild(btn);
+    (idx < POOL_ROW1_SIZE ? poolRow1 : poolRow2).appendChild(btn);
   });
+  poolEl.appendChild(poolRow1);
+  poolEl.appendChild(poolRow2);
 }
 
 function showPlaceholder() {
