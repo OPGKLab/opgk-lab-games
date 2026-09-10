@@ -27,8 +27,8 @@ const HARD_SIZE = 8;
 const GEN_ATTEMPTS = 200;
 
 const REGION_COLORS = [
-  '#ffd8c2', '#c8e6c9', '#bcd9f7', '#f5c6de',
-  '#fff2b0', '#d8c8f0', '#bdeeea', '#e0d2b8',
+  '#61c9dd', '#f3b948', '#a083d2', '#5ec096',
+  '#ea816f', '#5c8cd6', '#f39d6c', '#e387b8',
 ];
 
 let SIZE = NORMAL_SIZE;
@@ -214,7 +214,7 @@ function showPlaceholder() {
 function renderCell(r, c) {
   const el = cellEls[r][c];
   el.className = 'nya-cell';
-  el.style.background = REGION_COLORS[regionOf[r][c] % REGION_COLORS.length];
+  el.style.setProperty('--region-color', REGION_COLORS[regionOf[r][c] % REGION_COLORS.length]);
   if (placed[r][c]) {
     el.classList.add('nya-has-cat');
     el.textContent = '🐱';
