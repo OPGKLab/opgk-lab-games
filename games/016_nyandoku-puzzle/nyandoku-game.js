@@ -1,5 +1,5 @@
 /* =========================================================
-   にゃん独パズル🐱 固有ロジック
+   にゃんプレパズル🐱 固有ロジック
    共通土台(GameShell)のAPIだけを使用。
    ルール：行・列・色エリア・8方向隣接のいずれにも、
    ネコが2匹以上並ばないように盤面いっぱいに配置する。
@@ -16,7 +16,7 @@
 
 const shell = new GameShell({
   rootSelector: '#app',
-  title: 'にゃん独パズル🐱',
+  title: 'にゃんプレパズル🐱',
   hint: '縦・横・同じ色・ナナメを含めた隣接マスに、ネコが2匹以上並ばないように置きましょう',
   hasScore: false,
   hasTimer: false,
@@ -199,13 +199,48 @@ function buildBoard() {
   updateProgress();
 }
 
+function ruleCell(bg, content) {
+  return `<div class="nya-rule-cell${content === '✕' ? ' nya-rule-x' : ''}" style="background:${bg}">${content}</div>`;
+}
+
+function ruleDiagramHTML(type) {
+  const cells = [];
+  if (type === 'color') {
+    // 同じ色のマス9個、1匹以外は全部✕
+    for (let i = 0; i < 9; i++) cells.push(ruleCell('#c8e6c9', i === 4 ? '🐱' : '✕'));
+  } else if (type === 'lane') {
+    // 中央の行・列だけ✕、角は無地
+    for (let i = 0; i < 9; i++) {
+      const r = (i / 3) | 0, c = i % 3;
+      if (r === 1 && c === 1) cells.push(ruleCell('#fff2b0', '🐱'));
+      else if (r === 1 || c === 1) cells.push(ruleCell('#fff', '✕'));
+      else cells.push(ruleCell('#f2f2f2', ''));
+    }
+  } else {
+    // 隣接：中央にネコ、周り8マスは色バラバラで✕
+    const colors = ['#bcd9f7', '#f5c6de', '#d8c8f0', '#e0d2b8', '#bdeeea', '#ffd8c2', '#c8e6c9', '#fff2b0'];
+    let ci = 0;
+    for (let i = 0; i < 9; i++) {
+      if (i === 4) cells.push(ruleCell('#fbe4c8', '🐱'));
+      else cells.push(ruleCell(colors[ci++], '✕'));
+    }
+  }
+  return `<div class="nya-rule-grid">${cells.join('')}</div>`;
+}
+
 function showPlaceholder() {
   shell.board.className = 's-board';
   shell.board.innerHTML = `
-    <div class="nya-placeholder">
-      <p>同じ<b>行・列・色エリア</b>、そして<b>ナナメを含めた隣接マス</b>に、ネコが2匹以上並ばないように、盤面いっぱいにネコを置くパズルです。</p>
-      <p>「🐱配置」「✕印」をボタンで切り替えて考えましょう。</p>
-      <p>「スタート」を押すとはじまります</p>
+    <div class="nya-start-screen">
+      <div class="nya-rule-row">
+        <div class="nya-rule-card">${ruleDiagramHTML('color')}<div class="nya-rule-caption">同じ色に<br>ネコ1匹</div></div>
+        <div class="nya-rule-card">${ruleDiagramHTML('lane')}<div class="nya-rule-caption">同じ行・列に<br>ネコ1匹</div></div>
+        <div class="nya-rule-card">${ruleDiagramHTML('adjacent')}<div class="nya-rule-caption">ナナメ含め<br>隣接NG</div></div>
+      </div>
+      <div class="nya-placeholder">
+        <p>盤面いっぱいにネコを置くパズルです。「🐱配置」「✕印」をボタンで切り替えて考えましょう。</p>
+        <p>「スタート」を押すとはじまります</p>
+      </div>
     </div>
   `;
 }
