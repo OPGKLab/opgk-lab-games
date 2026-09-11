@@ -1,5 +1,5 @@
 /* =========================================================
-   にゃんプレパズル🐱 固有ロジック
+   にゃん独パズル🐱 固有ロジック
    共通土台(GameShell)のAPIだけを使用。
    ルール：行・列・色エリア・8方向隣接のいずれにも、
    ネコが2匹以上並ばないように盤面いっぱいに配置する。
@@ -16,7 +16,7 @@
 
 const shell = new GameShell({
   rootSelector: '#app',
-  title: 'にゃんプレパズル🐱',
+  title: 'にゃん独パズル🐱',
   hint: '縦・横・同じ色・ナナメを含めた隣接マスに、ネコが2匹以上並ばないように置きましょう',
   hasScore: false,
   hasTimer: false,
@@ -27,8 +27,8 @@ const HARD_SIZE = 8;
 const GEN_ATTEMPTS = 200;
 
 const REGION_COLORS = [
-  '#61c9dd', '#f3b948', '#a083d2', '#5ec096',
-  '#ea816f', '#5c8cd6', '#f39d6c', '#e387b8',
+  '#e36363', '#ea9e52', '#e3ca52', '#61bf87',
+  '#52bfce', '#5c8cd6', '#967dd6', '#d875b1',
 ];
 
 let SIZE = NORMAL_SIZE;
