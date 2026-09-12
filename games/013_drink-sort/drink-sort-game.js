@@ -452,9 +452,39 @@ function playClear() {
   setTimeout(() => shell.end('かんせい！ぜんぶそろったよ🍹'), trayEls.length * 70 + 500);
 }
 
+/* スタート前：実際のトレイと同じ見た目のミニ例で「ばらばら→そろえる」を視覚的に見せる。
+   老眼配慮のため縮小はせず、通常サイズのカップのまま、スロット数だけ2個に減らした簡略版。 */
 function showPlaceholder() {
   shell.board.className = 's-board';
-  shell.board.innerHTML = '<div class="sort-placeholder">「スタート」を押すとパズルが始まります</div>';
+  shell.board.innerHTML = `
+    <div class="sort-placeholder">
+      <div class="sort-howto">
+        <div class="sort-howto-group">
+          <div class="sort-tray sort-howto-tray" id="howtoMessy"></div>
+          <div class="sort-howto-label">ばらばら</div>
+        </div>
+        <div class="sort-howto-arrow">➡️</div>
+        <div class="sort-howto-group">
+          <div class="sort-tray sort-howto-tray" id="howtoSorted"></div>
+          <div class="sort-howto-label">そろえる！</div>
+        </div>
+      </div>
+      <p>カップをドラッグして、同じ種類ごとにまとめるゲームです。</p>
+      <p>「スタート」を押すとはじまります</p>
+    </div>
+  `;
+  renderHowToTray(shell.board.querySelector('#howtoMessy'), ['🍹', '☕']);
+  renderHowToTray(shell.board.querySelector('#howtoSorted'), ['🍹', '🍹']);
+}
+
+function renderHowToTray(trayEl, items) {
+  items.forEach((emoji) => {
+    const slot = document.createElement('div');
+    slot.className = 'sort-slot sort-filled';
+    slot.style.background = TINTS[emoji] || '#f5faf9';
+    slot.textContent = emoji;
+    trayEl.appendChild(slot);
+  });
 }
 
 showPlaceholder();
