@@ -59,6 +59,7 @@ let pool = {};     // colorId -> 残りトラック台数
 let gameEnded = false;
 let animating = false; // アニメーション再生中は入力を受け付けない
 let queueBoxMinHeight = 40; // 行列ボックスの高さ（生成時の行数から算出し、以後は固定して画面のガタつきを防ぐ）
+let queueBoxWidth = 220; // 行列ボックスの幅（1行あたりの最大表示数から算出し、以後は固定する）
 
 /* ---------- ユーティリティ ---------- */
 function randColor() { return Math.floor(Math.random() * ANIMALS.length); }
@@ -181,6 +182,8 @@ function generatePuzzle() {
   // 行数から必要な高さを見積もり、以後クリアまで固定する（動的縮小によるガタつき防止）
   const totalRows = Math.ceil(queue.length / QUEUE_ROW_SIZE);
   queueBoxMinHeight = totalRows * 26 + 10 + Math.max(0, totalRows - 1) * 4 + 16;
+  // 幅も1行分の最大表示数から見積もり、途中で数が減っても縮まないよう固定する
+  queueBoxWidth = QUEUE_ROW_SIZE * 21 + 40;
 
   renderBoard();
 }
@@ -253,8 +256,6 @@ function renderBoard() {
     <div class="donadona-section-label">🚶 動物の行列（先頭をタップで待避）</div>
     <div class="donadona-queue" id="donadonaQueue"></div>
 
-    <div class="donadona-lane">▼ 乗車レーン ▼</div>
-
     <div class="donadona-section-label donadona-bays-label">
       <span>🚪 乗車口</span><span>⏳ 待避</span>
     </div>
@@ -262,6 +263,8 @@ function renderBoard() {
       <div class="donadona-bays" id="donadonaBays"></div>
       <div class="donadona-holding" id="donadonaHolding"></div>
     </div>
+
+    <div class="donadona-big-arrow">⬆️</div>
 
     <div class="donadona-section-label">🅿️ 駐車場（タップで乗車口へ）</div>
     <div class="donadona-pool" id="donadonaPool"></div>
@@ -272,6 +275,7 @@ function renderBoard() {
   // column-reverseで包んでいるので、最初に追加した行（先頭を含む行）が一番下に来る。
   const queueEl = shell.board.querySelector('#donadonaQueue');
   queueEl.style.minHeight = queueBoxMinHeight + 'px';
+  queueEl.style.width = queueBoxWidth + 'px';
   for (let start = 0; start < queue.length; start += QUEUE_ROW_SIZE) {
     const rowIdx = start / QUEUE_ROW_SIZE;
     const rowItems = queue.slice(start, start + QUEUE_ROW_SIZE);
@@ -280,15 +284,18 @@ function renderBoard() {
     rowItems.forEach((c, i) => {
       const globalIdx = start + i;
       if (globalIdx === 0) {
+        const frontWrap = document.createElement('div');
+        frontWrap.className = 'donadona-queue-front-wrap';
         const arrow = document.createElement('span');
         arrow.className = 'donadona-queue-front-arrow';
         arrow.textContent = '🔽';
-        rowEl.appendChild(arrow);
         const btn = document.createElement('button');
         btn.className = 'donadona-queue-front';
         btn.textContent = ANIMALS[c].heart;
         btn.addEventListener('click', onQueueFrontTap);
-        rowEl.appendChild(btn);
+        frontWrap.appendChild(btn);
+        frontWrap.appendChild(arrow);
+        rowEl.appendChild(frontWrap);
       } else {
         const span = document.createElement('span');
         span.className = 'donadona-queue-heart';
@@ -330,9 +337,10 @@ function renderBoard() {
   const poolRow2 = document.createElement('div');
   poolRow2.className = 'donadona-pool-row';
   const POOL_ROW1_SIZE = 3; // 画面幅によらず常に3・2の2段になるよう固定
+  const allBaysEmpty = bays.every((b) => b.color === null);
   ANIMALS.forEach((a, idx) => {
     const btn = document.createElement('button');
-    btn.className = 'donadona-pool-btn';
+    btn.className = 'donadona-pool-btn' + (allBaysEmpty && pool[a.id] ? ' donadona-pool-hint' : '');
     btn.disabled = !pool[a.id];
     btn.innerHTML = `
       <span class="donadona-pool-inner">
@@ -351,8 +359,16 @@ function showPlaceholder() {
   shell.board.className = 's-board';
   shell.board.innerHTML = `
     <div class="donadona-placeholder">
-      <p>行列の先頭と同じ色のトラックを、乗車口に呼びましょう。</p>
-      <p>トラックは満員になるまで出発しません。合わない先頭は待避へどかせます。</p>
+      <p>行列の先頭と同じ色のトラックを、乗車口に呼ぶゲームです。</p>
+      <div class="donadona-explainer">
+        <span>🩷🩷🩷🩷</span>
+        <span class="donadona-explainer-arrow">→</span>
+        <span>🚚🩷</span>
+        <span class="donadona-explainer-arrow">→</span>
+        <span>🐖💨</span>
+      </div>
+      <p class="donadona-explainer-caption">同じ色が4匹そろうと、その動物になって出発します</p>
+      <p>合わない先頭は待避へどかせます。</p>
       <p>「スタート」を押すとはじまります</p>
     </div>
   `;

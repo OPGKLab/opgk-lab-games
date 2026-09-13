@@ -58,6 +58,8 @@
   border-radius: 10px;
   padding: 8px 6px;
   min-height: 40px;
+  max-width: 100%;
+  margin: 0 auto;
 }
 .donadona-queue-row {
   display: flex;
@@ -68,6 +70,7 @@
    本物の行列のようにお尻から続いて見えるようにする */
 .donadona-queue-row-rev {
   flex-direction: row-reverse;
+  justify-content: flex-end;
 }
 .donadona-queue-heart {
   font-size: 13px;
@@ -82,29 +85,35 @@
   padding: 0 2px;
   cursor: pointer;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-  animation: donadonaFrontPulse 1s ease-in-out infinite alternate;
 }
-@keyframes donadonaFrontPulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.12); }
+.donadona-queue-front-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .donadona-queue-front-arrow {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1;
   animation: donadonaArrowNudge 0.7s ease-in-out infinite alternate;
 }
 @keyframes donadonaArrowNudge {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(3px); }
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
 }
 
 /* 乗車レーンの導線表示（行列→乗車口の流れを示すだけの装飾） */
-.donadona-lane {
+/* 駐車場→乗車口の操作方向を示す、大きく跳ねる矢印 */
+.donadona-big-arrow {
   text-align: center;
-  font-size: 11px;
-  color: #8a99a3;
-  letter-spacing: 0.15em;
-  margin: 2px 0 4px;
+  font-size: 34px;
+  line-height: 1;
+  margin: 2px 0 6px;
+  animation: donadonaBigArrowBounce 0.9s ease-in-out infinite;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
+}
+@keyframes donadonaBigArrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
 }
 
 /* 乗車口＋待避を同じ行に（待避は右寄せ） */
@@ -194,13 +203,23 @@
   display: inline-block;
   font-size: 20px;
   line-height: 1;
-  transform: rotate(40deg); /* トラックだけ斜め上向きに（向きは実機で要再調整） */
+  transform: rotate(40deg); /* トラックだけ斜め上向きに */
 }
 .donadona-pool-count {
   font-size: 12px;
   font-weight: bold;
   color: var(--accent);
   transform: translateX(-6px);
+}
+
+/* ゲーム開始直後（乗車口が全部空いている間）、駐車場のトラックを光らせて
+   「まずここをタップする」ことを視覚的に誘導する */
+.donadona-pool-btn.donadona-pool-hint {
+  animation: donadonaPoolHintPulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes donadonaPoolHintPulse {
+  0% { box-shadow: 0 0 0 2px var(--accent); }
+  100% { box-shadow: 0 0 0 4px var(--accent), 0 0 10px 3px rgba(61, 107, 140, 0.55); }
 }
 
 /* アニメーション再生中は誤タップ防止のため操作をロック */
@@ -256,3 +275,22 @@
   padding: 10px 14px;
 }
 .donadona-placeholder p { margin: 0; }
+
+.donadona-explainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 24px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 6px;
+}
+.donadona-explainer-arrow {
+  font-size: 16px;
+  color: var(--accent);
+}
+.donadona-explainer-caption {
+  font-size: 12px;
+  color: #5c6f7c;
+}
