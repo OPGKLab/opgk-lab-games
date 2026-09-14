@@ -1,0 +1,247 @@
+/* このゲーム固有：テーマカラー（スレートブルー、既存ゲームと非重複） */
+:root {
+  --bg: #e9f6fa;
+  --board: #d9f0f6;
+  --accent: #5bb8d4;
+  --hard: #e2574c;
+  --text: #22414a;
+  --popup-good: #5bb8d4;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+
+  /* このゲーム固有：ピース識別カラー（7色サイクル、016ねこ配置と同系統のトーン） */
+  --piece-c0: #e0776b;
+  --piece-c1: #eda85a;
+  --piece-c2: #e0c85a;
+  --piece-c3: #6bbd8a;
+  --piece-c4: #5bb6c4;
+  --piece-c5: #6f92d6;
+  --piece-c6: #9080d1;
+
+  --hole-bg: #d6dae2;
+  --empty-bg: #ffffff;
+}
+
+.pita-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.pita-progress b { color: var(--accent); font-size: 15px; }
+.pita-toolbar-actions { display: flex; gap: 6px; }
+.pita-toolbar-actions button { font-size: 12px; }
+
+/* 盤面 */
+.pita-board {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 3px;
+  max-width: 340px;
+  margin: 0 auto 14px;
+}
+.pita-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 6px;
+  padding: 0;
+  cursor: pointer;
+  background: var(--empty-bg);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+.pita-cell.pita-hole {
+  cursor: default;
+  background: var(--hole-bg);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.12);
+  opacity: 0.55;
+}
+.pita-cell.pita-filled {
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.4);
+}
+.pita-cell.pita-hint-glow {
+  animation: pitaHintPulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes pitaHintPulse {
+  0% { box-shadow: inset 0 0 0 2px var(--accent); }
+  100% { box-shadow: inset 0 0 0 4px var(--accent), 0 0 10px 2px rgba(106,127,160,0.5); }
+}
+.pita-cell.pita-shake { animation: pitaShake 0.3s ease; }
+@keyframes pitaShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* ピーストレイ */
+.pita-tray-label {
+  font-size: 12px;
+  color: #6b7a8c;
+  margin: 4px 0 6px 2px;
+}
+.pita-tray {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 4px 10px;
+}
+.pita-piece {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+.pita-piece.pita-piece-selected {
+  box-shadow: 0 0 0 3px var(--accent), 0 1px 3px rgba(0,0,0,0.15);
+}
+.pita-piece-cell {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  visibility: hidden;
+}
+.pita-piece-cell.pita-piece-cell-on {
+  visibility: visible;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.35);
+}
+.pita-piece-cell.pita-anchor::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  margin: 5.5px;
+}
+.pita-piece-cell { position: relative; }
+
+.pita-rotate-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.pita-rotate-btn:disabled { opacity: 0.4; }
+
+.pita-c0 { background: var(--piece-c0); }
+.pita-c1 { background: var(--piece-c1); }
+.pita-c2 { background: var(--piece-c2); }
+.pita-c3 { background: var(--piece-c3); }
+.pita-c4 { background: var(--piece-c4); }
+.pita-c5 { background: var(--piece-c5); }
+.pita-c6 { background: var(--piece-c6); }
+
+.pita-placeholder {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #5c6a80;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.pita-placeholder p { margin: 0; }
+.pita-placeholder b { color: var(--accent); }
+
+/* スタート前の遊び方図解：盤面の一部とピースを並べ、●の意味と
+   「グレーのマスは使わない／全部埋めなくてよい」を視覚的に伝える */
+/* 「●のマス→ここに合わせる」を1対1で示す図解 */
+/* 「点線ピースが浮いていて、●のマスを盤面の枠に合わせて落とす」図解 */
+.pita-howto-scene {
+  position: relative;
+  width: 140px;
+  height: 100px;
+  margin: 4px auto 8px;
+}
+
+/* 下：実際に置く先の2×2の枠（白マス＋アクセント枠） */
+.pita-howto-frame {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(2, 26px);
+  grid-template-rows: repeat(2, 26px);
+  gap: 2px;
+}
+.pita-howto-frame-cell {
+  border-radius: 5px;
+  background: var(--empty-bg);
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.1);
+}
+.pita-howto-frame-cell.pita-howto-frame-target {
+  box-shadow: inset 0 0 0 3px var(--accent);
+  background: #fff;
+}
+
+/* 上：まだ置いていない、点線アウトラインのピース（浮いている状態） */
+.pita-howto-floating {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(2, 26px);
+  grid-template-rows: repeat(2, 26px);
+  gap: 2px;
+}
+.pita-howto-fcell {
+  border-radius: 5px;
+  border: 2px dashed var(--accent);
+  opacity: 0.75;
+  position: relative;
+}
+.pita-howto-fcell.pita-howto-fcell-off { border: none; }
+.pita-howto-fcell.pita-howto-anchor::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ピースの●マスから、枠内の対象マスへ落ちる矢印 */
+.pita-howto-drop-arrow {
+  position: absolute;
+  left: 50%;
+  top: 40px;
+  transform: translateX(-50%);
+  font-size: 16px;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.pita-howto-note {
+  font-size: 12.5px;
+  color: var(--accent);
+  font-weight: bold;
+  margin: 0 0 10px;
+}
+
+/* 使わないマスの補足（小さいスウォッチ＋説明） */
+.pita-howto-hole-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.pita-howto-hole-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--hole-bg);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.12);
+  opacity: 0.55;
+}
