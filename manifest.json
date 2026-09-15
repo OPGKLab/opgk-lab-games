@@ -1,0 +1,14 @@
+{
+  "name": "OPGK Lab | Casual Series",
+  "short_name": "OPGK Lab",
+  "description": "無料・広告なし。すきま時間にどうぞ。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eaf3f7",
+  "theme_color": "#6fae8d",
+  "icons": [
+    { "src": "./icon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

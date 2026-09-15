@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>オフラインです | Casual Series</title>
+<link rel="stylesheet" href="./common/series-style-base.css" />
+<style>
+  .offline-wrap {
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    padding: 20px 14px;
+  }
+  .offline-emoji { font-size: 44px; }
+  .offline-wrap p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--text); }
+</style>
+</head>
+<body>
+  <div class="s-app">
+    <div class="s-brand">🌿 OPGK Lab</div>
+    <div class="s-board">
+      <div class="offline-wrap">
+        <span class="offline-emoji">📡</span>
+        <p>このゲームは、まだこの端末に保存されていません。</p>
+        <p>電波の入るところで、一度このゲームを開いてから<br>お試しください。</p>
+      </div>
+    </div>
+    <a class="s-back-link" href="./index.html">← ゲーム一覧に戻る</a>
+    <p class="s-copyright">©2026 OPGK Lab</p>
+  </div>
+</body>
+</html>
