@@ -1,0 +1,155 @@
+/* このゲーム固有：テーマカラー（ダスティローズ、既存ゲームと非重複） */
+:root {
+  --bg: #f7eef1;
+  --board: #f0e0e5;
+  --accent: #c76b86;
+  --hard: #e2574c;
+  --text: #3d2a30;
+  --popup-good: #c76b86;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+}
+
+.bs-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.bs-progress b { color: var(--accent); font-size: 15px; }
+.bs-toolbar-actions { display: flex; gap: 6px; }
+.bs-toolbar-actions button { font-size: 12px; }
+
+/* 色ごとの残数レジェンド */
+.bs-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.bs-legend-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.bs-legend-chip.bs-legend-done { opacity: 0.35; text-decoration: line-through; }
+.bs-legend-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 盤面：セルごとに余白を広めに取り、ピンがはみ出して重なって見えるようにする */
+.bs-grid {
+  --cols: 5;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 14px;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.bs-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  cursor: pointer;
+}
+.bs-cell.bs-cell-empty {
+  cursor: default;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,0.06);
+}
+
+/* ピン本体：016ねこ配置パズルのタイル質感（ツヤ・立体感）を踏襲 */
+.bs-pin {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255,255,255,0.33), rgba(255,255,255,0) 48%),
+    var(--pin-color, #eee);
+  box-shadow:
+    inset 0 -3px 0 rgba(0,0,0,0.2),
+    inset 0 2px 0 rgba(255,255,255,0.3),
+    inset 0 0 0 1px rgba(0,0,0,0.08);
+  transform: translate(calc(var(--depth) * 7px), calc(var(--depth) * 7px));
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+/* 下に隠れているピン：少し暗くして「奥」感を出す。クリックは親のbs-cellが受ける */
+.bs-pin-under { filter: brightness(0.8); z-index: 1; pointer-events: none; }
+/* 一番上のピン：はっきり見せる */
+.bs-pin-top { z-index: 2; }
+
+.bs-pin-top.bs-hint {
+  animation: bsHintPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes bsHintPulse {
+  0% { box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3), 0 0 0 0 rgba(199,107,134,0.7); }
+  100% { box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3), 0 0 10px 4px rgba(199,107,134,0.8); }
+}
+
+/* タップしたが抜けなかった時：軽く震える */
+.bs-pin-top.bs-shake { animation: bsShake 0.3s ease; }
+@keyframes bsShake {
+  0%, 100% { transform: translate(calc(var(--depth) * 7px), calc(var(--depth) * 7px)); }
+  25% { transform: translate(calc(var(--depth) * 7px - 4px), calc(var(--depth) * 7px)); }
+  75% { transform: translate(calc(var(--depth) * 7px + 4px), calc(var(--depth) * 7px)); }
+}
+
+.bs-pin-top.bs-removing {
+  transform: translate(calc(var(--depth) * 7px), calc(var(--depth) * 7px)) scale(0.2);
+  opacity: 0;
+}
+
+/* ルール図解（スタート前） */
+.bs-rule-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 0 6px;
+}
+.bs-rule-stack-demo {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+.bs-rule-pin {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background-image: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.33), rgba(255,255,255,0) 48%);
+  box-shadow:
+    inset 0 -3px 0 rgba(0,0,0,0.2),
+    inset 0 2px 0 rgba(255,255,255,0.3),
+    inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+.bs-rule-caption { font-size: 12.5px; line-height: 1.6; color: var(--text); text-align: left; }
+.bs-rule-caption b { color: var(--accent); }
+
+.bs-placeholder {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  color: #7a5a63;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 10px 14px;
+}
+.bs-placeholder p { margin: 0; }
+.bs-placeholder b { color: var(--accent); }
