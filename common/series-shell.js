@@ -6,6 +6,7 @@
      - スタート・リセットボタンの動作
      - 激むずスイッチ（ワンタッチ切替、プレイ中はロック）
      - 効果音エンジン（常時ON）・得点ポップアップ・トースト通知
+     - Service Worker登録（オフライン対応、サポート外ブラウザでは無視）
 
    役割ではない（各ゲーム側で実装すること）:
      - 盤面のマス目・レイアウト
@@ -26,6 +27,18 @@
      shell.toast('メッセージ')
      shell.hardMode                  // 現在激むず中か（bool）読み取り用
    ========================================================= */
+
+/* ---------- Service Worker登録（オフライン対応） ----------
+   各ゲームの index.html は common/series-shell.js を "../../common/series-shell.js"
+   として読み込む前提（＝サイトルートから2階層下）のため、sw.jsのパスとscopeは
+   相対パス "../../" で固定してよい。サポート外ブラウザ・file://実行時は何もしない。 */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('../../sw.js', { scope: '../../' }).catch(() => {
+      /* 登録失敗時も通常プレイに影響しないよう握りつぶす */
+    });
+  });
+}
 
 class GameShell {
   constructor(config) {
