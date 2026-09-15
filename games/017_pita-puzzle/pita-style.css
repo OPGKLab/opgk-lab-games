@@ -9,14 +9,14 @@
   --popup-bad: #e2574c;
   --popup-bonus: #e0a52c;
 
-  /* このゲーム固有：ピース識別カラー（7色サイクル、016ねこ配置と同系統のトーン） */
-  --piece-c0: #e0776b;
-  --piece-c1: #eda85a;
-  --piece-c2: #e0c85a;
-  --piece-c3: #6bbd8a;
-  --piece-c4: #5bb6c4;
-  --piece-c5: #6f92d6;
-  --piece-c6: #9080d1;
+  /* このゲーム固有：ピース識別カラー（016ねこ配置のREGION_COLORSを踏襲、8色中7色を使用） */
+  --piece-c0: #e36363;
+  --piece-c1: #ea9e52;
+  --piece-c2: #e3ca52;
+  --piece-c3: #61bf87;
+  --piece-c4: #52bfce;
+  --piece-c5: #5c8cd6;
+  --piece-c6: #967dd6;
 
   --hole-bg: #d6dae2;
   --empty-bg: #ffffff;
@@ -58,7 +58,11 @@
   opacity: 0.55;
 }
 .pita-cell.pita-filled {
-  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.4);
+  background-image: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.35), rgba(255,255,255,0) 48%);
+  box-shadow:
+    inset 0 -3px 0 rgba(0,0,0,0.18),
+    inset 0 2px 0 rgba(255,255,255,0.3),
+    inset 0 0 0 1px rgba(0,0,0,0.06);
 }
 .pita-cell.pita-hint-glow {
   animation: pitaHintPulse 0.9s ease-in-out infinite alternate;
@@ -107,7 +111,11 @@
 }
 .pita-piece-cell.pita-piece-cell-on {
   visibility: visible;
-  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.35);
+  background-image: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.35), rgba(255,255,255,0) 48%);
+  box-shadow:
+    inset 0 -2px 0 rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 0 0 1px rgba(0,0,0,0.06);
 }
 .pita-piece-cell.pita-anchor::after {
   content: "";
