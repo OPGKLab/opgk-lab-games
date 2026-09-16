@@ -40,7 +40,6 @@ let colorRemain = [];
 let totalPins = 0;
 let removedCount = 0;
 let cleared = false;
-let history = [];       // { cellIndex, color } の配列（1手＝1ピン削除）
 let hintTimeoutId = null;
 
 function shuffleArr(arr) {
@@ -76,7 +75,6 @@ function buildPuzzle() {
 
   colorRemain = Array(cfg.colorCount).fill(cfg.perColor);
   removedCount = 0;
-  history = [];
   cleared = false;
 
   renderBoard();
@@ -104,16 +102,12 @@ function buildDom() {
       <span class="bs-progress">残り: <b id="bsProgress">${totalPins}</b> / ${totalPins}</span>
       <div class="bs-toolbar-actions">
         <button class="s-icon-btn-text" id="bsHintBtn">💡 ヒント</button>
-        <button class="s-icon-btn-text" id="bsUndoBtn">⬅️ ひとつ戻る</button>
-        <button class="s-icon-btn-text" id="bsResetBtn">↩️ はじめから</button>
       </div>
     </div>
     <div class="bs-legend" id="bsLegend"></div>
     <div class="bs-grid" id="bsGrid" style="--cols:${cfg.cols}"></div>
   `;
   shell.board.querySelector('#bsHintBtn').addEventListener('click', showHint);
-  shell.board.querySelector('#bsUndoBtn').addEventListener('click', undoMove);
-  shell.board.querySelector('#bsResetBtn').addEventListener('click', restartBoard);
 
   const grid = shell.board.querySelector('#bsGrid');
   cellEls = [];
@@ -201,7 +195,7 @@ function onCellClick(idx) {
     rejectTap(idx, color);
     return;
   }
-  removePin(idx, color, true);
+  removePin(idx, color);
 }
 
 function rejectTap(idx, color) {
@@ -215,8 +209,7 @@ function rejectTap(idx, color) {
   shell.toast(`まだ他の場所に${PIN_LABELS[color % PIN_LABELS.length]}色が残っています`);
 }
 
-function removePin(idx, color, pushHistory) {
-  if (pushHistory) history.push({ cellIndex: idx, color });
+function removePin(idx, color) {
   shell.playTone(560 + color * 30, 0.08);
 
   const el = cellEls[idx];
@@ -239,29 +232,6 @@ function removePin(idx, color, pushHistory) {
   }, 200);
 }
 
-/* ---------- ひとつ戻る ---------- */
-function undoMove() {
-  if (!shell.running || cleared) return;
-  if (history.length === 0) {
-    shell.toast('これ以上戻れません');
-    return;
-  }
-  const { cellIndex, color } = history.pop();
-  cells[cellIndex].push(color);
-  removedCount--;
-  colorRemain[color]++;
-  renderCell(cellIndex);
-  updateProgress();
-  renderLegend();
-  shell.playTone(420, 0.06);
-  shell.toast('ひとつ前に戻しました');
-}
-
-/* ---------- はじめから ---------- */
-function restartBoard() {
-  if (!shell.running) return;
-  while (history.length) undoMove();
-}
 
 /* ---------- ヒント：ロック解除されている色のピンを1つ光らせる ---------- */
 function showHint() {
