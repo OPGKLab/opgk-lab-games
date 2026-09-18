@@ -3,11 +3,16 @@
    -----------------------------------------------------------
    キャッシュ戦略（2種類）:
 
-   1. コアファイル（common/・トップindex.html・about.html・manifest等）
+   1. コアファイル（common/・about.html・manifest等）
       → キャッシュ優先（cache-first）。CACHE_VERSIONを上げた時だけ更新される。
         更新頻度が低い前提のファイル群。
+        ※トップindex.html（ゲーム一覧）はここに含めない。新作追加のたびに
+          内容が変わるため、コア扱いにすると新作が反映されない不具合になる
+          （v1で実際に発生：018追加後、既訪問ブラウザに一覧が反映されない
+          事象があった。以後この教訓によりindex.htmlは2.に分類する）。
 
-   2. それ以外（各ゲームの index.html / *-game.js / *-style.css など）
+   2. それ以外（トップindex.html含む、各ゲームの index.html / *-game.js /
+      *-style.css など）
       → ネット優先（network-first）。オンライン中は常に最新を取得し、
         取得できた版を実行時キャッシュ(RUNTIME_CACHE)に保存する。
         オフライン時のみ、直近に保存された版で代用する。
@@ -16,20 +21,18 @@
 
    運用ルール：
    - common/series-shell.js や series-style-base.css を更新した時は、
-     下の CACHE_VERSION を必ず1つ上げること（例: 'v1' → 'v2'）。
+     下の CACHE_VERSION を必ず1つ上げること（例: 'v2' → 'v3'）。
      上げ忘れると、スマホ側が古い共通ファイルを表示し続けてしまう。
-   - 各ゲーム本体（games/配下）を更新した時は、何もしなくてよい
+   - トップindex.html・各ゲーム本体（games/配下）を更新した時は、何もしなくてよい
      （ネット優先のため次回アクセス時に自動で最新化される）。
    ========================================================= */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CORE_CACHE = `opgk-core-${CACHE_VERSION}`;
 const RUNTIME_CACHE = 'opgk-runtime';
 
 /* コアファイル一覧（sw.jsから見た相対パス＝サイトルート基準） */
 const CORE_ASSET_PATHS = [
-  './',
-  './index.html',
   './about.html',
   './offline.html',
   './manifest.json',
@@ -89,9 +92,9 @@ async function cacheFirst(request) {
   }
 }
 
-/* 各ゲーム用：まずネットから最新を取りに行き、取れたら実行時キャッシュを更新。
-   オフライン等で失敗した場合のみ、直近のキャッシュで代用する。
-   ナビゲーション（ページ遷移）で代用も無い場合は offline.html を返す。 */
+/* トップindex.html・各ゲーム用：まずネットから最新を取りに行き、取れたら
+   実行時キャッシュを更新。オフライン等で失敗した場合のみ、直近のキャッシュで
+   代用する。ナビゲーション（ページ遷移）で代用も無い場合は offline.html を返す。 */
 async function networkFirst(request) {
   const runtimeCache = await caches.open(RUNTIME_CACHE);
   try {
