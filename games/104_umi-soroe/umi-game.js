@@ -191,7 +191,27 @@ function getTileEl(r, c) {
 
 function showPlaceholder() {
   shell.board.className = 's-board';
-  shell.board.innerHTML = '<div class="umi-placeholder">「スタート」を押すと盤面が生成されます</div>';
+  shell.board.innerHTML = `
+    <div class="umi-howto">
+      <div class="umi-howto-col" id="umiHowtoBefore"></div>
+      <div class="umi-howto-arrow">➡️</div>
+      <div class="umi-howto-col" id="umiHowtoAfter"></div>
+    </div>
+    <div class="umi-howto-caption">同じ生き物を3つならべるゲームです</div>
+    <div class="umi-placeholder">「スタート」を押すと盤面が生成されます</div>
+  `;
+  renderHowToCol(shell.board.querySelector('#umiHowtoBefore'), ['🐳', '🐢', '🐳', '🐳'], []);
+  renderHowToCol(shell.board.querySelector('#umiHowtoAfter'), ['🐢', '🐳', '🐳', '🐳'], [1, 2, 3]);
+}
+
+function renderHowToCol(colEl, items, glowIndexes) {
+  if (!colEl) return;
+  items.forEach((emoji, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'umi-howto-tile umi-c0' + (glowIndexes.includes(i) ? ' umi-howto-glow' : '');
+    tile.textContent = emoji;
+    colEl.appendChild(tile);
+  });
 }
 
 /* ---------- 入力（ドラッグでなぞって隣と入れ替え） ---------- */
