@@ -138,9 +138,39 @@ function buildBoard() {
   drawStatic();
 }
 
+/* ---------- 進化の輪（スタート前の図解。言語に依存せず伝わるよう文字は使わない） ---------- */
+const RING_SIZE = 280;   // 表示コンテナの一辺(px)
+const RING_CENTER = 140; // 中心座標
+const RING_RADIUS = 100; // 円の半径
+const RING_MIN_DISP = 14; // 一番小さい卵の表示半径
+const RING_MAX_DISP = 28; // 一番大きい卵（❓含む）の表示半径
+const RING_MYSTERY_BG = '#fff8ea'; // ❓専用の背景色（本来の色は隠す。視認性重視の明るい色）
+
+function buildEvolutionRingHTML() {
+  const n = STAGES.length;
+  const items = STAGES.map((s, i) => {
+    const isLast = i === n - 1;
+    const angle = (i / n) * Math.PI * 2 - Math.PI / 2; // 上から時計回り
+    const x = RING_CENTER + RING_RADIUS * Math.cos(angle);
+    const y = RING_CENTER + RING_RADIUS * Math.sin(angle);
+    const t = (s.r - MIN_R) / (MAX_R - MIN_R);
+    const dispR = RING_MIN_DISP + t * (RING_MAX_DISP - RING_MIN_DISP);
+    const emoji = isLast ? '❓' : s.emoji;
+    const bg = isLast ? RING_MYSTERY_BG : s.color;
+    const border = isLast ? 'box-shadow:0 0 0 2px #e0a52c, 0 1px 3px rgba(0,0,0,0.15);' : '';
+    return `<div class="tamago-ring-item" style="left:${x}px;top:${y}px;width:${dispR * 2}px;height:${dispR * 2}px;background:${bg};font-size:${dispR * 1.15}px;${border}">${emoji}</div>`;
+  }).join('');
+  return `
+    <div class="tamago-ring" style="width:${RING_SIZE}px;height:${RING_SIZE}px;">
+      <div class="tamago-ring-arrow">↻</div>
+      ${items}
+    </div>
+  `;
+}
+
 function showPlaceholder() {
   shell.board.className = 's-board tamago-board';
-  shell.board.innerHTML = '<div class="tamago-placeholder">「スタート」を押すとたまごが落ちてきます</div>';
+  shell.board.innerHTML = buildEvolutionRingHTML();
 }
 
 /* ---------- 座標変換（表示サイズとCanvas内部解像度のズレを吸収） ---------- */
