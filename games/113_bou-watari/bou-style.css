@@ -86,3 +86,17 @@
 body {
   overscroll-behavior-y: contain;
 }
+/* 追記 */
+.bou-sprite {
+  position: absolute;
+  line-height: 1;
+  pointer-events: none;
+}
+.bou-sprite-player {
+  font-size: 30px;
+  transform: translate(-50%, -100%);
+}
+.bou-sprite-target {
+  font-size: 22px;
+  transform: translate(-50%, -50%);
+}

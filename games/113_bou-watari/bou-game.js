@@ -81,6 +81,7 @@ const RULE_SVG_CROSS = `
 </svg>`;
 
 let canvas, ctx;
+let playerSprite, targetSprite;
 let rafId = null;
 let state = 'idle'; // idle | growing | falling | walking | dropping
 
@@ -149,10 +150,14 @@ function buildBoard() {
     </div>
     <div class="bou-canvas-wrap">
       <canvas id="bouCanvas"></canvas>
+      <div class="bou-sprite bou-sprite-target" id="bouTargetSprite">📜</div>
+      <div class="bou-sprite bou-sprite-player" id="bouPlayerSprite">🥷</div>
     </div>
     <p class="bou-tap-hint">画面を押している間、棒がのびます。離すと倒れます</p>
   `;
   canvas = shell.board.querySelector('#bouCanvas');
+  playerSprite = shell.board.querySelector('#bouPlayerSprite');
+  targetSprite = shell.board.querySelector('#bouTargetSprite');
   const dpr = Math.min(window.devicePixelRatio || 1, 3);
   canvas.width = W * dpr;
   canvas.height = H * dpr;
@@ -279,11 +284,15 @@ function finishWalk() {
 
 function triggerGameOver() {
   cancelAnimationFrame(rafId);
+  playerSprite.style.display = 'none';
+  targetSprite.style.display = 'none';
   shell.end(`ゲームオーバー！${crossCount}個わたりました（スコア${score}）`);
 }
 
 function triggerClear() {
   cancelAnimationFrame(rafId);
+  playerSprite.style.display = 'none';
+  targetSprite.style.display = 'none';
   runConfetti(() => {
     shell.end(`🎉 ゴール！${GOAL_COUNT}個の足場をわたりきりました（スコア${score}）`);
   });
@@ -396,9 +405,9 @@ function drawPlatform(p, camX) {
 }
 
 function drawTargetMarker(p, camX, now) {
-  if (p.hit) return;
+  if (p.hit) { targetSprite.style.display = 'none'; return; }
   const sx = p.target - camX;
-  if (sx < -20 || sx > W + 20) return;
+  if (sx < -20 || sx > W + 20) { targetSprite.style.display = 'none'; return; }
   const bob = Math.sin(now * 0.004) * 3;
   const sy = GROUND_Y - 16 + bob;
 
@@ -410,10 +419,9 @@ function drawTargetMarker(p, camX, now) {
   ctx.arc(sx, sy, 16, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.font = '22px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('📜', sx, sy);
+  targetSprite.style.display = 'block';
+  targetSprite.style.left = `${(sx / W) * 100}%`;
+  targetSprite.style.top = `${(sy / H) * 100}%`;
 }
 
 function drawStick(camX) {
@@ -442,9 +450,6 @@ function drawStick(camX) {
 }
 
 function drawCharacter(camX, now) {
-  ctx.font = '30px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
   let sx, sy, alpha = 1;
   if (state === 'dropping') {
     sx = walkTargetX - camX;
@@ -454,9 +459,9 @@ function drawCharacter(camX, now) {
     sx = charX - camX;
     sy = GROUND_Y + (state === 'idle' ? Math.sin(now * 0.005) * 2 : 0);
   }
-  ctx.globalAlpha = alpha;
-  ctx.fillText('🥷', sx, sy + 4);
-  ctx.globalAlpha = 1;
+  playerSprite.style.left = `${(sx / W) * 100}%`;
+  playerSprite.style.top = `${((sy + 4) / H) * 100}%`;
+  playerSprite.style.opacity = alpha;
 }
 
 /* ---------- ポップアップ（Canvas座標にマーカーを重ねて表示） ---------- */
