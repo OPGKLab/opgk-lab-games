@@ -47,11 +47,17 @@ const HIT_MARGIN = 5; // px。この距離までブロックが迫ったら衝�
 const JUMP_DURATION = 0.75;
 const JUMP_HEIGHT = 110;
 
-/* 仮パラメータ。speed=せり出し速度(px/s)、decay=balanceの毎秒減衰率、
+/* 仮パラメータ。speed=初期せり出し速度(px/s)、speedStep=10段ごとの上昇量、
+   maxSpeed=速度の上限、decay=balanceの毎秒減衰率、
    threshold=崩壊するbalanceの絶対値、minW/maxW/minH/maxH=ブロックサイズ範囲 */
-const NORMAL_MODE = { speed: 85, decay: 0.55, threshold: 1.15, minW: 60, maxW: 118, minH: 20, maxH: 32 };
-const HARD_MODE   = { speed: 125, decay: 0.42, threshold: 0.92, minW: 46, maxW: 100, minH: 18, maxH: 28 };
+const NORMAL_MODE = { speed: 85, speedStep: 14, maxSpeed: 175, decay: 0.55, threshold: 1.15, minW: 60, maxW: 118, minH: 20, maxH: 32 };
+const HARD_MODE   = { speed: 125, speedStep: 16, maxSpeed: 220, decay: 0.42, threshold: 0.92, minW: 46, maxW: 100, minH: 18, maxH: 28 };
 // ※decayは「1秒あたり何倍に減衰するか」。draw/loop内で dt 秒分を pow(decay, dt) として適用する。
+
+function currentSpeed() {
+  const tier = Math.floor(stage / 10);
+  return Math.min(mode.speed + tier * mode.speedStep, mode.maxSpeed);
+}
 
 /* ブロックの配色（ペルー織物風）。5段ごとにパレットを巡回。
    テラコッタ・マスタード・ターコイズ・深紅・藍 */
@@ -380,7 +386,7 @@ function loop(ts) {
 
   if (!starActive && currentBlock) {
     const prevX = currentBlock.x;
-    currentBlock.x += currentBlock.dir * mode.speed * dt;
+    currentBlock.x += currentBlock.dir * currentSpeed() * dt;
 
     // 高速移動時、1フレームでラマの位置を飛び越えて衝突判定をすり抜けないように
     // 「移動前後でラマの位置を跨いだか」でも判定する
@@ -447,7 +453,7 @@ function draw() {
 
   if (starActive) {
     // タワー最上段基準の固定位置に表示（せり出しブロックの高さに引きずられない）
-    const starY = GROUND_Y - cum + viewOffset - 34;
+    const starY = GROUND_Y - cum + viewOffset - 92;
     drawSun(starX, starY, 16);
   }
 
