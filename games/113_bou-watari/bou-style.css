@@ -1,0 +1,88 @@
+/* このゲーム固有：テーマカラー(共通CSS変数の上書き)
+   夕暮れの渓谷イメージのグレイッシュバイオレット。既存ゲームと非重複。 */
+:root {
+  --bg: #efeaf5;
+  --board: #e7e0f2;
+  --accent: #6a5b8c;
+  --hard: #e2574c;
+  --text: #362f47;
+  --popup-good: #6a5b8c;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+}
+
+/* 進捗表示(🏁 何個目 / ゴール) */
+.bou-toolbar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.bou-progress b { color: var(--accent); font-size: 16px; }
+
+/* 盤面ラッパー：幅は固定(ねこ配置パズルと同じ考え方)。
+   margin:0 autoで左右の余白を必ず均等にする */
+.bou-canvas-wrap {
+  position: relative;
+  width: 300px;
+  max-width: 100%;
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+#bouCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 300 / 360;
+  touch-action: none;
+}
+
+.bou-tap-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #5c5468;
+  margin: 8px 0 0;
+}
+
+/* ---------- スタート前：文章なしの遊び方図解 ---------- */
+.bou-start-screen {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+.bou-rule-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.bou-rule-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 10px 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.bou-rule-caption {
+  font-size: 11px;
+  color: var(--text);
+  margin-top: 2px;
+}
+.bou-goal-line {
+  text-align: center;
+  font-size: 15px;
+  color: var(--text);
+  margin: 0;
+}
+.bou-goal-line b { color: var(--accent); font-size: 18px; }
+
+/* 連打・連続タップでブラウザの拡大やスクロールと誤認識されないようにする */
+body {
+  overscroll-behavior-y: contain;
+}
