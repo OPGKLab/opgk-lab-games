@@ -1195,10 +1195,95 @@ const DATA = {
       explanation: '1996年11月21日に第1回世界テレビ・フォーラムが国連で開催されたことにちなみ、同年12月の国連総会でこの日が「世界テレビ・デー」と宣言されました。',
     },
   },
+  '11-22': {
+    question: '11月22日が「いい夫婦の日」なのはなぜ？',
+    choices: ['「いい(11)ふうふ(22)」の語呂合わせだから', '国が定めた結婚記念日だから', '夫婦の日として国連が定めたから', '日本初の結婚式が行われた日だから'],
+    answer: 0,
+    explanation: '1988年、余暇開発センター（現・日本生産性本部）が「夫婦で余暇を楽しむライフスタイル」を提唱し、制定しました。',
+    hard: {
+      question: '11月22日は「大工さんの日」でもあります。この日付は、大工の神様とされる聖人の月命日にちなみます。その聖人とは？',
+      choices: ['聖徳太子', '菅原道真', '最澄', '空海'],
+      answer: 0,
+      explanation: '聖徳太子の命日（旧暦2月22日）にちなみ、また「11」を2本の柱、「22」を土台や梁に見立てて、日本建築大工技能士会が制定しました。',
+    },
+  },
+  '11-23': {
+    question: '11月23日「勤労感謝の日」は、戦前まで行われていた宮中行事の名残です。その行事とは？',
+    choices: ['新嘗祭', '神嘗祭', '大嘗祭', '祈年祭'],
+    answer: 0,
+    explanation: '新穀を神に捧げて収穫を感謝する「新嘗祭」の日をそのまま、1948年に「勤労感謝の日」として改めました。',
+    hard: {
+      question: '新嘗祭は元々、旧暦11月の「ある日」に行われていました。1873年の太陽暦導入後、その日が新暦の11月23日に固定されました。その「ある日」とは？',
+      choices: ['2回目の卯の日', '満月の日', '冬至の翌日', '新月の日'],
+      answer: 0,
+      explanation: '旧暦11月の2回目の「卯の日」に行われていた新嘗祭が、太陽暦導入の年にたまたま11月23日だったことから、以降この日に固定されました。',
+    },
+  },
+  '11-24': {
+    question: '1859年11月24日、イギリスで初版が刊行された、チャールズ・ダーウィンの著書は？',
+    choices: ['種の起源', '人間の由来', 'ビーグル号航海記', '動物と植物の変異'],
+    answer: 0,
+    explanation: '生物が長い時間をかけて変化していく「進化論」を提唱した本で、世界の生物学に大きな影響を与えました。',
+    hard: {
+      question: '1894年11月24日、東京音楽学校（現・東京芸術大学）奏楽堂で行われた、明治以降日本初のあるイベントとは？',
+      choices: ['オペラ公演', '交響楽団の演奏会', 'バレエ公演', '映画上映会'],
+      answer: 0,
+      explanation: '外国人講師の指導のもと、日本人学生によるオペラ公演が行われ、日本の洋楽史における重要な出来事となりました。',
+    },
+  },
+  '11-25': {
+    question: '1963年11月25日、女性週刊誌『女性自身』の誌面で初めて使われ、その後定着した「働く女性」を指す言葉は？',
+    choices: ['OL（オフィスレディー）', 'キャリアウーマン', 'ワーキングウーマン', 'ビジネスガール'],
+    answer: 0,
+    explanation: 'それまで使われていた「BG」という呼び方が好ましくない意味を持つとわかり、代わりの言葉を募集した結果「OL」が採用されました。',
+    hard: {
+      question: '11月25日は「ハイビジョンの日」でもあります。この日付の由来は、ハイビジョン放送の走査線の本数から。その本数は？',
+      choices: ['1125本', '1080本', '720本', '2160本'],
+      answer: 0,
+      explanation: 'ハイビジョンの走査線数「1125本」を日付に見立て、郵政省（現・総務省）とNHKが1987年に制定しました。',
+    },
+  },
+  '11-26': {
+    question: '11月26日が「いい風呂の日」なのはなぜ？',
+    choices: ['「いい(11)ふろ(26)」の語呂合わせだから', '日本初の銭湯が開業した日だから', '入浴剤が発売された日だから', '国が定めた健康の日だから'],
+    answer: 0,
+    explanation: '日本浴用剤工業会が制定。11月下旬は湯船でゆっくり温まりたくなる時期でもあることから選ばれました。',
+    hard: {
+      question: '1935年11月26日に創立された「日本ペンクラブ」の初代会長を務めた作家は誰？',
+      choices: ['島崎藤村', '夏目漱石', '森鴎外', '川端康成'],
+      answer: 0,
+      explanation: '文学を通じて表現の自由を擁護する国際的な文学者団体の日本センターとして発足し、詩人・小説家の島崎藤村が初代会長を務めました。',
+    },
+  },
+  '11-27': {
+    question: '「ノーベル賞制定記念日」の由来となった、1895年11月27日にアルフレッド・ノーベルが記した遺言の内容は？',
+    choices: ['全財産を人類に貢献した人々への賞に充てる', '故郷スウェーデンに美術館を建てる', '発明の特許をすべて公開する', '莫大な財産を国に寄付する'],
+    answer: 0,
+    explanation: 'ノーベルはこの遺言で、自らの莫大な財産を人類の平和や発展に貢献した人々を表彰する基金に充てるよう指示しました。',
+    hard: {
+      question: 'ノーベル賞を創設したアルフレッド・ノーベルが発明し、莫大な富を築くきっかけとなったものは？',
+      choices: ['ダイナマイト', '蓄音機', '蒸気機関', '電信機'],
+      answer: 0,
+      explanation: '安全に扱える爆薬「ダイナマイト」を発明して財を成したノーベルは、その富をノーベル賞創設の基金に充てました。',
+    },
+  },
+  '11-28': {
+    question: '1520年11月28日、探検家マゼランが南米大陸南端の海峡を抜けて到達した、後にその名がついた大洋は？',
+    choices: ['太平洋', '大西洋', 'インド洋', '北極海'],
+    answer: 0,
+    explanation: '穏やかな航海が続いたことから「平和な海（Pacific Ocean）」と名付けられ、日本語では「太平洋」と訳されました。',
+    hard: {
+      question: '11月28日は「税関記念日」でもあります。1872年（明治5年）、それまで「運上所」と呼ばれていた開港地の施設が統一して呼ばれるようになった名称は？',
+      choices: ['税関', '出島', '開港場', '会所'],
+      answer: 0,
+      explanation: '幕末に開港地へ設置された「運上所」が、明治5年のこの日「税関」という名称に統一されました。',
+    },
+  },
 };
 
 let weekDates = [];
 let answered = {};
+let shuffleMap = {}; // key: "MM-DD_n"|"MM-DD_h" → 選択肢の表示順（インデックス配列）
 
 function pad(n) { return String(n).padStart(2, '0'); }
 function dateKey(d) { return `${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
@@ -1213,6 +1298,20 @@ function getWeekDates(base) {
   });
 }
 
+/* 選択肢の表示順をシャッフルし、日付＋難易度ごとにキャッシュ（再描画のたびに変わらないように） */
+function getShuffleOrder(key, isHard, len) {
+  const cacheKey = `${key}_${isHard ? 'h' : 'n'}`;
+  if (!shuffleMap[cacheKey]) {
+    const arr = Array.from({ length: len }, (_, i) => i);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    shuffleMap[cacheKey] = arr;
+  }
+  return shuffleMap[cacheKey];
+}
+
 function showPlaceholder() {
   shell.board.className = 's-board';
   shell.board.innerHTML = '<div class="mame-placeholder">「スタート」を押すと今週のカレンダーが表示されます</div>';
@@ -1222,6 +1321,7 @@ function buildBoard() {
   const today = new Date();
   weekDates = getWeekDates(today);
   const todayKey = dateKey(today);
+  shuffleMap = {};
 
   shell.board.className = 's-board mame-board';
   shell.board.innerHTML = '';
@@ -1281,15 +1381,16 @@ function renderQuestion(key) {
   `;
 
   const choiceWrap = card.querySelector('.mame-choices');
-  q.choices.forEach((c, i) => {
+  const order = getShuffleOrder(key, shell.hardMode, q.choices.length);
+  order.forEach((origIdx) => {
     const b = document.createElement('button');
     b.className = 'mame-choice';
-    b.textContent = c;
+    b.textContent = q.choices[origIdx];
     if (isAnswered) {
       b.disabled = true;
-      if (i === q.answer) b.classList.add('mame-choice-correct');
+      if (origIdx === q.answer) b.classList.add('mame-choice-correct');
     }
-    b.addEventListener('click', () => onAnswer(key, i, q));
+    b.addEventListener('click', () => onAnswer(key, origIdx, q));
     choiceWrap.appendChild(b);
   });
 
@@ -1333,5 +1434,6 @@ shell.onStart(() => {
 });
 shell.onReset(() => {
   answered = {};
+  shuffleMap = {};
   showPlaceholder();
 });
