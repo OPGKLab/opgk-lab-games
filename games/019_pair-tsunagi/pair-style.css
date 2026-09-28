@@ -1,0 +1,76 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き） */
+:root {
+  --bg: #f7eef5;
+  --board: #efe3ec;
+  --accent: #b5479b;
+  --hard: #e2574c;
+  --text: #3a2d38;
+  --popup-good: #b5479b;
+  --popup-bad: #e2574c;
+  --popup-bonus: #e0a52c;
+}
+
+/* 盤面：正方形SVG（標準300px） */
+.pair-svg {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  margin: 0 auto;
+  touch-action: none;
+}
+.pair-boundary { fill: #fff; stroke: #b9aab6; stroke-width: 3; }
+.pair-hit { fill: transparent; cursor: pointer; }
+
+.pair-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: #6b5a68;
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+  padding: 0 10px;
+}
+
+/* 線：引いている最中／確定後（色はJSでペアの色を指定） */
+.pair-drag,
+.pair-line {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.pair-drag { opacity: 0.75; }
+.pair-hint-line {
+  fill: none;
+  stroke: #3a2d38;
+  stroke-width: 5;
+  stroke-dasharray: 8 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.pair-spark { pointer-events: none; animation: pairSparkPop 0.6s ease-out forwards; }
+@keyframes pairSparkPop {
+  0% { opacity: 0; transform: scale(0.5); }
+  30% { opacity: 1; transform: scale(1.3); }
+  100% { opacity: 0; transform: scale(1.6) translateY(-14px); }
+}
+
+/* 補助ボタン行・リセット導線 */
+.pair-tools { margin-top: 8px; }
+.pair-link-wrap { margin-top: 6px; }
+.pair-link-btn {
+  background: none;
+  border: none;
+  color: #8a7986;
+  font-size: 12px;
+  text-decoration: underline;
+  padding: 4px 8px;
+  cursor: pointer;
+}
