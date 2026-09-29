@@ -1,0 +1,169 @@
+/* このゲーム固有：テーマカラー（共通CSS変数の上書き）夜空・オーロラ風 */
+:root {
+  --bg: #f1eefc;
+  --board: #1b1035;
+  --accent: #7c5cd6;
+  --hard: #e2574c;
+  --text: #22333b;
+  --popup-good: #7c5cd6;
+  --popup-bad: #e2574c;
+  --popup-bonus: #ffd166;
+}
+
+/* このゲーム固有：盤面（星空＋オーロラの淡い光だまり） */
+.yozora-board {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  min-height: 360px;
+  touch-action: none;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.16) 1px, transparent 0) 0 0/22px 22px,
+    radial-gradient(circle at 75% 15%, rgba(94,234,212,0.20), transparent 55%),
+    radial-gradient(circle at 20% 80%, rgba(167,139,250,0.22), transparent 55%),
+    linear-gradient(160deg, #140b2e 0%, #1b1035 55%, #0f0a24 100%);
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* ---- プレースホルダー（スタート前） ---- */
+.yozora-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.92);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+  padding: 0 18px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.yozora-placeholder p { margin: 0; }
+.yozora-placeholder-title {
+  font-size: 17px;
+  font-weight: bold;
+  margin-bottom: 4px !important;
+  background: linear-gradient(90deg, #4ade80, #22d3ee, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+.yozora-placeholder-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.68);
+}
+
+/* ---- 塗り絵モード ---- */
+.yozora-instruction b { color: #ffd166; }
+.yozora-instruction {
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+  margin: 4px 0 10px;
+  text-align: center;
+}
+
+.yozora-paint-svg {
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 1 / 1;
+  touch-action: manipulation;
+}
+.yozora-region {
+  fill: #322849; /* 重ね描きする柄（七宝・青海波など）で下が透けないよう不透明にする */
+  stroke: rgba(255,255,255,0.7);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  cursor: pointer;
+  transition: fill 0.15s ease;
+}
+.yozora-region:active {
+  filter: brightness(1.15);
+}
+
+.yozora-palette {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.yozora-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+}
+.yozora-swatch.active {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.4), 0 0 8px rgba(255,255,255,0.6);
+}
+.yozora-swatch-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(255,255,255,0.15);
+  position: relative;
+}
+.yozora-swatch-custom input[type="color"] {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.yozora-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.yozora-action-btn {
+  font-size: 12px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  cursor: pointer;
+}
+.yozora-action-btn:active { background: rgba(255,255,255,0.25); }
+.yozora-action-btn-primary {
+  background: linear-gradient(90deg, #4ade80, #22d3ee, #a78bfa);
+  font-weight: bold;
+  color: #1b1035;
+}
+
+/* 「ぬりおわった」演出：盤面全体に光の波を1回走らせる */
+.yozora-wave {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 30%, rgba(178,255,224,0.5) 44%, rgba(196,181,253,0.4) 52%, rgba(255,255,255,0.12) 58%, transparent 74%);
+  background-size: 260% 260%;
+  background-position: -60% -60%;
+  opacity: 0;
+  animation: yozoraWaveSweep 1.1s ease-out forwards;
+  mix-blend-mode: screen;
+}
+@keyframes yozoraWaveSweep {
+  0% { background-position: -60% -60%; opacity: 0; }
+  12% { opacity: 1; }
+  100% { background-position: 60% 60%; opacity: 0; }
+}
+
