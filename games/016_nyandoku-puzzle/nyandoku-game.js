@@ -237,12 +237,22 @@ function showPlaceholder() {
         <div class="nya-rule-card">${ruleDiagramHTML('lane')}<div class="nya-rule-caption">同じ行・列に<br>ネコ1匹</div></div>
         <div class="nya-rule-card">${ruleDiagramHTML('adjacent')}<div class="nya-rule-caption">ナナメ含め<br>隣接NG</div></div>
       </div>
+      <div class="nya-tut-open-wrap">
+        <button class="s-icon-btn-text" id="nyaTutBtn">❓遊びかたを見てみる👀</button>
+      </div>
       <div class="nya-placeholder">
         <p>盤面いっぱいにネコを置くパズルです。「🐱配置」「✕印」をボタンで切り替えて考えましょう。</p>
         <p>「スタート」を押すとはじまります</p>
       </div>
     </div>
   `;
+  const tutBtn = shell.board.querySelector('#nyaTutBtn');
+  if (tutBtn && typeof NyaTutorial !== 'undefined') {
+    tutBtn.addEventListener('click', () => NyaTutorial.open({
+      colors: REGION_COLORS,
+      tone: (f, d, t) => shell.playTone(f, d, t),
+    }));
+  }
 }
 
 /* ---------- 描画 ---------- */

@@ -1,0 +1,135 @@
+/* ねこ配置パズル：遊びかたチュートリアル（オーバーレイ）
+   盤面のマスは本編の .nya-cell / .nya-grid をそのまま使い、本編と同じ見た目にしている。 */
+
+/* スタート前画面の「遊びかたを見てみる」ボタン置き場 */
+.nya-tut-open-wrap { text-align: center; margin: 0 0 14px; }
+
+.nya-tut-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(46, 42, 38, 0.55);
+  animation: nyaTutFade 0.2s ease;
+}
+@keyframes nyaTutFade { from { opacity: 0; } to { opacity: 1; } }
+
+.nya-tut-panel {
+  width: 100%;
+  max-width: 360px;
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  background: var(--bg);
+  border-radius: 20px;
+  padding: 14px 14px 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+}
+
+.nya-tut-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.nya-tut-title { font-size: 17px; font-weight: bold; color: var(--text); }
+.nya-tut-count { margin-left: auto; font-size: 13px; font-weight: bold; color: var(--accent); }
+.nya-tut-close {
+  font-size: 13px;
+  font-weight: bold;
+  border: none;
+  border-radius: 14px;
+  padding: 6px 12px;
+  background: #fff;
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+/* お手本盤面（本編と同じマスを小さめに表示） */
+.nya-tut-boardwrap { background: var(--board); border-radius: 16px; padding: 10px; }
+.nya-tut-boardwrap .nya-grid { max-width: 260px; gap: 4px; }
+.nya-tut-boardwrap .nya-cell {
+  font-size: 22px;
+  cursor: default;
+  pointer-events: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.nya-tut-boardwrap .nya-cell.nya-has-cat { font-size: 30px; }
+.nya-tut-boardwrap .nya-cell.nya-marked { font-size: 26px; }
+/* 前のステップまでの✕はうすくして、新しく増えた✕を目立たせる */
+.nya-tut-boardwrap .nya-cell.nya-marked.nya-tut-old {
+  color: rgba(46, 42, 38, 0.28);
+  -webkit-text-stroke-color: rgba(46, 42, 38, 0.28);
+}
+
+/* ネコ・✕がぽんと現れる */
+.nya-tut-g { display: inline-block; }
+.nya-tut-g.nya-tut-in { animation: nyaTutPop 0.38s ease-out; }
+@keyframes nyaTutPop {
+  0%   { transform: scale(0.2); opacity: 0; }
+  60%  { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 説明中のエリア・ラインを光らせる */
+.nya-tut-boardwrap .nya-cell.nya-tut-hl {
+  position: relative;
+  z-index: 1;
+  transform: scale(1.06);
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 14px 4px rgba(255, 255, 255, 0.95),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+}
+/* 「ここ1つだけ」のマスはゆっくり点滅 */
+.nya-tut-boardwrap .nya-cell.nya-tut-target {
+  position: relative;
+  z-index: 2;
+  animation: nyaTutTarget 0.7s ease-in-out infinite alternate;
+}
+@keyframes nyaTutTarget {
+  from { box-shadow: 0 0 0 3px #fff, 0 0 6px 2px rgba(255, 255, 255, 0.7); }
+  to   { box-shadow: 0 0 0 4px #fff, 0 0 18px 7px rgba(255, 255, 255, 1); }
+}
+
+.nya-tut-caption {
+  margin: 12px 2px;
+  min-height: 6.5em; /* 4行ぶん確保して、ステップ切替でボタン位置が動かないように */
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.nya-tut-caption b { color: var(--accent); }
+
+.nya-tut-actions { display: flex; gap: 10px; justify-content: center; }
+.nya-tut-btn {
+  min-width: 112px;
+  min-height: 46px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 23px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.nya-tut-btn-main { background: var(--accent); color: #fff; }
+.nya-tut-btn-sub { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); }
+.nya-tut-btn:disabled { opacity: 0.4; cursor: default; }
+
+.nya-tut-replay {
+  display: block;
+  margin: 10px auto 0;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.nya-tut-replay.nya-tut-hidden { visibility: hidden; }
