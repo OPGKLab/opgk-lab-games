@@ -238,7 +238,7 @@ function showPlaceholder() {
         <div class="nya-rule-card">${ruleDiagramHTML('adjacent')}<div class="nya-rule-caption">ナナメ含め<br>隣接NG</div></div>
       </div>
       <div class="nya-tut-open-wrap">
-        <button class="s-icon-btn-text" id="nyaTutBtn">❓遊びかたを見てみる👀</button>
+        <button class="s-icon-btn-text" id="nyaTutBtn">❓遊びかたを体験してみる👀</button>
       </div>
       <div class="nya-placeholder">
         <p>盤面いっぱいにネコを置くパズルです。「🐱配置」「✕印」をボタンで切り替えて考えましょう。</p>

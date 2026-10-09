@@ -133,3 +133,18 @@
   cursor: pointer;
 }
 .nya-tut-replay.nya-tut-hidden { visibility: hidden; }
+
+/* ---------- 体験ステップ（光ったマスをタップ） ---------- */
+.nya-tut-boardwrap.nya-tut-practice .nya-cell { pointer-events: auto; cursor: pointer; }
+/* 👆 タップしてほしいマスの合図 */
+.nya-tut-boardwrap .nya-cell.nya-tut-tap::after {
+  content: '👆';
+  position: absolute;
+  right: 1px;
+  bottom: -2px;
+  font-size: 20px;
+  line-height: 1;
+  pointer-events: none;
+  animation: nyaTutTapBob 0.8s ease-in-out infinite alternate;
+}
+@keyframes nyaTutTapBob { from { transform: translateY(0); } to { transform: translateY(-5px); } }

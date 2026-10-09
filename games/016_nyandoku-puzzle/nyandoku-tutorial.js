@@ -2,8 +2,12 @@
    ねこ配置パズル「遊びかた」チュートリアル（動く説明書）
 
    構成（将来 common/ へ移す時は「枠」だけを共通化する想定）
-     [枠]   オーバーレイ表示・まえへ/つぎへ・とじる・タイマー管理（ゲーム非依存）
+     [枠]   オーバーレイ表示・まえへ/つぎへ・とじる・タイマー管理・体験ステップの進行（ゲーム非依存）
      [内容] お手本盤面(5×5)・各ステップの説明文とアニメ（このゲーム専用）
+
+   ステップは2種類
+     見るだけ … { caption, build() }            build()が時間つきの演出(ops)を返す
+     体験する … { caption, targets[], finale }  光ったマスをユーザーがタップして進める
 
    使い方：
      NyaTutorial.open({
@@ -26,9 +30,12 @@ const NyaTutorial = (() => {
   const REGION_COLOR_IDX = [5, 3, 2, 6, 0]; // エリア番号 → 本編パレットの色番号（青・緑・黄・紫・赤）
   const FALLBACK_COLORS = ['#e36363', '#ea9e52', '#e3ca52', '#61bf87', '#52bfce', '#5c8cd6', '#967dd6', '#d875b1'];
 
-  const FIRST_CAT = [2, 2];                   // ①：1マスだけのエリア＝ここしか置けない（②〜④もこのネコ）
-  const DEDUCED_CAT = [0, 1];                 // ⑤：✕でしぼられて「ここ1つだけ」になるネコ
-  const REST_CATS = [[1, 4], [4, 3], [3, 0]]; // ⑥：のこりのネコ（決まる順）
+  const FIRST_CAT = [2, 2];   // ①：1マスだけのエリア＝ここしか置けない（②〜④もこのネコ）
+  const DEDUCED_CAT = [0, 1]; // ⑤：✕でしぼられて「ここ1つだけ」になるネコ（青）
+  const AUTO_CAT2 = [1, 4];   // ⑥：同じく「ここ1つだけ」になるネコ（緑）
+  // ⑦：ユーザーがタップして置くネコ（赤→紫）。赤を置くと横ラインで紫に✕が入り、紫も1マスだけになる
+  const PRACTICE_RED = [4, 3];
+  const PRACTICE_PURPLE = [3, 0];
 
   /* ===================== [内容] 盤面まわりの部品 ===================== */
   let cells = []; // cells[r][c] = { el, cat, x }
@@ -84,7 +91,7 @@ const NyaTutorial = (() => {
     if (s.cat) return;
     s.cat = true;
     s.x = false;
-    s.el.classList.remove('nya-marked', 'nya-tut-old', 'nya-tut-target');
+    s.el.classList.remove('nya-marked', 'nya-tut-old', 'nya-tut-target', 'nya-tut-tap');
     s.el.classList.add('nya-has-cat');
     setGlyph(s, '🐱', inst);
     if (!inst) tone(620, 0.08);
@@ -136,6 +143,31 @@ const NyaTutorial = (() => {
     return t0 + 400 + xs.length * 45 + 300;
   }
 
+  // 「このエリアは置けるマスが1つだけ」→ エリアを光らせ、残った1マスを点滅 → ネコが入る → ✕が広がる
+  function deduceOps(pos) {
+    const pl = planner();
+    const ops = [[0, dimOld]];
+    const [r, c] = pos;
+    const reg = regionCells(LAYOUT[r][c]);
+    ops.push([300, () => { glow(reg, true); glow([[r, c]], true, 'nya-tut-target'); }]);
+    ops.push([1900, () => { glow(reg, false); glow([[r, c]], false, 'nya-tut-target'); }]);
+    catBurst(ops, 1900, r, c, pl);
+    return ops;
+  }
+  // 完成：光の波＋ファンファーレ（本編のクリア演出と同じ見た目）
+  function waveOps(t) {
+    const ops = [];
+    const wave = [];
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) wave.push([r, c]);
+    wave.sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
+    wave.forEach(([r, c], i) => ops.push([t + i * 35, (inst) => {
+      if (!inst) cells[r][c].el.classList.add('nya-solved');
+    }]));
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
+      ops.push([t + i * 90, (inst) => { if (!inst) tone(f, 0.14, 'triangle'); }]));
+    return ops;
+  }
+
   /* ===================== [内容] ステップ定義 ===================== */
   // build() は「その時点の盤面」から、[待ち時間ms, 実行関数(inst)] の配列を作る
   const STEPS = [
@@ -184,35 +216,30 @@ const NyaTutorial = (() => {
     },
     {
       caption: '⑤ ✕がふえて、このエリアは置けるマスが<b>ここ1つだけ</b>になりました。なのでネコが入ります！',
-      build() {
-        const pl = planner();
-        const ops = [[0, dimOld]];
-        const [r, c] = DEDUCED_CAT;
-        const reg = regionCells(LAYOUT[r][c]);
-        ops.push([300, () => { glow(reg, true); glow([[r, c]], true, 'nya-tut-target'); }]);
-        ops.push([1900, () => { glow(reg, false); glow([[r, c]], false, 'nya-tut-target'); }]);
-        catBurst(ops, 1900, r, c, pl);
-        return ops;
-      },
+      build() { return deduceOps(DEDUCED_CAT); },
     },
     {
-      caption: '⑥ ネコを置くたびに、<b>同じ色のエリア</b>・縦・横・まわりに✕がふえます。✕は「✕印」ボタンでつけるメモ。くり返して全部置けたらクリア！',
-      build() {
-        const pl = planner();
-        const ops = [[0, dimOld]];
-        let t = 400;
-        REST_CATS.forEach(([r, c]) => { t = catBurst(ops, t, r, c, pl) + 250; });
-        // 完成：光の波＋ファンファーレ（本編のクリア演出と同じ見た目）
-        const wave = [];
-        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) wave.push([r, c]);
-        wave.sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
-        wave.forEach(([r, c], i) => ops.push([t + i * 35, (inst) => {
-          if (!inst) cells[r][c].el.classList.add('nya-solved');
-        }]));
-        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
-          ops.push([t + i * 90, (inst) => { if (!inst) tone(f, 0.14, 'triangle'); }]));
-        return ops;
-      },
+      caption: '⑥ 緑のエリアも、置けるマスが<b>1つだけ</b>になりました。ネコを置くと、<b>同じ色</b>・縦・横・まわりに✕がふえます。',
+      build() { return deduceOps(AUTO_CAT2); },
+    },
+    {
+      // 体験ステップ：光ったマスをタップ → ネコが入り✕が広がる → 次のマスへ
+      caption: '⑦ ここからは、やってみましょう！赤のエリアは置けるマスが<b>1つだけ</b>。光っているマスをタップして、ネコを置いてください。',
+      targets: [
+        {
+          cat: PRACTICE_RED,
+          prompt: '⑦ ここからは、やってみましょう！赤のエリアは置けるマスが<b>1つだけ</b>。光っているマスをタップして、ネコを置いてください。',
+          done: 'そうです！ネコと<b>同じ横のライン</b>にも置けなくなるので、✕が入ります。',
+          glowLine: 'row',
+          pause: 1200,
+        },
+        {
+          cat: PRACTICE_PURPLE,
+          prompt: '紫のエリアに✕が入って、置けるマスが<b>1つだけ</b>になりました。最後です。光っているマスをタップしましょう！',
+          pause: 500,
+        },
+      ],
+      finale: 'クリア！全部のネコを置けました🎉 本番では「✕印」ボタンで✕をつけながら、しぼりこんでいきましょう。',
     },
   ];
 
@@ -221,6 +248,7 @@ const NyaTutorial = (() => {
   let overlay = null;
   let ui = {};
   let pending = [];
+  let practice = null; // 体験ステップの進行 { k, idx, busy, done }
   let cur = 0;
   let prevOverflow = '';
 
@@ -250,15 +278,105 @@ const NyaTutorial = (() => {
     ui.caption.innerHTML = STEPS[cur].caption;
     ui.count.textContent = (cur + 1) + ' / ' + STEPS.length;
     ui.prev.disabled = cur === 0;
-    ui.next.textContent = cur === STEPS.length - 1 ? 'あそんでみる' : 'つぎへ ▶';
-    ui.replay.classList.toggle('nya-tut-hidden', cur !== STEPS.length - 1);
+    renderButtons();
+  }
+  function renderButtons() {
+    const step = STEPS[cur];
+    const last = cur === STEPS.length - 1;
+    const waiting = !!step.targets && !(practice && practice.done); // 体験の途中
+    ui.next.textContent = waiting ? '答えを見る' : (last ? 'あそんでみる' : 'つぎへ ▶');
+    ui.replay.classList.toggle('nya-tut-hidden', !(last && !waiting));
   }
 
-  function playStep(k) { schedule(STEPS[k].build()); }
+  function playStep(k) {
+    if (STEPS[k].targets) startPractice(k);
+    else schedule(STEPS[k].build());
+  }
+
+  /* ---- 体験ステップ：光ったマスをタップ → ネコ＋✕ → 次のマスへ ---- */
+  function startPractice(k) {
+    practice = { k, idx: 0, busy: false, done: false };
+    ui.boardWrap.classList.add('nya-tut-practice');
+    dimOld();
+    promptTarget();
+  }
+  function promptTarget() {
+    const t = STEPS[practice.k].targets[practice.idx];
+    const [r, c] = t.cat;
+    ui.caption.innerHTML = t.prompt;
+    glow(regionCells(LAYOUT[r][c]), true);
+    glow([[r, c]], true, 'nya-tut-target');
+    glow([[r, c]], true, 'nya-tut-tap');
+    practice.busy = false;
+    renderButtons();
+  }
+  function clearFocus(r, c) {
+    glow(regionCells(LAYOUT[r][c]), false);
+    glow([[r, c]], false, 'nya-tut-target');
+    glow([[r, c]], false, 'nya-tut-tap');
+  }
+  function onBoardClick(e) {
+    if (!practice || practice.busy || practice.done) return;
+    const el = e.target.closest('.nya-cell');
+    if (!el) return;
+    const idx = Array.prototype.indexOf.call(ui.board.children, el);
+    const r = (idx / N) | 0, c = idx % N;
+    const t = STEPS[practice.k].targets[practice.idx];
+    if (r === t.cat[0] && c === t.cat[1]) {
+      practice.busy = true;
+      clearFocus(r, c);
+      dimOld(); // 今までの✕はうすく、これから増える✕を目立たせる
+      if (t.done) ui.caption.innerHTML = t.done;
+      const ops = [];
+      const end = catBurst(ops, 0, r, c, planner());
+      const line = t.glowLine === 'row' ? lineRow(r) : t.glowLine === 'col' ? lineCol(c) : null;
+      if (line) {
+        ops.push([0, () => glow(line, true)]);
+        ops.push([end, () => glow(line, false)]);
+      }
+      ops.push([end + (t.pause || 0), (inst) => advancePractice(inst)]);
+      schedule(ops);
+    } else {
+      // ちがうマス：ぷるっと揺らして、光っているマスを案内する
+      el.classList.remove('nya-shake');
+      void el.offsetWidth;
+      el.classList.add('nya-shake');
+      setTimeout(() => el.classList.remove('nya-shake'), 320);
+      tone(260, 0.12, 'sawtooth');
+    }
+  }
+  function advancePractice(inst) {
+    if (!practice) return;
+    const step = STEPS[practice.k];
+    practice.idx++;
+    if (practice.idx < step.targets.length) { promptTarget(); return; }
+    practice.done = true;
+    ui.boardWrap.classList.remove('nya-tut-practice');
+    ui.caption.innerHTML = step.finale;
+    renderButtons();
+    if (!inst) schedule(waveOps(300));
+  }
+  // 「答えを見る」：のこりを自動で置いて完成させる
+  function finishPractice() {
+    if (!practice || practice.done) return;
+    flush();
+    while (practice && !practice.done) {
+      const [r, c] = STEPS[practice.k].targets[practice.idx].cat;
+      clearFocus(r, c);
+      dimOld();
+      const ops = [];
+      const end = catBurst(ops, 0, r, c, planner());
+      ops.push([end, (inst) => advancePractice(inst)]);
+      ops.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn(true));
+    }
+    renderButtons();
+  }
 
   // 盤面を作り直し、k番目の手前までを一瞬で再現してから、k番目をアニメ再生
   function rebuildTo(k) {
     cancelPending();
+    practice = null;
+    ui.boardWrap.classList.remove('nya-tut-practice');
     buildBoard(ui.board, opts.colors);
     for (let i = 0; i < k; i++) {
       STEPS[i].build().sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn(true));
@@ -269,6 +387,11 @@ const NyaTutorial = (() => {
   }
 
   function next() {
+    if (STEPS[cur].targets) {
+      if (practice && !practice.done) { finishPractice(); return; }
+      close();
+      return;
+    }
     if (cur >= STEPS.length - 1) { close(); return; }
     flush();
     cur++;
@@ -313,6 +436,7 @@ const NyaTutorial = (() => {
     document.body.style.overflow = 'hidden';
 
     ui = {
+      boardWrap: overlay.querySelector('.nya-tut-boardwrap'),
       board: overlay.querySelector('.nya-grid'),
       caption: overlay.querySelector('.nya-tut-caption'),
       count: overlay.querySelector('.nya-tut-count'),
@@ -321,6 +445,7 @@ const NyaTutorial = (() => {
       replay: overlay.querySelector('.nya-tut-replay'),
     };
     ui.board.style.setProperty('--cols', N);
+    ui.board.addEventListener('click', onBoardClick);
     ui.prev.addEventListener('click', prev);
     ui.next.addEventListener('click', next);
     ui.replay.addEventListener('click', replay);
@@ -334,6 +459,7 @@ const NyaTutorial = (() => {
   function close() {
     if (!overlay) return;
     cancelPending();
+    practice = null;
     document.removeEventListener('keydown', onKey);
     document.body.style.overflow = prevOverflow;
     overlay.remove();
