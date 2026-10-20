@@ -45,6 +45,7 @@ let cellEls = [];
 let dragging = false;
 let activeColor = null;
 let hintTimeoutId = null;
+let gapCueTimeoutId = null;
 let hintGhostCells = []; // ヒントで表示中の幻影ルートのセル（消去用に保持）
 
 /* ---------- ユーティリティ ---------- */
@@ -195,13 +196,46 @@ function buildDom() {
   shell.board.querySelector('#ballRestartBtn').addEventListener('click', restartCurrentPuzzle);
 }
 
+/* スタート画面の対比用ミニ盤面（固定データ。0=⚽ 1=🏀 null=空きマス）
+   ボールの位置は左右で同じ。違いは「ルート」だけ＝近道だと空きマスが残る */
+const MINI_ENDPOINTS = ['0,0', '1,2', '1,1', '3,0'];
+const MINI_NG = [
+  [0, 0, 0, null],
+  [1, 1, 0, null],
+  [1, null, null, null],
+  [1, null, null, null],
+];
+const MINI_OK = [
+  [0, 0, 0, 0],
+  [1, 1, 0, 0],
+  [1, 1, 1, 1],
+  [1, 1, 1, 1],
+];
+
+function miniBoardHTML(layout) {
+  let html = '<div class="ball-mini-grid">';
+  layout.forEach((row, r) => row.forEach((color, c) => {
+    if (color === null) {
+      html += '<div class="ball-cell ball-mini-gap"></div>';
+      return;
+    }
+    const kind = MINI_ENDPOINTS.includes(`${r},${c}`) ? 'ball-endpoint' : 'ball-trail';
+    const glyph = kind === 'ball-endpoint' ? COLORS[color].emoji : '・'; // 軌跡は太い「・」だけ
+    html += `<div class="ball-cell ball-c${color} ${kind}">${glyph}</div>`;
+  }));
+  return html + '</div>';
+}
+
 function showPlaceholder() {
   shell.board.className = 's-board';
   shell.board.innerHTML = `
     <div class="ball-placeholder">
-      <p>同じボール同士をつなぐゲームです。</p>
-      <p><b>盤面のマスを全て使い切るとクリアになります。</b></p>
-      <p>線をつなぐだけでは終わりません。</p>
+      <p>同じボール同士をつなぎましょう。</p>
+      <div class="ball-explain">
+        <div class="ball-explain-item ball-explain-ng"><div class="ball-badge ball-badge-ng"></div>${miniBoardHTML(MINI_NG)}</div>
+        <div class="ball-explain-item ball-explain-ok"><div class="ball-badge ball-badge-ok"></div>${miniBoardHTML(MINI_OK)}</div>
+      </div>
+      <p><b>すべてのマスを使い切るとクリア</b></p>
       <p class="ball-placeholder-start">「スタート」を押すとはじまります。</p>
     </div>
   `;
@@ -439,13 +473,34 @@ function checkWin() {
   if (!shell.running) return;
   let filled = 0;
   for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) if (board[r][c].color !== null) filled++;
-  if (filled !== SIZE * SIZE) return;
 
+  let allConnected = true;
   for (let i = 0; i < COLOR_COUNT; i++) {
-    if (!isColorConnected(i)) return;
+    if (!isColorConnected(i)) { allConnected = false; break; }
   }
+  if (!allConnected) return;
 
+  if (filled !== SIZE * SIZE) {
+    showGapCue(SIZE * SIZE - filled);
+    return;
+  }
   triggerWin();
+}
+
+/* 全色つながったのに空きマスが残っている時：空きマスを点滅させ、残り数を知らせる */
+function showGapCue(remaining) {
+  clearTimeout(gapCueTimeoutId);
+  const gaps = [];
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (board[r][c].color === null) {
+        cellEls[r][c].classList.add('ball-gap-pulse');
+        gaps.push(cellEls[r][c]);
+      }
+    }
+  }
+  shell.toast(`あと${remaining}マス残っています`);
+  gapCueTimeoutId = setTimeout(() => gaps.forEach((el) => el.classList.remove('ball-gap-pulse')), 1900);
 }
 
 /* クリア演出：斜め方向に光の波が広がり、ところどころで🎉ポップが弾ける */

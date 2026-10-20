@@ -125,3 +125,73 @@
   font-weight: bold;
   color: var(--text);
 }
+
+/* ---------- スタート画面：❌/⭕ の対比ミニ盤面 ---------- */
+.ball-explain {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin: 6px 0;
+}
+.ball-explain-item {
+  flex: 1;
+  max-width: 140px;
+  padding: 8px 6px 6px;
+  border: 3px solid;
+  border-radius: 14px;
+  background: #fffdf6;
+}
+.ball-explain-ng { border-color: #e2574c; }
+.ball-explain-ok { border-color: #4f7fe0; }
+
+/* ❌⭕はCSSで描く（端末の絵文字は色を変えられないため） */
+.ball-badge { position: relative; width: 26px; height: 26px; margin: 0 auto 6px; }
+.ball-badge-ok { border: 4px solid #4f7fe0; border-radius: 50%; box-sizing: border-box; }
+.ball-badge-ng::before,
+.ball-badge-ng::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 30px; height: 4px;
+  background: #e2574c;
+  border-radius: 2px;
+}
+.ball-badge-ng::before { transform: translate(-50%, -50%) rotate(45deg); }
+.ball-badge-ng::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+.ball-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
+.ball-mini-grid .ball-cell {
+  border-radius: 4px;
+  cursor: default;
+  pointer-events: none;
+}
+.ball-mini-grid .ball-cell.ball-endpoint {
+  font-size: 19px;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.12);
+}
+/* 軌跡は絵文字ではなく、色付きの太い「・」で表示 */
+.ball-mini-grid .ball-cell.ball-trail {
+  font-size: 26px;
+  font-weight: 900;
+  opacity: 1;
+}
+.ball-mini-grid .ball-c0.ball-trail { color: #6f8f5e; }
+.ball-mini-grid .ball-c1.ball-trail { color: #d98c3d; }
+/* 空きマス：枠より細い赤の点線で「埋まっていない」ことを示す */
+.ball-mini-grid .ball-cell.ball-mini-gap {
+  background: #fff;
+  box-shadow: none;
+  outline: 1.5px dashed rgba(226, 87, 76, 0.6);
+  outline-offset: -3px;
+}
+
+/* ---------- プレイ中：全色つながったのに空きマスが残る時の点滅 ---------- */
+.ball-cell.ball-gap-pulse { animation: ballGapPulse 0.6s ease-in-out 3; }
+@keyframes ballGapPulse {
+  0%, 100% { background: #fff; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); }
+  50% { background: #ffe3df; box-shadow: inset 0 0 0 3px rgba(226, 87, 76, 0.75), 0 0 8px 2px rgba(226, 87, 76, 0.4); }
+}
