@@ -49,6 +49,10 @@ let level = 1;
 let tickTimer = null;
 let gameOver = true;
 let paused = false;
+let clearing = false;   // 4列消し演出中（落下・操作を止める）
+let flashRows = [];     // 演出中に光らせる行
+let effectTimer = null;
+const QUAD_EFFECT_MS = 500;
 
 /* ---------- 7種バッグ抽選（偏りなくランダムに出す） ---------- */
 function refillBag() {
@@ -110,15 +114,15 @@ function tryMove(dRow, dCol) {
 }
 
 function moveLeft() {
-  if (!shell.running || gameOver || paused) return;
+  if (!shell.running || gameOver || paused || clearing) return;
   if (tryMove(0, -1)) { shell.playTone(420, 0.04); renderBoard(); }
 }
 function moveRight() {
-  if (!shell.running || gameOver || paused) return;
+  if (!shell.running || gameOver || paused || clearing) return;
   if (tryMove(0, 1)) { shell.playTone(420, 0.04); renderBoard(); }
 }
 function hardDrop() {
-  if (!shell.running || gameOver || paused || !piece) return;
+  if (!shell.running || gameOver || paused || clearing || !piece) return;
   let dist = 0;
   while (tryMove(1, 0)) dist++;
   shell.playTone(210, 0.05, 'triangle');
@@ -128,7 +132,7 @@ function hardDrop() {
   renderBoard();
 }
 function rotatePiece() {
-  if (!shell.running || gameOver || paused || !piece) return;
+  if (!shell.running || gameOver || paused || clearing || !piece) return;
   const nextRot = (piece.rotation + 1) % 4;
   for (const k of KICKS) {
     if (!collides(piece.type, nextRot, piece.row, piece.col + k)) {
@@ -143,7 +147,7 @@ function rotatePiece() {
 
 /* ---------- 一時停止 ---------- */
 function togglePause() {
-  if (!shell.running || gameOver) return;
+  if (!shell.running || gameOver || clearing) return;
   paused = !paused;
   const grid = shell.board.querySelector('#tetGrid');
   const label = shell.board.querySelector('#tetPauseLabel');
@@ -167,7 +171,7 @@ function scheduleTick() {
   tickTimer = setTimeout(tick, intervalForLevel());
 }
 function tick() {
-  if (!shell.running || gameOver || paused) return;
+  if (!shell.running || gameOver || paused || clearing) return;
   if (!tryMove(1, 0)) {
     lockPiece();
   } else {
@@ -184,10 +188,69 @@ function lockPiece() {
     if (r >= 0 && r < ROWS) board[r][c] = colorId;
   }
   piece = null;
+  const full = findFullRows();
+  if (full.length >= 4) { playQuadEffect(full); return; } // 4列同時消しは特別演出
   const cleared = clearLines();
   if (cleared > 0) applyLineClear(cleared);
   if (!gameOver) spawnPiece();
   renderBoard();
+}
+
+function findFullRows() {
+  const rows = [];
+  for (let r = 0; r < ROWS; r++) {
+    if (board[r].every((v) => v !== null)) rows.push(r);
+  }
+  return rows;
+}
+
+/* ---------- 4列同時消しの特別演出（金色に光る＋絵文字が舞う） ---------- */
+function playQuadEffect(rows) {
+  clearing = true;
+  clearTimeout(tickTimer);
+  flashRows = rows;
+  renderBoard();
+  playQuadSound();
+  spawnQuadFx(rows);
+  effectTimer = setTimeout(() => {
+    clearing = false;
+    flashRows = [];
+    removeQuadFx();
+    const cleared = clearLines();
+    if (cleared > 0) applyLineClear(cleared, true);
+    spawnPiece();
+    renderBoard();
+    if (!gameOver && shell.running) scheduleTick();
+  }, QUAD_EFFECT_MS);
+}
+
+/* 4列消し専用サウンド：高音の速い上昇（キラキラ）→ 長めに響く2音（リーン） */
+function playQuadSound() {
+  const sparkle = [1046.5, 1318.5, 1568, 2093, 2637]; // C6 E6 G6 C7 E7
+  sparkle.forEach((f, i) => setTimeout(() => shell.playTone(f, 0.12, 'sine'), i * 55));
+  const ringAt = sparkle.length * 55;
+  setTimeout(() => shell.playTone(2093, 0.8, 'sine'), ringAt);
+  setTimeout(() => shell.playTone(2637, 0.6, 'sine'), ringAt + 30);
+}
+
+function spawnQuadFx(rows) {
+  const wrap = shell.board.querySelector('#tetBoardWrap');
+  if (!wrap) return;
+  const emojis = ['✨', '🎉', '✨', '✨'];
+  emojis.forEach((emoji, i) => {
+    const r = rows[i % rows.length];
+    const c = (Math.random() * cols) | 0;
+    const cell = cellEls[r][c];
+    const fx = document.createElement('span');
+    fx.className = 'tetris-fx';
+    fx.textContent = emoji;
+    fx.style.left = `${cell.offsetLeft + cell.offsetWidth / 2}px`;
+    fx.style.top = `${cell.offsetTop}px`;
+    wrap.appendChild(fx);
+  });
+}
+function removeQuadFx() {
+  shell.board.querySelectorAll('.tetris-fx').forEach((el) => el.remove());
 }
 
 function clearLines() {
@@ -198,11 +261,11 @@ function clearLines() {
   return clearedCount;
 }
 
-function applyLineClear(count) {
+function applyLineClear(count, silent) {
   totalLines += count;
   const gained = (LINE_SCORE[count] || LINE_SCORE[4]) * level;
   shell.addScore(gained);
-  playLineClearSound(count);
+  if (!silent) playLineClearSound(count);
   shell.toast(count >= 4 ? `大量消去！+${gained}` : `${count}ライン消去！+${gained}`);
 
   const newLevel = Math.floor(totalLines / LINES_PER_LEVEL) + 1;
@@ -295,6 +358,7 @@ function renderBoard() {
       if (r >= 0 && r < ROWS && c >= 0 && c < cols) setCellColor(cellEls[r][c], colorIdOf(piece.type));
     }
   }
+  flashRows.forEach((r) => cellEls[r].forEach((el) => el.classList.add('tetris-flash')));
   renderNextQueue();
 }
 
@@ -337,9 +401,129 @@ function updateToolbar() {
   if (ln) ln.textContent = totalLines;
 }
 
+/* ---------- スタート前の自動デモ（文字なしで「落ちものパズル」と伝える） ----------
+   2マス幅のすき間に□型が落ちてはまり、2列そろって金色に光って消える流れをループ再生。
+   ゲーム本体の状態(board/piece等)には触れず、専用の変数で動かす。音は鳴らさない。 */
+let demoActive = false;
+let demoTimers = [];
+let demoCells = [];
+let demoCols = NORMAL_COLS;
+let demoBoard = [];
+let demoGap = 0;
+const DEMO_STEP_MS = 110;
+const DEMO_COLOR = colorIdOf('J'); // デモのピースは青（本番ではJ型の色。L型は本番ではオレンジ）
+
+function demoLater(fn, ms) { demoTimers.push(setTimeout(fn, ms)); }
+
+function stopDemo() {
+  demoActive = false;
+  demoTimers.forEach(clearTimeout);
+  demoTimers = [];
+}
+
+function startDemo(c) {
+  demoActive = true;
+  demoCols = c;
+  const grid = shell.board.querySelector('#tetGrid');
+  demoCells = [];
+  for (let r = 0; r < ROWS; r++) {
+    demoCells.push([]);
+    for (let col = 0; col < demoCols; col++) {
+      const cell = document.createElement('div');
+      cell.className = 'tetris-cell';
+      grid.appendChild(cell);
+      demoCells[r].push(cell);
+    }
+  }
+  runDemoCycle();
+}
+
+function renderDemo(pieceRow, state, flash) {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < demoCols; c++) setCellColor(demoCells[r][c], demoBoard[r][c]);
+  }
+  if (pieceRow !== null) {
+    const landRow = ROWS - 3;
+    // 着地予測は、回転が終わってから（本番と同じく、今の向きで落ちる先を示す）
+    if (state === 2 && pieceRow !== landRow) {
+      SHAPES.L[2].forEach(([dr, dc]) => setCellGhost(demoCells[landRow + dr][demoGap + dc], DEMO_COLOR));
+    }
+    SHAPES.L[state].forEach(([dr, dc]) => setCellColor(demoCells[pieceRow + dr][demoGap + dc], DEMO_COLOR));
+  }
+  (flash || []).forEach((r) => demoCells[r].forEach((el) => el.classList.add('tetris-flash')));
+}
+
+function demoFx(rows) {
+  const wrap = shell.board.querySelector('#tetBoardWrap');
+  if (!wrap) return;
+  ['✨', '🎉', '✨', '✨'].forEach((emoji, i) => {
+    const cell = demoCells[rows[i % rows.length]][(Math.random() * demoCols) | 0];
+    const fx = document.createElement('span');
+    fx.className = 'tetris-fx';
+    fx.textContent = emoji;
+    fx.style.left = `${cell.offsetLeft + cell.offsetWidth / 2}px`;
+    fx.style.top = `${cell.offsetTop}px`;
+    wrap.appendChild(fx);
+  });
+}
+
+function runDemoCycle() {
+  if (!demoActive) return;
+  // L字ピースが「1マスのくぼみ＋その上の3マス幅」にぴったりはまる場面（g〜g+2が落ちる先）
+  const g = (Math.random() * (demoCols - 2)) | 0;
+  demoGap = g;
+  const palette = [1, 2, 3, 4, 5, 7]; // 青(ピースの色)以外で積み、ピースが目立つようにする
+  const pick = () => palette[(Math.random() * palette.length) | 0];
+  demoBoard = Array.from({ length: ROWS }, () => Array(demoCols).fill(null));
+  for (let c = 0; c < demoCols; c++) {
+    if (c !== g) demoBoard[ROWS - 1][c] = pick();            // 最下段：gだけ空ける
+    if (c < g || c > g + 2) demoBoard[ROWS - 2][c] = pick(); // その上：g〜g+2を空ける
+  }
+  // 少しだけ上にも積んで自然な盤面に（落ちる先の真上は空けておく）
+  for (let c = 0; c < demoCols; c++) {
+    if (c >= g && c <= g + 2) continue;
+    if (Math.random() < 0.5) {
+      demoBoard[ROWS - 3][c] = pick();
+      if (Math.random() < 0.3) demoBoard[ROWS - 4][c] = pick();
+    }
+  }
+
+  const landRow = ROWS - 3;
+  const rotateAt = 5;       // この行まで落ちたところで1回転（縦のL→着地の向き）
+  const fallStart = 700;
+  renderDemo(0, 1);
+  for (let r = 1; r <= landRow; r++) {
+    demoLater(() => renderDemo(r, r >= rotateAt ? 2 : 1), fallStart + r * DEMO_STEP_MS);
+  }
+
+  const landedAt = fallStart + landRow * DEMO_STEP_MS + 80;
+  demoLater(() => {
+    SHAPES.L[2].forEach(([dr, dc]) => { demoBoard[landRow + dr][g + dc] = DEMO_COLOR; });
+    renderDemo(null, 0, [ROWS - 2, ROWS - 1]);
+    demoFx([ROWS - 2, ROWS - 1]);
+  }, landedAt);
+  demoLater(() => {
+    removeQuadFx();
+    const remaining = demoBoard.filter((row) => row.some((v) => v === null));
+    while (remaining.length < ROWS) remaining.unshift(Array(demoCols).fill(null));
+    demoBoard = remaining;
+    renderDemo(null, 0);
+  }, landedAt + QUAD_EFFECT_MS);
+  demoLater(runDemoCycle, landedAt + QUAD_EFFECT_MS + 1300);
+}
+
 function showPlaceholder() {
-  shell.board.className = 's-board';
-  shell.board.innerHTML = '<div class="tetris-placeholder">「スタート」を押すとブロックが降ってきます</div>';
+  stopDemo();
+  const c = shell.hardMode ? HARD_COLS : NORMAL_COLS;
+  shell.board.className = 's-board tetris-board';
+  shell.board.innerHTML = `
+    <div class="tetris-demo-bar"><span class="tetris-demo-badge">見本 sample</span></div>
+    <div class="tetris-board-wrap" id="tetBoardWrap">
+      <div class="tetris-grid" id="tetGrid" style="--cols:${c};--rows:${ROWS}"></div>
+    </div>
+    <div class="tetris-placeholder-note">「スタート」を押すとブロックが降ってきます</div>
+  `;
+  startDemo(c);
 }
 
 /* ---------- 終了 ---------- */
@@ -361,6 +545,7 @@ document.addEventListener('keydown', (e) => {
 
 /* ---- GameShellのライフサイクルに接続 ---- */
 shell.onStart(() => {
+  stopDemo();
   cols = shell.hardMode ? HARD_COLS : NORMAL_COLS;
   board = Array.from({ length: ROWS }, () => Array(cols).fill(null));
   bag = [];
@@ -370,6 +555,9 @@ shell.onStart(() => {
   level = 1;
   gameOver = false;
   paused = false;
+  clearing = false;
+  flashRows = [];
+  clearTimeout(effectTimer);
 
   buildDom();
   fillNextQueue();
@@ -381,6 +569,9 @@ shell.onStart(() => {
 
 shell.onReset(() => {
   clearTimeout(tickTimer);
+  clearTimeout(effectTimer);
+  clearing = false;
+  flashRows = [];
   gameOver = true;
   paused = false;
   piece = null;
@@ -388,7 +579,8 @@ shell.onReset(() => {
 });
 
 shell.onHardModeChange(() => {
-  // running中は呼ばれない（GameShell側で保証）。次回スタート時のcolsに反映される。
+  // running中は呼ばれない（GameShell側で保証）。デモ表示中だけ、盤面幅に合わせて作り直す。
+  if (demoActive) showPlaceholder();
 });
 
 showPlaceholder();

@@ -83,7 +83,7 @@
   cursor: pointer;
 }
 
-/* 盤面レイアウト：濃いえんじ色の壁紙調グラデーション＋斜めストライプで質感を出す */
+/* 盤面レイアウト：ウィート系の木目色＋斜めストライプで質感を出す */
 .tetris-grid {
   --cols: 10;
   --rows: 17;
@@ -116,6 +116,31 @@
 .tetris-cell.tetris-c5 { background: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.65), rgba(255,255,255,0) 48%), var(--c5); box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3); }
 .tetris-cell.tetris-c6 { background: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.65), rgba(255,255,255,0) 48%), var(--c6); box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3); }
 .tetris-cell.tetris-c7 { background: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.65), rgba(255,255,255,0) 48%), var(--c7); box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.3); }
+
+/* 4列同時消し演出：消える行を金色に光らせる（点滅はせず、1回だけ柔らかく光る） */
+.tetris-cell.tetris-flash {
+  background: radial-gradient(circle at 28% 22%, rgba(255,255,255,0.8), rgba(255,255,255,0) 55%), #f7c948;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.8), 0 0 8px rgba(247,201,72,0.9);
+  animation: tetrisFlash 0.5s ease-out;
+}
+@keyframes tetrisFlash {
+  0% { filter: brightness(1.7); }
+  100% { filter: brightness(1); }
+}
+/* 演出で舞う絵文字（約0.5秒で消える。操作再開後には残らない） */
+.tetris-fx {
+  position: absolute;
+  font-size: 20px;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 3;
+  animation: tetrisFxUp 0.5s ease-out forwards;
+}
+@keyframes tetrisFxUp {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
+  20% { opacity: 1; transform: translate(-50%, -6px) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -44px) scale(1); }
+}
 
 /* 着地予測（ゴースト）：うっすら1pxの輪郭＋低い不透明度で控えめに */
 .tetris-cell.tetris-ghost { background: transparent; opacity: 0.55; }
@@ -224,6 +249,34 @@
   font-size: 14px;
   text-align: center;
   padding: 0 10px;
+}
+
+/* スタート前デモ：本番のツールバーと同じ高さ(34px+余白10px)の帯に「見本 sample」を表示。
+   これで本番画面と見分けがつき、スタート時に盤面の位置も動かない */
+.tetris-demo-bar {
+  height: 34px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tetris-demo-badge {
+  padding: 5px 18px;
+  border-radius: 15px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.25em;
+  text-indent: 0.25em;
+}
+
+/* スタート前デモ：盤面の下に添える一行ガイド */
+.tetris-placeholder-note {
+  margin-top: 12px;
+  color: #8a6b60;
+  font-size: 13px;
+  text-align: center;
 }
 
 /* 連続タップ時にブラウザがスクロール操作と誤認しないようにする（ずれ・誤タップ対策） */
