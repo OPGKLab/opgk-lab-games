@@ -11,8 +11,20 @@
 
   /* このゲーム固有：パイプの色（common側には存在しない変数） */
   --pipe-color: #2f8fd1;
-  --tile-bg: #ffffff;
-  --tile-bg-hover: #eef7fd;
+}
+
+/* 背景：上から光が差すようなやわらかいグラデーション */
+body {
+  background: radial-gradient(ellipse at 50% -5%, #ffffff 0%, var(--bg) 50%, #d3e8f6 100%) fixed;
+  min-height: 100vh;
+}
+.s-title { text-shadow: 0 2px 0 rgba(255,255,255,0.8), 0 3px 6px rgba(47,143,209,0.25); }
+
+/* 盤面：くぼみのある水槽のような立体感 */
+.pipe-board,
+.pipe-demo-board {
+  background: linear-gradient(180deg, #c6dfef 0%, #dbe9f4 45%, #d5e7f3 100%);
+  box-shadow: inset 0 4px 10px rgba(30,70,110,0.18), inset 0 -2px 0 rgba(255,255,255,0.7);
 }
 
 /* このゲーム固有：盤面レイアウト（正方形になるよう rows=cols で使う） */
@@ -25,30 +37,25 @@
   margin: 0 auto;
 }
 
-.pipe-placeholder {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 160px;
-  color: #5c7268;
-  font-size: 14px;
-  text-align: center;
-  padding: 0 10px;
-}
-
+/* タイル：ツヤのある白いパネル（立体感は共通仕様の質感に準拠） */
 .pipe-tile {
   position: relative;
   aspect-ratio: 1 / 1;
-  background: var(--tile-bg);
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255,255,255,0.9), rgba(255,255,255,0) 55%),
+    linear-gradient(180deg, #ffffff, #e9f4fb);
   border: none;
   border-radius: 12px;
   padding: 0;
   cursor: pointer;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+  box-shadow:
+    inset 0 -3px 0 rgba(0,0,0,0.08),
+    inset 0 2px 0 rgba(255,255,255,0.9),
+    inset 0 0 0 1px rgba(0,0,0,0.06),
+    0 2px 3px rgba(34,51,59,0.12);
 }
-.pipe-tile:active { background: var(--tile-bg-hover); }
 
+/* パイプ：1色のシンプルな太管。端は隣接タイルと継ぎ目なし、曲がり角だけ丸く */
 .pipe-shape { position: absolute; inset: 0; transition: transform 0.15s ease; }
 .pipe-svg { width: 100%; height: 100%; display: block; }
 .pipe-svg line,
@@ -56,8 +63,8 @@
   fill: none;
   stroke: var(--pipe-color);
   stroke-width: 30;
-  stroke-linecap: butt;   /* 端はタイル境界にぴったり合わせる（隣接タイルとの継ぎ目用） */
-  stroke-linejoin: round; /* 曲がり角だけ丸くする */
+  stroke-linecap: butt;
+  stroke-linejoin: round;
   transition: stroke 0.25s ease, filter 0.25s ease;
 }
 
@@ -76,6 +83,7 @@
   transform: translateY(-50%) scaleX(-1); /* 蛇口の向きを盤面側（右）へ */
   font-size: 32px;
   line-height: 1;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
 }
 .pipe-tile.pipe-exit::after {
   content: "🪣";
@@ -84,8 +92,101 @@
   transform: translateY(-50%);
   font-size: 32px;
   line-height: 1;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
 }
 
+/* クリア時：盤面に光の波が左→右へ走り、バケツが弾む */
 .pipe-board.pipe-solved .pipe-tile {
-  box-shadow: inset 0 0 0 2px var(--accent);
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    inset 0 -3px 0 rgba(0,0,0,0.08),
+    0 2px 3px rgba(34,51,59,0.12);
+}
+.pipe-board.pipe-solved::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.7) 50%, transparent 60%) no-repeat;
+  background-size: 300% 100%;
+  animation: jgSweep 1.2s ease-out forwards;
+}
+@keyframes jgSweep { from { background-position: 100% 0; } to { background-position: 0% 0; } }
+.pipe-board.pipe-solved .pipe-tile.pipe-exit::after { animation: jgBucket 0.5s ease 2; }
+@keyframes jgBucket {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.25); }
+}
+
+/* ===== スタート画面：ループ図解（周期6秒） ===== */
+.pipe-demo-board { max-width: 340px; margin: 0 auto; }  /* 本番盤面と同じ幅にして高さの跳ねを抑える */
+.pipe-demo {
+  min-height: 312px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 24px;
+  animation: jgDemoFade 6s linear infinite;
+  pointer-events: none;
+}
+.pipe-demo-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 5px; width: 54%;
+}
+.pipe-demo .pipe-tile { width: 100%; }
+.pipe-demo-turn { animation: jgDemoTurn 6s linear infinite; }
+.pipe-demo-hand {
+  position: absolute; left: 50%; top: 58%;
+  font-size: 30px; line-height: 1; opacity: 0;
+  animation: jgDemoHand 6s linear infinite;
+}
+.pipe-demo-cap { text-align: center; line-height: 1.35; }
+.pipe-demo-cap p { margin: 0 0 8px; }
+.pipe-demo-cap b { display: block; font-size: 14px; color: var(--text); }
+
+/* 水が左→右へ流れる（タイルごとに光るタイミングをずらす） */
+.pipe-demo-row .pipe-tile:nth-child(1) .pipe-svg line { animation: jgDemoWet1 6s linear infinite; }
+.pipe-demo-row .pipe-tile:nth-child(2) .pipe-svg line { animation: jgDemoWet2 6s linear infinite; }
+.pipe-demo-row .pipe-tile:nth-child(3) .pipe-svg line { animation: jgDemoWet3 6s linear infinite; }
+
+@keyframes jgDemoFade { 0%,88% {opacity:1} 93%,97% {opacity:0} 100% {opacity:1} }
+@keyframes jgDemoTurn { 0%,28% {transform:rotate(90deg)} 36%,95% {transform:rotate(0deg)} 96%,100% {transform:rotate(90deg)} }
+@keyframes jgDemoHand {
+  0%,12% {opacity:0; transform:translate(-50%,10px)}
+  18% {opacity:1; transform:translate(-50%,0)}
+  24% {opacity:1; transform:translate(-50%,-6px) scale(.9)}
+  30% {opacity:1; transform:translate(-50%,0)}
+  38%,100% {opacity:0}
+}
+@keyframes jgDemoWet1 { 0%,38% {stroke:var(--pipe-color)} 44%,94% {stroke:#6fd4ff} 96%,100% {stroke:var(--pipe-color)} }
+@keyframes jgDemoWet2 { 0%,48% {stroke:var(--pipe-color)} 54%,94% {stroke:#6fd4ff} 96%,100% {stroke:var(--pipe-color)} }
+@keyframes jgDemoWet3 { 0%,58% {stroke:var(--pipe-color)} 64%,94% {stroke:#6fd4ff} 96%,100% {stroke:var(--pipe-color)} }
+
+/* ===== クリア時オーバーレイ ===== */
+.s-toast { z-index: 60; }  /* トーストをオーバーレイより前面に */
+.jg-overlay {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(231, 243, 251, 0.82);
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.jg-overlay.active { opacity: 1; }
+.jg-reward { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.jg-reward-icon {
+  font-size: 72px; line-height: 1;
+  opacity: 0; transform: scale(0.3);
+  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.jg-reward-icon.show { opacity: 1; transform: scale(1); }
+.jg-reward-icon.sway.show { animation: jgSway 1.8s ease-in-out infinite; }
+@keyframes jgSway {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  50% { transform: translateY(-12px) rotate(8deg); }
+}
+/* 激むず：🌈を3つ重ねる（控えめサイズ） */
+.jg-rainbow { gap: 0; }
+.jg-rainbow .jg-reward-icon { font-size: 60px; margin: 0 -4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pipe-demo, .pipe-demo-turn, .pipe-demo-hand,
+  .pipe-demo-row .pipe-tile .pipe-svg line, .jg-reward-icon.sway.show,
+  .pipe-board.pipe-solved::after, .pipe-board.pipe-solved .pipe-tile.pipe-exit::after { animation: none; }
 }

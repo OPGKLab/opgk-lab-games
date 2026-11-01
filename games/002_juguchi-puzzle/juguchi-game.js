@@ -15,6 +15,11 @@ const shell = new GameShell({
 const NORMAL_SIZE = { rows: 4, cols: 4 };
 const HARD_SIZE = { rows: 5, cols: 5 };
 
+/* クリア演出のタイミング調整（ms）。オーバーレイが遅く感じたら OVERLAY_DELAY_MS を小さく */
+const FINISH_DELAY_MS = 100;  // 最後のパイプが光ってから、ファンファーレ＋光の波までの間
+const OVERLAY_DELAY_MS = 150; // ファンファーレからオーバーレイ表示までの間
+const OVERLAY_SHOW_MS = 2800; // オーバーレイが自動で消えるまでの時間（タップでも閉じる）
+
 const DIR_ORDER = ['N', 'E', 'S', 'W']; // 時計回り順
 const BASE_OPENINGS = {
   straight: ['W', 'E'],
@@ -197,7 +202,8 @@ function playFlowAnimation(order) {
     shell.board.classList.add('pipe-solved');
     playClearFanfare();
     shell.end('クリア！水がつながったよ🚰');
-  }, order.length * step + 200);
+    setTimeout(showClearOverlay, OVERLAY_DELAY_MS);
+  }, order.length * step + FINISH_DELAY_MS);
 }
 
 /* クリア時のサウンド（上昇アルペジオ＋余韻） */
@@ -237,18 +243,67 @@ function computeFlow() {
   return { ok, order };
 }
 
-function showPlaceholder() {
-  shell.board.className = 's-board';
-  shell.board.innerHTML = '<div class="pipe-placeholder">「スタート」を押すとパズルが始まります</div>';
+/* スタート画面：言葉なしで遊び方を伝えるループ図解（タップ→回る→水が流れる） */
+function showDemo() {
+  hideClearOverlay();
+  const tile = (extra, shapeExtra = '', inner = '') =>
+    `<div class="pipe-tile pipe-straight ${extra}"><div class="pipe-shape ${shapeExtra}">${pipeSVG('straight')}</div>${inner}</div>`;
+  shell.board.className = 's-board pipe-demo-board';
+  shell.board.innerHTML = `
+    <div class="pipe-demo">
+      <div class="pipe-demo-row">
+        ${tile('pipe-entrance')}
+        ${tile('', 'pipe-demo-turn', '<span class="pipe-demo-hand">👆</span>')}
+        ${tile('pipe-exit')}
+      </div>
+      <div class="pipe-demo-cap">
+        <p><b>タップして回しましょう</b></p>
+        <p><b>バケツまでつなげましょう</b></p>
+      </div>
+    </div>`;
 }
 
-showPlaceholder();
+/* クリア時オーバーレイ：通常=🐟ゆらゆら／激むず=🌈。タップor自動で閉じる */
+let overlayTimer = null;
+function showClearOverlay() {
+  hideClearOverlay();
+  const hard = shell.hardMode;
+  const ov = document.createElement('div');
+  ov.className = 'jg-overlay';
+  ov.id = 'jgOverlay';
+  const box = document.createElement('div');
+  box.className = hard ? 'jg-reward jg-rainbow' : 'jg-reward';
+  for (let i = 0; i < 3; i++) {
+    const span = document.createElement('span');
+    span.className = 'jg-reward-icon sway';
+    span.textContent = hard ? '🌈' : '🐟';
+    span.style.animationDelay = `${i * 0.3}s`;
+    box.appendChild(span);
+    setTimeout(() => span.classList.add('show'), i * 110);
+  }
+  ov.appendChild(box);
+  ov.addEventListener('click', hideClearOverlay);
+  document.body.appendChild(ov);
+  requestAnimationFrame(() => ov.classList.add('active'));
+  overlayTimer = setTimeout(hideClearOverlay, OVERLAY_SHOW_MS);
+}
+function hideClearOverlay() {
+  clearTimeout(overlayTimer);
+  const ov = document.getElementById('jgOverlay');
+  if (!ov) return;
+  ov.id = '';
+  ov.classList.remove('active');
+  setTimeout(() => ov.remove(), 300);
+}
+
+showDemo();
 
 /* ---- GameShellのライフサイクルに接続 ---- */
 shell.onStart(() => {
+  hideClearOverlay();
   const size = shell.hardMode ? HARD_SIZE : NORMAL_SIZE;
   buildPuzzle(size.rows, size.cols);
 });
 shell.onReset(() => {
-  showPlaceholder();
+  showDemo();
 });
