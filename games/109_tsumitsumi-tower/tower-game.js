@@ -28,12 +28,12 @@ const CRANE_AMP = 80; // クレーンの振れ幅（左右のみ）
 const NORMAL_SPEED_RANGE = [1.0, 1.9];
 const HARD_SPEED_BASE = [0.8, 1.5];
 const HARD_SPEED_FAST = [1.6, 2.6];
-const HARD_FAST_CHANCE_STEP = 0.08;
+const HARD_FAST_CHANCE_STEP = 0.053;
 const HARD_FAST_CHANCE_MAX = 0.6;
 let hardRampStep = 0;
 let hardFastChance = 0;
 
-const MILESTONE_INTERVAL = 15;
+const MILESTONE_INTERVAL = 10;
 // テーマ柄セット：見た目だけの節目演出。増やす場合はここにクラス名を追記するだけでOK。
 const THEMES = ['wood', 'candy', 'stone', 'gem'];
 
