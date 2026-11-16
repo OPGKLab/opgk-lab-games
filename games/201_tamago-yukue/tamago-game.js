@@ -49,8 +49,9 @@ const HARD_PROGRESS_BONUS = 0.25;
 const GRAVITY = 1500;          // px/s^2
 const RESTITUTION = 0.22;      // 円同士の反発係数
 const WALL_RESTITUTION = 0.28; // 壁・床の反発係数
-const AIR_DAMPING = 0.95;      // 横方向の減衰（強め）。これが弱いと着地後も横滑りして遠くの同種と勝手に合体してしまう
-const GROUND_FRICTION = 0.96;
+// 横方向の空気抵抗（毎サブステップ）＝滑りの主ノブ。1に近いほどよく滑る。
+// 実測(小さい卵を少しずらして落とした時の移動量): 0.95=約35px(鉛) / 0.99=約60〜100px / 0.999=約80〜130px(滑り過ぎ)
+const AIR_DAMPING = 0.99;
 const MERGE_LOCK_MS = 250;     // 生成直後、この間は合体対象外
 const OVER_LINE_LIMIT_MS = 2000; // 赤線超え継続でゲームオーバーになるまでの時間
 const SUBSTEPS = 2;
@@ -248,7 +249,6 @@ function resolveWalls() {
     if (p.y + p.r > H) {
       p.y = H - p.r;
       p.vy = Math.abs(p.vy) < MIN_BOUNCE_SPEED ? 0 : -p.vy * WALL_RESTITUTION;
-      p.vx *= GROUND_FRICTION;
     }
   });
 }
@@ -333,7 +333,9 @@ const REST_VY_SPEED = 20;
 // 着地後の横方向の転がりやすさ（サイズ依存）。値が1に近いほど減衰が弱く長く転がる。
 const MIN_R = STAGES[0].r;
 const MAX_R = STAGES[MAX_STAGE].r;
-const SMALL_REST_FRICTION = 0.985; // 一番小さい卵：よく転がる
+// 着地後（縦速度がほぼ0の時）の摩擦（1フレームあたりの残存率）。サイズ依存の微調整用。
+// 滑りの大枠は AIR_DAMPING のほうが支配的で、こちらは「止まるまでの時間」に効く。
+const SMALL_REST_FRICTION = 0.96;  // 一番小さい卵：よく転がる
 const LARGE_REST_FRICTION = 0.88;  // 一番大きい卵：あまり転がらない（少しだけ動く）
 function restFrictionFor(r) {
   const t = (r - MIN_R) / (MAX_R - MIN_R); // 0(小)〜1(大)
@@ -457,19 +459,107 @@ function drawParticle(p) {
   drawCircleWithEmoji(p.x, p.y, p.r, STAGES[p.stage]);
 }
 
-function drawCircleWithEmoji(x, y, r, stageDef) {
+function circlePath(x, y, r) {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = stageDef.color;
-  ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-  ctx.stroke();
+}
 
+function radialFill(cx, cy, r0, r1, stops, x, y, r) {
+  const g = ctx.createRadialGradient(cx, cy, r0, cx, cy, r1);
+  stops.forEach(([o, c]) => g.addColorStop(o, c));
+  ctx.fillStyle = g;
+  ctx.fillRect(x - r, y - r, r * 2, r * 2);
+}
+
+/* ---- 球の配色：影と輪郭を「その球自身の色の濃い版」にする ----
+   以前の茶色/黒の影は、白系の球が灰色にくすむ原因だった。色付きの影にすると、暗い印象が消えて明るく見える。 */
+const BALL_LIFT = 0; // 下地を白へ寄せる割合（0〜0.4）。0=元の色のまま。もっと明るくしたい時だけ上げる（0.2前後）
+
+function hexToRgb(h) {
+  const v = h.replace('#', '');
+  return [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16));
+}
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  const l = (mx + mn) / 2;
+  let h = 0, s = 0;
+  if (d) {
+    s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+    if (mx === r) h = (g - b) / d + (g < b ? 6 : 0);
+    else if (mx === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+  }
+  return [h, s, l];
+}
+function hslToRgb(h, s, l) {
+  h = (((h % 360) + 360) % 360) / 360;
+  if (!s) { const v = Math.round(l * 255); return [v, v, v]; }
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+  const f = (t) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  return [f(h + 1 / 3), f(h), f(h - 1 / 3)].map((v) => Math.round(v * 255));
+}
+function rgba(c, a) { return `rgba(${c[0]},${c[1]},${c[2]},${a})`; }
+
+// 影色：色相はそのまま彩度を上げて暗くする。白・灰系（彩度が低い）は暖色寄りに振る
+function shadowTone(hex) {
+  const [r, g, b] = hexToRgb(hex);
+  let [h, s, l] = rgbToHsl(r, g, b);
+  if (s < 0.2) h = 28;
+  return hslToRgb(h, Math.max(s * 1.25, 0.42), Math.max(l - 0.2, 0.42));
+}
+function liftTone(hex, t) {
+  const [r, g, b] = hexToRgb(hex);
+  const [h, s, l] = rgbToHsl(r, g, b);
+  return hslToRgb(h, Math.min(1, s * 1.08), l + (1 - l) * t);
+}
+// 毎フレームの計算を避けるため、各ステージの色を最初に一度だけ求めておく
+STAGES.forEach((st) => {
+  st.shade = shadowTone(st.color);
+  st.base = BALL_LIFT > 0 ? liftTone(st.color, BALL_LIFT) : hexToRgb(st.color);
+});
+
+// 球体シェーディング。ツヤは弱めにして絵文字の「下」に敷く（絵文字は最後に描く）。
+function shadeSphere(x, y, r, shade) {
+  ctx.save();
+  circlePath(x, y, r);
+  ctx.clip();
+  // 光源側から遠い縁を、その球の色の影で暗く（球の丸み）
+  radialFill(x - 0.25 * r, y - 0.3 * r, 0, 1.35 * r,
+    [[0, rgba(shade, 0)], [0.5, rgba(shade, 0)], [1, rgba(shade, 0.5)]], x, y, r);
+  // 左上のツヤ（弱め）
+  radialFill(x - 0.4 * r, y - 0.46 * r, 0, 0.55 * r,
+    [[0, 'rgba(255,255,255,0.35)'], [1, 'rgba(255,255,255,0)']], x, y, r);
+  ctx.restore();
+}
+
+function drawEmoji(x, y, r, emoji) {
   ctx.font = `${Math.floor(r * 1.3)}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(stageDef.emoji, x, y + 1);
+  ctx.fillText(emoji, x, y + 1);
+}
+
+function drawCircleWithEmoji(x, y, r, stageDef) {
+  circlePath(x, y, r);
+  ctx.fillStyle = rgba(stageDef.base, 1);
+  ctx.fill();
+
+  shadeSphere(x, y, r, stageDef.shade);
+  drawEmoji(x, y, r, stageDef.emoji);
+
+  circlePath(x, y, r - 0.6);
+  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = rgba(stageDef.shade, 0.55);
+  ctx.stroke();
 }
 
 /* ---------- メインループ ---------- */
