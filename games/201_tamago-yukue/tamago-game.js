@@ -1,7 +1,7 @@
 /* =========================================================
    たまごのゆくえ🐣 固有ロジック
    共通土台(GameShell)のAPIだけを使い、盤面はCanvasに自前の円物理で描画する。
-   進化: 🥚→🐣→🐔→🦃→🦢→🦚→🍳
+   進化（11段階）: 🥚→🐣→🐤→🐔→🦆→🪿→🦃→🦢→🦩→🦚→🍳（🍳同士はぶつかると消えてボーナス）
    ========================================================= */
 
 const shell = new GameShell({
@@ -61,6 +61,10 @@ const SETTLE_ZERO_SPEED = 3;   // これ未満の速度は完全に0とみなす
 
 let W = NORMAL_SIZE.w, H = NORMAL_SIZE.h, LINE_Y = NORMAL_SIZE.lineY;
 let canvas, ctx, nextIconEl;
+let sprites = [];      // ステージごとに1回だけ描いた球の画像（拡縮・演出用）
+let spriteDpr = 1;
+let effects = [];      // 合体演出（ゴースト・粒）
+let frameNow = 0;
 let particles = [];
 let nextId = 1;
 let currentPiece = null;   // まだ落としていない、プレイヤーが操作中の卵
@@ -130,6 +134,8 @@ function buildBoard() {
   if (toolbarEl) toolbarEl.style.maxWidth = `${W}px`;
   ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
+  spriteDpr = dpr;
+  bakeSprites();
 
   canvas.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointermove', onPointerMove);
@@ -361,9 +367,14 @@ function doMerge(a, b) {
   const newStage = a.stage + 1;
   const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
   const p = makeParticle(newStage, mx, my, (a.vx + b.vx) / 4, (a.vy + b.vy) / 4);
+  p.popAt = Date.now();
+  const isFinal = newStage === MAX_STAGE && FX.final;
+  if (isFinal) p.reveal = true; // ❓→🍳の正体公開
   particles.push(p);
+  spawnMergeFx(a, b, mx, my, newStage);
   shell.addScore(newStage * 10);
-  shell.playTone(600 + newStage * 60, 0.12, newStage === MAX_STAGE ? 'triangle' : 'sine');
+  if (isFinal) playFinalFanfare();
+  else shell.playTone(600 + newStage * 60, 0.12, newStage === MAX_STAGE ? 'triangle' : 'sine');
   showMergePopup(mx, my, `+${newStage * 10}`, newStage === MAX_STAGE ? 'bonus' : 'good');
 }
 
@@ -372,6 +383,7 @@ const FINAL_VANISH_BONUS = 200;
 function doVanish(a, b) {
   particles = particles.filter((p) => p.id !== a.id && p.id !== b.id);
   const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  spawnVanishFx(a, b, mx, my);
   shell.addScore(FINAL_VANISH_BONUS);
   [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((freq, i) =>
     setTimeout(() => shell.playTone(freq, 0.14, 'triangle'), i * 90)
@@ -414,6 +426,7 @@ function checkGameOver() {
 function triggerGameOver() {
   gameOverTriggered = true;
   currentPiece = null;
+  effects = []; // 演出が途中で止まった絵が残らないように
   shell.playTone(220, 0.3, 'sawtooth');
   shell.end(`ゲームオーバー！スコア: ${shell.getScore()}`);
 }
@@ -437,11 +450,14 @@ function render() {
   ctx.stroke();
   ctx.restore();
 
+  frameNow = Date.now();
+  drawEffects('ghost');
   particles.forEach((p) => drawParticle(p));
+  drawEffects('spark');
 
   if (currentPiece) {
     ctx.globalAlpha = 0.9;
-    drawCircleWithEmoji(currentPiece.x, currentPiece.y, currentPiece.r, STAGES[currentPiece.stage]);
+    drawSprite(currentPiece.stage, currentPiece.x, currentPiece.y);
     ctx.globalAlpha = 1;
     // ガイド線
     ctx.save();
@@ -453,10 +469,21 @@ function render() {
     ctx.stroke();
     ctx.restore();
   }
+  effects = effects.filter((e) => frameNow - e.t0 < (e.dur || e.life)); // 終わった演出を片付ける
 }
 
 function drawParticle(p) {
-  drawCircleWithEmoji(p.x, p.y, p.r, STAGES[p.stage]);
+  if (!p.popAt) { drawSprite(p.stage, p.x, p.y); return; }
+  const age = frameNow - p.popAt;
+  const sc = p.reveal ? popScale(age, FINAL_POP.ms, FINAL_POP.from, FINAL_POP.over) : popScale(age);
+  if (p.reveal && age < REVEAL_END) {
+    // ❓→🍳：どちらも不透明な円なので、🍳を下に敷いて❓を薄くしていけば、途中で透けずに切り替わる
+    const u = Math.min(1, Math.max(0, (age - REVEAL_FROM) / (REVEAL_END - REVEAL_FROM)));
+    if (u > 0) drawSprite(p.stage, p.x, p.y, sc);
+    if (u < 1) drawSpriteObj(mysterySprite, p.x, p.y, sc, 1 - u);
+    return;
+  }
+  drawSprite(p.stage, p.x, p.y, sc);
 }
 
 function circlePath(x, y, r) {
@@ -521,6 +548,7 @@ function liftTone(hex, t) {
   const [h, s, l] = rgbToHsl(r, g, b);
   return hslToRgb(h, Math.min(1, s * 1.08), l + (1 - l) * t);
 }
+STAGES[MAX_STAGE].rim = '#e0a52c'; // 🍳だけ金の縁（FINAL_RIMと同じ色）
 // 毎フレームの計算を避けるため、各ステージの色を最初に一度だけ求めておく
 STAGES.forEach((st) => {
   st.shade = shadowTone(st.color);
@@ -556,10 +584,211 @@ function drawCircleWithEmoji(x, y, r, stageDef) {
   shadeSphere(x, y, r, stageDef.shade);
   drawEmoji(x, y, r, stageDef.emoji);
 
-  circlePath(x, y, r - 0.6);
-  ctx.lineWidth = 1.2;
-  ctx.strokeStyle = rgba(stageDef.shade, 0.55);
+  if (stageDef.rim) { // 🍳と❓の球：金の縁
+    circlePath(x, y, r - 1.3);
+    ctx.lineWidth = 2.6;
+    ctx.strokeStyle = stageDef.rim;
+  } else {
+    circlePath(x, y, r - 0.6);
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = rgba(stageDef.shade, 0.55);
+  }
   ctx.stroke();
+}
+
+/* ---------- 合体演出 ----------
+   ・ポン：新しい球が小さい状態から弾んで定位置へ（見た目だけ。物理の大きさは最初から最終サイズ）
+   ・ゴースト：合体前の2つが中心へ吸い込まれて消える
+   ・粒：合体位置からパールの粒がパッと散る（静止中は一切動かさず、合体の一瞬だけ）
+   絵文字は「フォントサイズを変えながら描く」とiOS Safariで不安定になるため、
+   球の絵をステージごとに1回だけ描いて保存し、拡縮は画像の拡縮で行う。 */
+const FX = { pop: true, ghost: true, spark: true, final: true }; // 演出ごとのON/OFF（確認用）。finalは🍳が生まれる瞬間の特別演出
+const POP_MS = 300, POP_FROM = 0.7, POP_OVER = 1.12;
+const GHOST_MS = 140;
+// 🍳（最終形態）が生まれる瞬間だけの特別演出：ポンを大きくゆっくりにして、その中で❓が🍳に切り替わる
+const FINAL_POP = { ms: 520, from: 0.5, over: 1.18 };
+const REVEAL_FROM = 260, REVEAL_END = 360; // この間に❓→🍳へ切り替える（ポンの頂点付近）
+const FINAL_RIM = '#e0a52c'; // 🍳の金の縁（スタート前の輪の❓と同じ色）
+let mysterySprite = null;
+const SPARK_DRAG = 3.2; // 粒の減速の強さ（大きいほど早く止まる）
+// 盤面の背景がクリーム色（ほぼ白）なので、白や淡い色の粒は溶けて見えない。金・ピンク・ミントなど背景に映える色にする
+const SPARK_COLORS = ['255,196,64', '255,150,180', '120,210,180', '255,255,255'];
+const SPARK_COLORS_GOLD = ['255,196,64', '255,222,130', '255,150,180', '255,255,255'];
+const GLINT_COLOR = '255,206,84';
+
+function bakeSprites() {
+  const saved = ctx;
+  sprites = STAGES.map((st) => {
+    const half = st.r + 2;
+    const size = Math.ceil(half * 2 * spriteDpr);
+    const cv = document.createElement('canvas');
+    cv.width = size;
+    cv.height = size;
+    const g = cv.getContext('2d');
+    g.scale(size / (half * 2), size / (half * 2));
+    ctx = g; // 既存の描画関数をそのまま使うため、描画先を一時的に差し替える
+    drawCircleWithEmoji(half, half, st.r, st);
+    return { cv, half };
+  });
+  // 🍳が生まれる瞬間に先に見せる「❓の球」。スタート前の輪の❓と同じ色・同じ金の縁にして伏線を回収する
+  const mr = STAGES[MAX_STAGE].r, mhalf = mr + 2, msize = Math.ceil(mhalf * 2 * spriteDpr);
+  const mcv = document.createElement('canvas');
+  mcv.width = msize;
+  mcv.height = msize;
+  const mg = mcv.getContext('2d');
+  mg.scale(msize / (mhalf * 2), msize / (mhalf * 2));
+  ctx = mg;
+  drawCircleWithEmoji(mhalf, mhalf, mr, {
+    emoji: '❓', color: RING_MYSTERY_BG, base: hexToRgb(RING_MYSTERY_BG), shade: shadowTone(RING_MYSTERY_BG), rim: FINAL_RIM,
+  });
+  mysterySprite = { cv: mcv, half: mhalf };
+  ctx = saved;
+}
+
+function drawSprite(stage, x, y, scale = 1, alpha = 1) {
+  drawSpriteObj(sprites[stage], x, y, scale, alpha);
+}
+
+function drawSpriteObj(sp, x, y, scale = 1, alpha = 1) {
+  const w = sp.half * 2 * scale;
+  let dx = x - w / 2, dy = y - w / 2;
+  if (scale === 1) { // 等倍のときは画素にそろえて、ぼやけを防ぐ
+    dx = Math.round(dx * spriteDpr) / spriteDpr;
+    dy = Math.round(dy * spriteDpr) / spriteDpr;
+  }
+  if (alpha !== 1) ctx.globalAlpha = alpha;
+  ctx.drawImage(sp.cv, dx, dy, w, w);
+  if (alpha !== 1) ctx.globalAlpha = 1;
+}
+
+function popScale(age, ms = POP_MS, from = POP_FROM, over = POP_OVER) {
+  if (!FX.pop || age >= ms) return 1;
+  const x = age / ms;
+  if (x < 0.55) { // from → over へ一気に膨らむ
+    const u = x / 0.55;
+    return from + (over - from) * (1 - Math.pow(1 - u, 3));
+  }
+  const u = (x - 0.55) / 0.45; // over → 1.0 へ戻る
+  return over - (over - 1) * (0.5 - 0.5 * Math.cos(Math.PI * u));
+}
+
+function pushSparks(mx, my, n, d0Base, speedBase, speedRange, lifeBase, lifeRange, sizeBase, sizeRange, star, cols, drag = SPARK_DRAG) {
+  const now = Date.now();
+  for (let i = 0; i < n; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const sp = speedBase + Math.random() * speedRange;
+    const d0 = d0Base * (0.6 + Math.random() * 0.4);
+    effects.push({
+      kind: 'spark', t0: now, star, drag,
+      x: mx + Math.cos(ang) * d0, y: my + Math.sin(ang) * d0,
+      vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      life: lifeBase + Math.random() * lifeRange,
+      size: sizeBase + Math.random() * sizeRange,
+      col: star ? GLINT_COLOR : cols[(Math.random() * cols.length) | 0],
+    });
+  }
+}
+
+// 🍳が生まれる瞬間：金の粒と星を画面の広い範囲へ、約1.5秒かけて飛ばす（操作は止めない）
+function spawnFinalFx(a, b, mx, my) {
+  const now = Date.now();
+  if (FX.ghost) {
+    [a, b].forEach((q) => effects.push({ kind: 'ghost', stage: q.stage, x0: q.x, y0: q.y, x1: mx, y1: my, t0: now, dur: 220, end: 0.8 }));
+  }
+  if (FX.spark) {
+    const r = STAGES[MAX_STAGE].r;
+    pushSparks(mx, my, 90, r, 150, 230, 900, 600, 2, 2, false, SPARK_COLORS_GOLD, 1.7);
+    pushSparks(mx, my, 16, r, 70, 120, 1000, 500, 4.5, 3.5, true, SPARK_COLORS_GOLD, 1.7);
+  }
+}
+
+// 専用の効果音：ソから駆け上がる音のあと、和音を長く響かせ、高い音をきらきらと重ねる
+function playFinalFanfare() {
+  const run = [392, 493.88, 587.33, 783.99, 987.77, 1174.66];
+  run.forEach((f, i) => setTimeout(() => shell.playTone(f, 0.13, 'triangle'), i * 75));
+  const t = run.length * 75;
+  setTimeout(() => [783.99, 987.77, 1174.66].forEach((f) => shell.playTone(f, 0.8, 'sine')), t);
+  [2093, 2349.32, 2637.02].forEach((f, i) => setTimeout(() => shell.playTone(f, 0.2, 'sine'), t + 120 + i * 110));
+}
+
+function spawnMergeFx(a, b, mx, my, newStage) {
+  if (newStage === MAX_STAGE && FX.final) { spawnFinalFx(a, b, mx, my); return; }
+  const now = Date.now();
+  if (FX.ghost) {
+    [a, b].forEach((q) => effects.push({ kind: 'ghost', stage: q.stage, x0: q.x, y0: q.y, x1: mx, y1: my, t0: now, dur: GHOST_MS, end: 0.8 }));
+  }
+  if (FX.spark) {
+    const r = STAGES[newStage].r;
+    const k = 1 + newStage * 0.04;
+    const sh = STAGES[newStage].shade; // 合体した球自身の色も混ぜて、球ごとに少し色合いが変わるように
+    const cols = SPARK_COLORS.concat([`${sh[0]},${sh[1]},${sh[2]}`]);
+    pushSparks(mx, my, Math.round(6 + newStage * 2.2), r, 90 * k, 90 * k, 380, 260, 1.9, 1.6, false, cols);
+    if (newStage >= 5) pushSparks(mx, my, 3, r, 35, 30, 450, 200, 3.2, 2, true, cols); // 大きい進化には星のきらめきも
+  }
+}
+
+function spawnVanishFx(a, b, mx, my) {
+  const now = Date.now();
+  if (FX.ghost) {
+    [a, b].forEach((q) => effects.push({ kind: 'ghost', stage: q.stage, x0: q.x, y0: q.y, x1: mx, y1: my, t0: now, dur: 280, end: 1.15 }));
+  }
+  if (FX.spark) {
+    const r = STAGES[MAX_STAGE].r;
+    pushSparks(mx, my, 60, r, 120, 180, 700, 300, 2, 1.8, false, SPARK_COLORS_GOLD);
+    pushSparks(mx, my, 10, r, 50, 60, 800, 300, 4.5, 3, true, SPARK_COLORS_GOLD);
+  }
+}
+
+function glintPath(L) {
+  ctx.beginPath();
+  ctx.moveTo(0, -L);
+  ctx.quadraticCurveTo(0.12 * L, -0.12 * L, L, 0);
+  ctx.quadraticCurveTo(0.12 * L, 0.12 * L, 0, L);
+  ctx.quadraticCurveTo(-0.12 * L, 0.12 * L, -L, 0);
+  ctx.quadraticCurveTo(-0.12 * L, -0.12 * L, 0, -L);
+}
+// 4方向の星。金色の星の中心に小さな白い星を重ねて、背景がクリーム色でも見えるようにする
+function drawGlint(x, y, L, alpha, rgb) {
+  const a = alpha.toFixed(3);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = `rgba(${rgb},${a})`;
+  glintPath(L);
+  ctx.fill();
+  ctx.fillStyle = `rgba(255,255,255,${a})`;
+  glintPath(L * 0.5);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawEffects(kind) {
+  effects.forEach((e) => {
+    const age = frameNow - e.t0;
+    if (e.kind !== kind) return;
+    if (kind === 'ghost') {
+      const u = age / e.dur;
+      if (u >= 1) return;
+      const k = u * u; // 後半ほど速く中心へ吸い込まれる
+      drawSprite(e.stage, e.x0 + (e.x1 - e.x0) * k, e.y0 + (e.y1 - e.y0) * k, 1 + (e.end - 1) * u, 1 - u);
+      return;
+    }
+    if (age >= e.life) return;
+    const u = age / e.life;
+    const t = age / 1000;
+    const k = e.drag || SPARK_DRAG;
+    const slide = (1 - Math.exp(-k * t)) / k; // 空気抵抗つきの移動距離（フレームレートに依存しない）
+    const x = e.x + e.vx * slide;
+    const y = e.y + e.vy * slide - 14 * t; // ふわっと上へ
+    const alpha = Math.pow(1 - u, 1.4);
+    if (e.star) {
+      drawGlint(x, y, e.size * 1.6 * (1 - 0.4 * u), alpha, e.col);
+    } else {
+      ctx.fillStyle = `rgba(${e.col},${alpha.toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(x, y, e.size * (1 - 0.5 * u), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
 }
 
 /* ---------- メインループ ---------- */
@@ -584,6 +813,7 @@ function loop() {
 shell.onStart(() => {
   buildBoard();
   particles = [];
+  effects = [];
   gameOverTriggered = false;
   dropLocked = false;
   previewStage = null;
@@ -595,6 +825,7 @@ shell.onStart(() => {
 shell.onReset(() => {
   cancelAnimationFrame(rafId);
   particles = [];
+  effects = [];
   currentPiece = null;
   previewStage = null;
   gameOverTriggered = false;
